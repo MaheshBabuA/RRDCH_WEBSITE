@@ -204,8 +204,11 @@ const Appointments = () => {
   return (
     <div className="max-w-7xl mx-auto py-10">
       
-      <div className="mb-10 text-center lg:text-left">
-         <h1 className="text-3xl md:text-4xl font-bold text-secondary-blue mb-4">
+      <div className="mb-12 text-center lg:text-left space-y-2">
+         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-blue/10 text-primary-blue text-xs font-bold uppercase tracking-widest">
+           Secure Booking
+         </div>
+         <h1 className="text-4xl md:text-5xl font-black text-secondary-blue tracking-tight leading-tight">
            {t('appointments.title')}
          </h1>
       </div>
@@ -214,7 +217,8 @@ const Appointments = () => {
         
         {/* --- Form Section (Left, 2 columns wide on desktop) --- */}
         <div className="lg:col-span-2 order-2 lg:order-1">
-          <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-border-light p-6 md:p-8" noValidate>
+          <form onSubmit={handleSubmit} className="bg-white rounded-[32px] shadow-premium border border-border-soft p-8 md:p-12 relative overflow-hidden" noValidate>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary-blue/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
             
             {serverError && (
               <div className="mb-6 p-4 bg-red-50 border border-error-red/30 rounded-xl text-error-red text-sm font-medium">
@@ -268,10 +272,10 @@ const Appointments = () => {
             />
 
             {/* Schedule Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-              <div className="w-full mb-4">
-                 <label className="block text-sm font-medium text-secondary-blue mb-1" htmlFor="date">
-                   {t('appointments.date')} <span className="text-error-red">*</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
+              <div className="w-full mb-6">
+                 <label className="block text-sm font-bold text-secondary-blue mb-2 ml-1" htmlFor="date">
+                   {t('appointments.date')} <span className="text-primary-blue">*</span>
                  </label>
                  <input
                    type="date"
@@ -281,16 +285,18 @@ const Appointments = () => {
                    onChange={handleChange}
                    min={getTodayString()}
                    max={getMaxDateString()}
-                   className={`form-input w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 transition-colors
-                     ${errors.date ? 'border-error-red focus:border-error-red focus:ring-error-red/20' : 'border-border-light focus:border-primary-blue focus:ring-primary-blue/20'}
+                   className={`w-full px-5 py-3.5 bg-white border-2 rounded-2xl outline-none transition-all duration-300 font-medium cursor-pointer
+                     ${errors.date 
+                       ? 'border-error-red/50 bg-error-red/[0.02] text-error-red focus:border-error-red focus:ring-4 focus:ring-error-red/10' 
+                       : 'border-border-soft hover:border-primary-blue/30 focus:border-primary-blue focus:ring-4 focus:ring-primary-blue/10'}
                    `}
                  />
-                 {errors.date && <p className="mt-1 text-sm text-error-red">{errors.date}</p>}
+                 {errors.date && <p className="mt-2 text-sm text-error-red font-medium ml-1">{errors.date}</p>}
               </div>
 
-              <div className="w-full mb-4">
-                 <label className="block text-sm font-medium text-secondary-blue mb-1" htmlFor="time">
-                   {t('appointments.time')} <span className="text-error-red">*</span>
+              <div className="w-full mb-6">
+                 <label className="block text-sm font-bold text-secondary-blue mb-2 ml-1" htmlFor="time">
+                   {t('appointments.time')} <span className="text-primary-blue">*</span>
                  </label>
                  <input
                    type="time"
@@ -298,11 +304,13 @@ const Appointments = () => {
                    name="time"
                    value={formData.time}
                    onChange={handleChange}
-                   className={`form-input w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 transition-colors
-                     ${errors.time ? 'border-error-red focus:border-error-red focus:ring-error-red/20' : 'border-border-light focus:border-primary-blue focus:ring-primary-blue/20'}
+                   className={`w-full px-5 py-3.5 bg-white border-2 rounded-2xl outline-none transition-all duration-300 font-medium cursor-pointer
+                     ${errors.time 
+                       ? 'border-error-red/50 bg-error-red/[0.02] text-error-red focus:border-error-red focus:ring-4 focus:ring-error-red/10' 
+                       : 'border-border-soft hover:border-primary-blue/30 focus:border-primary-blue focus:ring-4 focus:ring-primary-blue/10'}
                    `}
                  />
-                 {errors.time && <p className="mt-1 text-sm text-error-red">{errors.time}</p>}
+                 {errors.time && <p className="mt-2 text-sm text-error-red font-medium ml-1">{errors.time}</p>}
               </div>
             </div>
 
@@ -378,71 +386,79 @@ const Appointments = () => {
       >
         {modalState.data && (
           <div className="text-center print:text-left print:p-0">
-            {/* Modal Body - Ticket Card */}
+            {/* Modal Body - PASS STYLE Ticket */}
             <div 
               ref={ticketRef}
-              className="bg-white border-2 border-primary-blue/20 rounded-2xl overflow-hidden shadow-sm mb-6 max-w-sm mx-auto"
+              className="bg-white border-2 border-primary-blue/10 rounded-[40px] overflow-hidden shadow-premium mb-8 max-w-sm mx-auto transition-transform hover:scale-[1.01]"
             >
-              {/* Ticket Header */}
-              <div className="bg-primary-blue/5 p-4 border-b border-primary-blue/10 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <img src={logo} alt="Logo" className="w-10 h-10 object-contain rounded-full bg-white" />
-                  <div className="text-left">
-                    <div className="font-bold text-secondary-blue text-sm leading-tight">RRDCH</div>
-                    <div className="text-[10px] text-neutral-gray leading-tight">Rajarajeswari Dental College</div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="text-[10px] text-neutral-gray uppercase font-bold block">Status</span>
-                  <span className="text-[10px] font-bold text-success-green px-1.5 py-0.5 bg-success-green/10 rounded-full">CONFIRMED</span>
-                </div>
-              </div>
-
-              {/* Ticket Content */}
-              <div className="p-6 text-left space-y-4">
-                <div className="flex justify-between items-start gap-4">
-                  <div>
-                    <label className="text-[10px] text-neutral-gray uppercase font-bold block mb-0.5">Patient Name</label>
-                    <div className="font-bold text-secondary-blue">{modalState.data.name}</div>
-                  </div>
-                  <div className="text-right">
-                    <label className="text-[10px] text-neutral-gray uppercase font-bold block mb-0.5">Appointment ID</label>
-                    <div className="font-mono text-sm font-bold text-primary-blue">{modalState.data.confirmationNumber}</div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-dashed border-border-light">
-                  <div>
-                    <label className="text-[10px] text-neutral-gray uppercase font-bold block mb-0.5">Department</label>
-                    <div className="text-sm font-medium text-secondary-blue">
-                      {departments.find(d => d.id === modalState.data.department)?.name || modalState.data.department}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <label className="text-[10px] text-neutral-gray uppercase font-bold block mb-0.5">Date & Time</label>
-                    <div className="text-sm font-medium text-secondary-blue">
-                      {modalState.data.date} <br/> {modalState.data.time}
-                    </div>
-                  </div>
-                </div>
-
-                {/* QR Code Section */}
-                <div className="flex flex-col items-center justify-center pt-6 pb-2">
-                  <div className="p-2 bg-white border border-border-light rounded-lg shadow-sm">
-                    <QRCodeSVG 
-                      value={modalState.data.confirmationNumber} 
-                      size={120}
-                      level="H"
-                      includeMargin={true}
-                    />
-                  </div>
-                  <p className="text-[10px] text-neutral-gray mt-2 text-center italic">Scan for verification at hospital reception</p>
+              {/* Pass Header */}
+              <div className="bg-secondary-blue p-8 text-white relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary-blue/20 rounded-full blur-2xl -mr-10 -mt-10"></div>
+                <div className="relative z-10 flex flex-col items-center">
+                   <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-xl">
+                      <img src={logo} alt="Logo" className="w-12 h-12 object-contain" />
+                   </div>
+                   <h2 className="text-xl font-black tracking-tight">{t('footer.collegeName')}</h2>
+                   <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-success-green/20 backdrop-blur-sm text-success-green text-[10px] font-black uppercase tracking-[0.2em]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-success-green animate-pulse"></span>
+                      Verified Appointment
+                   </div>
                 </div>
               </div>
 
-              {/* Ticket Footer */}
-              <div className="bg-light-bg p-3 text-[9px] text-neutral-gray text-center italic">
-                Rajarajeswari Dental College & Hospital, Bangalore
+              {/* Pass Content */}
+              <div className="p-8 text-left space-y-6 relative">
+                {/* Decorative cutouts */}
+                <div className="absolute top-0 left-0 w-6 h-12 bg-gray-50 rounded-r-full -mt-6 -ml-3"></div>
+                <div className="absolute top-0 right-0 w-6 h-12 bg-gray-50 rounded-l-full -mt-6 -mr-3"></div>
+
+                <div className="space-y-6">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <label className="text-[10px] text-text-muted uppercase font-black tracking-widest block mb-1">Patient Name</label>
+                      <div className="text-lg font-black text-secondary-blue">{modalState.data.name}</div>
+                    </div>
+                    <div className="text-right">
+                      <label className="text-[10px] text-text-muted uppercase font-black tracking-widest block mb-1">Reg ID</label>
+                      <div className="font-mono text-sm font-black text-primary-blue">#{modalState.data.confirmationNumber.split('-')[1]}</div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-8 pt-6 border-t border-dashed border-border-soft">
+                    <div>
+                      <label className="text-[10px] text-text-muted uppercase font-black tracking-widest block mb-1">Department</label>
+                      <div className="text-sm font-bold text-secondary-blue leading-tight uppercase">
+                        {departments.find(d => d.id === modalState.data.department)?.name || modalState.data.department}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <label className="text-[10px] text-text-muted uppercase font-black tracking-widest block mb-1">Schedule</label>
+                      <div className="text-sm font-bold text-secondary-blue uppercase">
+                        {modalState.data.date.replace(/-/g, '/')} <br/> 
+                        <span className="text-primary-blue">{modalState.data.time}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* QR Code Section */}
+                  <div className="flex flex-col items-center justify-center pt-8 border-t border-dashed border-border-soft">
+                    <div className="p-4 bg-white border-2 border-border-soft rounded-[32px] shadow-sm group hover:border-primary-blue/30 transition-colors">
+                      <QRCodeSVG 
+                        value={modalState.data.confirmationNumber} 
+                        size={140}
+                        level="H"
+                        includeMargin={false}
+                        fgColor="#0f172a"
+                      />
+                    </div>
+                    <p className="text-[10px] text-text-muted mt-5 font-bold uppercase tracking-widest text-center">Fast-Track Verification Code</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pass Footer */}
+              <div className="bg-soft-bg p-5 text-[10px] font-bold text-text-muted text-center uppercase tracking-widest border-t border-border-soft">
+                Present at Hospital Reception
               </div>
             </div>
 

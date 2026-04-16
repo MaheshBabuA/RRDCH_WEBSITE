@@ -56,11 +56,13 @@ const Contact = () => {
     <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
       {showToast && <Toast message={t('contactPage.success')} type="success" onClose={() => setShowToast(false)} />}
       
-      <div className="text-center mb-16 underline-offset-8">
-        <h1 className="text-4xl md:text-5xl font-bold text-secondary-blue mb-4">
-          {t('contactPage.title')}
-        </h1>
-        <div className="w-24 h-1 bg-accent-green mx-auto rounded-full"></div>
+      <div className="mb-16 text-center lg:text-left space-y-2">
+         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-blue/10 text-primary-blue text-[10px] font-black uppercase tracking-widest">
+           Support & Inquiry
+         </div>
+         <h1 className="text-4xl md:text-5xl font-black text-secondary-blue tracking-tight leading-tight">
+           {t('contactPage.title')}
+         </h1>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
@@ -68,66 +70,55 @@ const Contact = () => {
         {/* Left Side: Hospital Info & Map */}
         <div className="space-y-12">
           
-          <div className="space-y-8">
-            <h2 className="text-2xl font-bold text-secondary-blue flex items-center gap-3">
-              <span className="p-2 bg-primary-blue/10 rounded-lg text-primary-blue">🏥</span>
-              {t('contactPage.infoTitle')}
-            </h2>
-            
-            <div className="space-y-6">
-              <div className="flex gap-4 group">
-                <div className="w-10 h-10 rounded-full bg-light-bg flex items-center justify-center flex-shrink-0 group-hover:bg-primary-blue group-hover:text-white transition-colors">
-                  📍
-                </div>
-                <div>
-                  <h4 className="font-bold text-secondary-blue leading-tight mb-1">{t('footer.collegeName')}</h4>
-                  <p className="text-sm text-neutral-gray leading-relaxed max-w-sm">
-                    {t('footer.address')}
-                  </p>
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white p-8 rounded-[32px] shadow-premium border border-border-soft group hover:border-primary-blue/30 transition-all duration-300">
+              <div className="w-12 h-12 rounded-2xl bg-primary-blue/10 flex items-center justify-center text-2xl mb-6 group-hover:bg-primary-blue group-hover:text-white transition-all">
+                📍
               </div>
+              <h4 className="font-black text-secondary-blue text-lg mb-2 leading-tight uppercase tracking-tight">{t('contactPage.infoTitle')}</h4>
+              <p className="text-sm text-text-muted font-medium leading-relaxed">
+                {t('footer.address')}
+              </p>
+            </div>
 
-              <div className="flex gap-4 group">
-                <div className="w-10 h-10 rounded-full bg-light-bg flex items-center justify-center flex-shrink-0 group-hover:bg-primary-blue group-hover:text-white transition-colors">
-                  📞
-                </div>
-                <div className="flex flex-col gap-1">
-                  <a href="tel:+918028437150" className="text-sm text-neutral-gray hover:text-primary-blue transition-colors font-medium">
-                    +91-80-2843 7150
-                  </a>
-                  <a href="tel:+918028437468" className="text-sm text-neutral-gray hover:text-primary-blue transition-colors font-medium text-bold">
-                    +91-80-2843 7468
-                  </a>
-                  <a href="tel:+919901559955" className="text-sm text-neutral-gray hover:text-primary-blue transition-colors font-medium">
-                    +91-99015 59955
-                  </a>
-                </div>
+            <div className="bg-white p-8 rounded-[32px] shadow-premium border border-border-soft group hover:border-primary-blue/30 transition-all duration-300">
+              <div className="w-12 h-12 rounded-2xl bg-primary-blue/10 flex items-center justify-center text-2xl mb-6 group-hover:bg-primary-blue group-hover:text-white transition-all">
+                📞
               </div>
-
-              <div className="flex gap-4 group">
-                <div className="w-10 h-10 rounded-full bg-light-bg flex items-center justify-center flex-shrink-0 group-hover:bg-primary-blue group-hover:text-white transition-colors">
-                  📧
-                </div>
-                <a href={`mailto:${t('footer.email')}`} className="text-sm text-neutral-gray hover:text-primary-blue transition-colors font-medium self-center underline underline-offset-4 decoration-primary-blue/30">
-                  {t('footer.email')}
+              <h4 className="font-black text-secondary-blue text-lg mb-4 leading-tight uppercase tracking-tight">Direct Lines</h4>
+              <div className="space-y-2">
+                <a href="tel:+918028437150" className="block text-sm text-text-muted hover:text-primary-blue font-bold transition-colors">
+                  +91-80-2843 7150
+                </a>
+                <a href="tel:+918028437468" className="block text-sm text-text-muted hover:text-primary-blue font-bold transition-colors">
+                  +91-80-2843 7468
                 </a>
               </div>
+            </div>
 
-              <div className="flex gap-4 group border-t border-border-light pt-6">
-                <div className="w-10 h-10 rounded-full bg-light-bg flex items-center justify-center flex-shrink-0 group-hover:bg-accent-green group-hover:text-white transition-colors">
-                  ⏰
-                </div>
-                <div>
-                  <h4 className="font-bold text-secondary-blue text-sm mb-1">{t('contactPage.operatingHours')}</h4>
-                  <p className="text-xs text-neutral-gray font-medium uppercase tracking-wide">{t('contactPage.hoursText')}</p>
-                  <p className="text-xs text-error-red font-bold mt-0.5">{t('contactPage.sunday')}</p>
-                </div>
+            <div className="bg-white p-8 rounded-[32px] shadow-premium border border-border-soft group hover:border-primary-blue/30 transition-all duration-300">
+              <div className="w-12 h-12 rounded-2xl bg-primary-blue/10 flex items-center justify-center text-2xl mb-6 group-hover:bg-primary-blue group-hover:text-white transition-all">
+                📧
               </div>
+              <h4 className="font-black text-secondary-blue text-lg mb-2 leading-tight uppercase tracking-tight">Email Us</h4>
+              <a href={`mailto:${t('footer.email')}`} className="text-sm text-text-muted hover:text-primary-blue font-bold transition-all border-b-2 border-primary-blue/10 hover:border-primary-blue">
+                {t('footer.email')}
+              </a>
+            </div>
+
+            <div className="bg-secondary-blue p-8 rounded-[32px] shadow-premium-hover border border-white/10 group relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-16 -mt-16"></div>
+              <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-2xl mb-6 group-hover:bg-white group-hover:text-secondary-blue transition-all relative z-10">
+                ⏰
+              </div>
+              <h4 className="font-black text-white text-lg mb-2 leading-tight uppercase tracking-tight relative z-10">{t('contactPage.operatingHours')}</h4>
+              <p className="text-[10px] text-white/50 font-black uppercase tracking-[0.2em] mb-1 relative z-10">{t('contactPage.hoursText')}</p>
+              <p className="text-xs text-accent-emerald font-black uppercase tracking-widest relative z-10">OPEN MON - SAT</p>
             </div>
           </div>
 
           {/* Map Embed */}
-          <div className="rounded-3xl overflow-hidden shadow-lg border border-border-light h-[350px] relative group">
+          <div className="rounded-[48px] overflow-hidden shadow-premium hover:shadow-premium-hover border-4 border-white relative group transition-all duration-500 h-[450px]">
              <iframe 
                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3889.34968393356!2d77.4427503756358!3d12.889055987418428!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae3f4000000001%3A0x6b490453303c734!2sRajarajeswari%20Dental%20College%20and%20Hospital!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin" 
                width="100%" 
@@ -137,22 +128,26 @@ const Contact = () => {
                loading="lazy" 
                referrerPolicy="no-referrer-when-downgrade"
                title="RRDCH Hospital Location"
-               className="grayscale group-hover:grayscale-0 transition-all duration-700"
+               className="grayscale group-hover:grayscale-0 transition-all duration-1000 scale-[1.01] group-hover:scale-110"
              ></iframe>
-             <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1.5 rounded-full text-[10px] font-bold text-secondary-blue shadow-sm">
-                RRDCH Campus, Kumbalgodu
+             <div className="absolute bottom-8 left-8 bg-white/95 backdrop-blur-md px-6 py-3 rounded-[24px] shadow-2xl border border-white/20">
+                <div className="text-[10px] font-black text-primary-blue uppercase tracking-widest mb-1">Clinic Location</div>
+                <div className="text-sm font-black text-secondary-blue">RRDCH Campus, Kumbalgodu</div>
              </div>
           </div>
 
           {/* Quick Links */}
-          <div className="bg-light-bg rounded-2xl p-6 border border-border-light/50">
-             <h3 className="font-bold text-secondary-blue mb-4 uppercase tracking-widest text-xs border-b border-border-light pb-2">
+          <div className="bg-soft-bg rounded-[32px] p-8 border border-border-soft relative overflow-hidden group">
+             <div className="absolute top-0 right-0 w-24 h-24 bg-primary-blue/5 rounded-full blur-2xl -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700"></div>
+             <h3 className="font-black text-secondary-blue mb-6 uppercase tracking-[0.2em] text-[10px] flex items-center gap-3">
+                <div className="w-8 h-1 bg-primary-blue rounded-full"></div>
                 {t('contactPage.quickHeading')}
              </h3>
-             <div className="grid grid-cols-2 gap-4">
+             <div className="grid grid-cols-2 gap-y-4 gap-x-8">
                {['Departments', 'Events', 'Admissions', 'Student Portal'].map(link => (
-                 <Link key={link} to={`/${link.toLowerCase().replace(' ', '-')}`} className="text-sm text-neutral-gray hover:text-primary-blue hover:translate-x-1 transition-all flex items-center gap-2 font-medium">
-                    <span className="text-primary-blue text-xs">◆</span> {link}
+                 <Link key={link} to={`/${link.toLowerCase().replace(' ', '-')}`} className="text-sm text-text-muted font-bold hover:text-primary-blue hover:translate-x-2 transition-all flex items-center gap-3 group/link">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-blue/30 group-hover/link:bg-primary-blue group-hover/link:w-4 transition-all"></span> 
+                    {link}
                  </Link>
                ))}
              </div>
@@ -161,11 +156,12 @@ const Contact = () => {
 
         {/* Right Side: Contact Form */}
         <div className="lg:mt-0">
-          <Card className="shadow-2xl border-t-8 border-t-primary-blue p-8 md:p-12 sticky top-24">
-            <h2 className="text-2xl font-bold text-secondary-blue mb-8">
+          <div className="bg-white rounded-[40px] shadow-premium border border-border-soft p-8 md:p-12 sticky top-24 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary-blue/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+            <h2 className="text-3xl font-black text-secondary-blue mb-10 tracking-tight leading-tight">
               {t('contactPage.formTitle')}
             </h2>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <FormInput 
                 label={t('appointments.name')}
                 name="name"
@@ -173,10 +169,10 @@ const Contact = () => {
                 onChange={handleInputChange}
                 error={errors.name}
                 required
-                placeholder="John Doe"
+                placeholder="Ex. John Doe"
               />
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
                 <FormInput 
                   label={t('appointments.email')}
                   name="email"
@@ -185,14 +181,14 @@ const Contact = () => {
                   onChange={handleInputChange}
                   error={errors.email}
                   required
-                  placeholder="john@example.com"
+                  placeholder="name@email.com"
                 />
                 <FormInput 
                   label={t('appointments.phone')}
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  placeholder="9876543210 (Optional)"
+                  placeholder="+91 91234 56789"
                 />
               </div>
 
@@ -203,7 +199,7 @@ const Contact = () => {
                 onChange={handleInputChange}
                 error={errors.subject}
                 required
-                placeholder="Admission Inquiry"
+                placeholder="What can we help you with?"
               />
 
               <FormTextarea 
@@ -213,21 +209,21 @@ const Contact = () => {
                 onChange={handleInputChange}
                 error={errors.message}
                 required
-                rows={5}
-                placeholder="Enter your message here..."
+                rows={4}
+                placeholder="Type your detailed message here..."
               />
 
-              <Button 
-                type="primary" 
-                text={t('contactPage.formTitle')} 
-                loading={isSubmitting} 
-                className="w-full py-4 text-lg shadow-lg group"
-                buttonType="submit"
-              >
-                {/* Custom children for icons if button supports it, or just use text prop */}
-              </Button>
+              <div className="pt-6">
+                <Button 
+                  type="primary" 
+                  text={t('contactPage.formTitle')} 
+                  loading={isSubmitting} 
+                  className="w-full py-4 text-lg shadow-premium hover:shadow-premium-hover active:scale-95 transition-all"
+                  buttonType="submit"
+                />
+              </div>
             </form>
-          </Card>
+          </div>
         </div>
       </div>
     </div>

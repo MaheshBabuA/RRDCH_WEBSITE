@@ -55,30 +55,34 @@ const Home = () => {
 
   return (
     <div className="flex flex-col gap-16 md:gap-24 -mt-8">
-      {/* 1. Hero Section */}
-      <section className="relative w-full h-[600px] flex items-center justify-center overflow-hidden">
-        {/* Placeholder Background Image */}
+       {/* 1. Hero Section */}
+      <section className="relative w-full h-[650px] flex items-center justify-center overflow-hidden rounded-[40px] shadow-2xl mx-auto max-w-[1400px]">
+        {/* Modern Background with dynamic gradient */}
         <div 
-          className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80")' }}
+          className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 hover:scale-105"
+          style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1629909613654-28e377c37b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80")' }}
         >
-          {/* Dark Overlay for text readability */}
-          <div className="absolute inset-0 bg-secondary-blue/70 mix-blend-multiply"></div>
+          {/* Advanced Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-secondary-blue via-secondary-blue/60 to-transparent"></div>
         </div>
 
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto space-y-6">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight drop-shadow-lg mb-0 text-balance">
+        <div className="relative z-10 text-left px-8 md:px-16 w-full max-w-7xl mx-auto space-y-8 animate-fade-in">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-sm font-bold uppercase tracking-widest shadow-lg">
+             <span className="w-2 h-2 rounded-full bg-accent-emerald animate-pulse"></span>
+             Leading Dental Excellence
+          </div>
+          <h1 className="text-5xl md:text-7xl font-extrabold text-white tracking-tight drop-shadow-2xl mb-0 max-w-3xl leading-[1.1] text-balance">
             {t('home.heroTitle')}
           </h1>
-          <p className="text-xl md:text-2xl text-blue-50 font-medium drop-shadow-md">
+          <p className="text-xl md:text-2xl text-blue-100/90 font-medium drop-shadow-md max-w-2xl">
             {t('home.heroSubtitle')}
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
+          <div className="flex flex-col sm:row items-center justify-start gap-4 pt-4">
             <Link to="/book-appointment">
-              <Button type="primary" text={t('home.bookAppointmentBtn')} className="w-full sm:w-auto text-lg px-8 py-3" />
+              <Button type="primary" text={t('home.bookAppointmentBtn')} className="w-full sm:w-auto text-lg px-10 py-4" />
             </Link>
             <Link to="/about">
-              <Button type="secondary" text={t('home.learnMore')} className="w-full sm:w-auto text-lg px-8 py-3 bg-white/10 text-white border-white hover:bg-white hover:text-secondary-blue" />
+              <Button type="secondary" text={t('home.learnMore')} className="w-full sm:w-auto text-lg px-10 py-4 bg-white/10 text-white border-white/30 hover:bg-white hover:text-secondary-blue backdrop-blur-sm" />
             </Link>
           </div>
         </div>
@@ -118,31 +122,33 @@ const Home = () => {
       </section>
 
       {/* 3. Why Choose RRDCH (Stats) */}
-      <section className="bg-secondary-blue w-full py-16 relative overflow-hidden">
-        {/* Subtle background pattern */}
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
+      <section className="bg-secondary-blue w-full py-24 relative overflow-hidden rounded-[40px] shadow-2xl">
+        {/* Dynamic background accents */}
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-primary-blue/30 rounded-full blur-[100px]"></div>
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-accent-emerald/20 rounded-full blur-[100px]"></div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-white tracking-tight">{t('home.whyChooseTitle')}</h2>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-extrabold text-white tracking-tight lg:text-5xl">{t('home.whyChooseTitle')}</h2>
+            <div className="w-24 h-1.5 bg-accent-emerald mx-auto mt-6 rounded-full"></div>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 divide-y sm:divide-y-0 sm:divide-x divide-white/20">
-            <div className="text-center p-4">
-              <div className="text-4xl md:text-5xl font-bold text-primary-blue text-white mb-2">250+</div>
-              <div className="text-blue-100 font-medium text-lg">{t('home.stats.dentalUnits')}</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
+            <div className="text-center group p-6 rounded-3xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300">
+              <div className="text-5xl md:text-6xl font-black text-white mb-2 group-hover:text-primary-blue transition-colors">250+</div>
+              <div className="text-blue-200 font-bold text-sm uppercase tracking-widest">{t('home.stats.dentalUnits')}</div>
             </div>
-            <div className="text-center p-4">
-              <div className="text-4xl md:text-5xl font-bold text-primary-blue text-white mb-2">1992</div>
-              <div className="text-blue-100 font-medium text-lg">{t('home.stats.establishment')}</div>
+            <div className="text-center group p-6 rounded-3xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300">
+              <div className="text-5xl md:text-6xl font-black text-white mb-2 group-hover:text-primary-blue transition-colors">1992</div>
+              <div className="text-blue-200 font-bold text-sm uppercase tracking-widest">{t('home.stats.establishment')}</div>
             </div>
-            <div className="text-center p-4">
-              <div className="text-4xl md:text-5xl font-bold text-primary-blue text-white mb-2">450+</div>
-              <div className="text-blue-100 font-medium text-lg">{t('home.stats.patients')}</div>
+            <div className="text-center group p-6 rounded-3xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300">
+              <div className="text-5xl md:text-6xl font-black text-white mb-2 group-hover:text-primary-blue transition-colors">450+</div>
+              <div className="text-blue-200 font-bold text-sm uppercase tracking-widest">{t('home.stats.patients')}</div>
             </div>
-            <div className="text-center p-4">
-              <div className="text-4xl md:text-5xl font-bold text-primary-blue text-white mb-2">11</div>
-              <div className="text-blue-100 font-medium text-lg">{t('home.stats.specializations')}</div>
+            <div className="text-center group p-6 rounded-3xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300">
+              <div className="text-5xl md:text-6xl font-black text-white mb-2 group-hover:text-primary-blue transition-colors">11</div>
+              <div className="text-blue-200 font-bold text-sm uppercase tracking-widest">{t('home.stats.specializations')}</div>
             </div>
           </div>
         </div>
@@ -164,17 +170,17 @@ const Home = () => {
         ) : error ? (
            <div className="text-center text-error-red p-8 bg-red-50 rounded-xl">{error}</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {events.map(event => (
-              <div key={event.id} className="bg-white rounded-xl shadow-sm border border-border-light overflow-hidden hover:shadow-md transition-shadow flex sm:flex-col">
-                <div className="bg-light-bg p-4 flex flex-col justify-center items-center min-w-[100px] border-r sm:border-r-0 sm:border-b border-border-light">
-                  <span className="text-primary-blue font-bold text-sm uppercase">{event.date.split(',')[0].substring(0, 3)}</span>
-                  <span className="text-2xl font-bold text-secondary-blue leading-none mt-1">{event.date.split(' ')[1].replace(',', '')}</span>
+              <div key={event.id} className="group bg-white rounded-3xl shadow-premium border border-border-soft overflow-hidden hover:shadow-premium-hover hover:border-primary-blue/30 transition-all duration-300 flex md:flex-col">
+                <div className="bg-primary-blue/5 p-6 flex flex-col justify-center items-center min-w-[120px] border-r md:border-r-0 md:border-b border-border-soft group-hover:bg-primary-blue/10 transition-colors">
+                  <span className="text-primary-blue font-extrabold text-xs uppercase tracking-[0.2em]">{event.date.split(',')[0].substring(0, 3)}</span>
+                  <span className="text-4xl font-black text-secondary-blue leading-none mt-2">{event.date.split(' ')[1].replace(',', '')}</span>
                 </div>
-                <div className="p-5 flex-grow">
-                  <h3 className="font-bold text-lg text-secondary-blue mb-1 line-clamp-2">{event.title}</h3>
-                  <div className="flex items-center text-sm text-neutral-gray mt-3">
-                    <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="p-6 flex-grow flex flex-col justify-between">
+                  <h3 className="font-bold text-xl text-secondary-blue mb-3 group-hover:text-primary-blue transition-colors line-clamp-2 leading-snug">{event.title}</h3>
+                  <div className="flex items-center text-sm font-medium text-text-muted mt-auto">
+                    <svg className="w-5 h-5 mr-2 text-primary-blue/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
@@ -193,18 +199,21 @@ const Home = () => {
       </section>
 
       {/* 5. Call to Action */}
-      <section className="mx-4 sm:mx-6 lg:mx-8 mb-12">
-        <div className="max-w-5xl mx-auto rounded-3xl bg-success-green overflow-hidden shadow-xl relative">
-          <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-white/10 skew-x-12 translate-x-32 hidden md:block"></div>
-          <div className="px-6 py-12 md:p-16 relative z-10 flex flex-col md:flex-row items-center justify-between text-center md:text-left gap-8">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
+      <section className="mx-4 sm:mx-6 lg:mx-8 mb-24 max-w-7xl lg:mx-auto w-full">
+        <div className="rounded-[40px] bg-gradient-to-r from-primary-blue to-accent-emerald overflow-hidden shadow-2xl relative p-1">
+          <div className="bg-secondary-blue rounded-[38px] px-8 py-16 md:p-20 relative z-10 flex flex-col md:flex-row items-center justify-between text-center md:text-left gap-12 overflow-hidden">
+            {/* Background logic/patterns */}
+            <div className="absolute top-0 right-0 w-1/3 h-full bg-white/5 skew-x-12 translate-x-20"></div>
+            <div className="absolute bottom-0 left-0 w-1/4 h-1/2 bg-accent-emerald/10 blur-3xl"></div>
+            
+            <div className="relative z-20 space-y-4">
+              <h2 className="text-4xl md:text-5xl font-black text-white mb-0 tracking-tight leading-tight">
                 {t('home.ctaCaption')}
               </h2>
-              <p className="text-green-50 text-lg">Experience excellence in dental care.</p>
+              <p className="text-blue-100/80 text-xl font-medium max-w-lg">Experience excellence in modern dental care with our expert team.</p>
             </div>
-            <Link to="/book-appointment" className="shrink-0">
-               <button className="bg-white text-success-green px-8 py-4 rounded-xl font-bold text-lg hover:shadow-lg hover:scale-105 active:scale-95 transition-all shadow-md mt-4 md:mt-0">
+            <Link to="/book-appointment" className="shrink-0 relative z-20">
+               <button className="bg-white text-secondary-blue px-10 py-5 rounded-2xl font-black text-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300">
                  {t('home.bookNow')}
                </button>
             </Link>
