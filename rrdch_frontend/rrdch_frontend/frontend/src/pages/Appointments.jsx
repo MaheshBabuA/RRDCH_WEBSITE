@@ -8,7 +8,7 @@ import FormTextarea from '../components/FormTextarea';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import { QRCodeSVG } from 'qrcode.react';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import logo from '../assets/logo.jpg';
 
