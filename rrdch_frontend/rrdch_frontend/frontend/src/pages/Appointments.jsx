@@ -110,6 +110,7 @@ const Appointments = () => {
     setIsSubmitting(true);
     setServerError('');
 
+    try {
       const result = await apiService.appointments.create(formData);
       setModalState({ isOpen: true, data: result.appointment });
       
