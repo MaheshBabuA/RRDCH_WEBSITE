@@ -32,15 +32,34 @@ const Appointments = () => {
   // Options State
   const [departments, setDepartments] = useState([]);
 
-  // Fetch departments for select (Mock API)
+  // Fallback departments if API is unavailable
+  const FALLBACK_DEPARTMENTS = [
+    { id: 'oral-medicine', name: 'Oral Medicine and Radiology' },
+    { id: 'prosthodontics', name: 'Prosthodontics' },
+    { id: 'orthodontics', name: 'Orthodontics' },
+    { id: 'oral-surgery', name: 'Oral and Maxillofacial Surgery' },
+    { id: 'periodontics', name: 'Periodontics' },
+    { id: 'conservative-dentistry', name: 'Conservative Dentistry & Endodontics' },
+    { id: 'pedodontics', name: 'Pedodontics' },
+    { id: 'public-health', name: 'Public Health Dentistry' },
+  ];
+
+  // Fetch departments for select
   useEffect(() => {
     const fetchDepts = async () => {
       try {
         const data = await apiService.departments.getAll();
-        setDepartments(data);
+        // Handle both array and wrapped responses
+        const deptArray = Array.isArray(data) ? data : (data?.departments || data?.data || []);
+        if (deptArray.length > 0) {
+          setDepartments(deptArray);
+        } else {
+          // Use fallback if API returned empty
+          setDepartments(FALLBACK_DEPARTMENTS);
+        }
       } catch (err) {
-        console.error('Failed to fetch departments:', err);
-        // Fallback or handle error
+        console.error('Failed to fetch departments, using fallback:', err);
+        setDepartments(FALLBACK_DEPARTMENTS);
       }
     };
     fetchDepts();
