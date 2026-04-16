@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "db": "cmd /c \"set PATH=%PATH%;C:\\Program Files\\MySQL\\MySQL Server 8.4\\bin && mysqld --datadir=\\\"./backend/database/data\\\" --console --port=3306\"",
+    "backend": "cd backend && cmd /c \"set PATH=%PATH%;C:\\Program Files\\nodejs && npm start\"",
+    "frontend": "cd frontend && cmd /c \"set PATH=%PATH%;C:\\Program Files\\nodejs && npm run dev\"",
+    "dev": "npx concurrently \"npm run db\" \"npm run backend\" \"npm run frontend\"",
     "backend-start": "cd rrdch-website/backend && npm start",
     "build": "cd rrdch_frontend/rrdch_frontend/frontend && npm install && npm run build",
     "postinstall": "cd rrdch-website/backend && npm install",
