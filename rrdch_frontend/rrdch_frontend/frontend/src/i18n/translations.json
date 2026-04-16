@@ -1,0 +1,631 @@
+{
+  "en": {
+    "navbar": {
+      "home": "Home",
+      "about": "About Us",
+      "academics": "Academics",
+      "departments": "Departments",
+      "admissions": "Admissions",
+      "contact": "Contact Us",
+      "patientServices": "Patient Services",
+      "bookAppointment": "Book Appointment",
+      "checkStatus": "Check Status",
+      "academicServices": "Academic Services",
+      "studentPortal": "Student Portal",
+      "syllabus": "Syllabus",
+      "feedback": "Feedback"
+    },
+    "home": {
+      "heroTitle": "Rajarajeswari Dental College and Hospital",
+      "heroSubtitle": "Excellence in Dental Education and Patient Care",
+      "bookAppointmentBtn": "Book Appointment",
+      "learnMore": "Learn More",
+      "featuredDepartments": "Featured Departments",
+      "whyChooseTitle": "Why Choose RRDCH",
+      "stats": {
+        "dentalUnits": "250+ Dental Units",
+        "establishment": "1992 Establishment",
+        "patients": "450-500 Patients Daily",
+        "specializations": "11 Specializations"
+      },
+      "upcomingEvents": "Upcoming Events",
+      "viewAllEvents": "View All Events",
+      "ctaCaption": "Ready to schedule your appointment?",
+      "bookNow": "Book Now"
+    },
+    "appointments": {
+      "title": "Book Your Appointment",
+      "name": "Full Name",
+      "phone": "Phone Number",
+      "email": "Email Address",
+      "department": "Select Department",
+      "date": "Appointment Date",
+      "time": "Appointment Time",
+      "submit": "Book Appointment",
+      "success": "Appointment booked successfully!",
+      "confirmationNumber": "Confirmation Number",
+      "notes": "Additional Notes (Optional)",
+      "notesPlaceholder": "Any specific symptoms or questions?",
+      "whyInfoTitle": "Why we need this info",
+      "whyInfoText": "Your details ensure we can prepare correctly for your visit and communicate important booking updates.",
+      "confirmationTime": "Your appointment will be confirmed within 2 hours.",
+      "backToHome": "Back to Home",
+      "print": "Print Confirmation",
+      "appointmentDetails": "Appointment Details",
+      "errors": {
+        "nameReq": "Patient name is required",
+        "phoneReq": "Phone number is required",
+        "phoneInvalid": "Phone must be exactly 10 digits",
+        "emailInvalid": "Please enter a valid email address",
+        "deptReq": "Please select a department",
+        "dateReq": "Please select a preferred date",
+        "dateInvalid": "Please select a date in the future",
+        "timeReq": "Please select a preferred time",
+        "generic": "There was an error booking your appointment. Please try again."
+      }
+    },
+    "departmentsPage": {
+      "title": "Our Departments",
+      "subtitle": "11 Specialized Departments",
+      "searchPlaceholder": "Search departments by name...",
+      "noResults": "No departments found matching your search.",
+      "headOfDept": "Head of Department",
+      "facilities": "Facilities & Equipment",
+      "postgrad": "Specialization Offered",
+      "schedule": "Operating Schedule",
+      "bookInDept": "Book Appointment in This Department",
+      "relatedDepts": "Explore Other Departments",
+      "backToList": "Back to All Departments"
+    },
+    "eventsPage": {
+      "title": "Calendar of Events",
+      "upcomingThisMonth": "Upcoming Events This Month",
+      "noEvents": "No events scheduled for this day.",
+      "selectedDate": "Events for",
+      "categories": {
+        "academic": "Academic",
+        "workshop": "Workshop",
+        "cultural": "Cultural",
+        "sports": "Sports",
+        "career": "Career"
+      },
+      "days": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      "months": [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ]
+    },
+    "hostelComplaints": {
+      "title": "Hostel Amenities & Complaints",
+      "tabSubmit": "Submit New Complaint",
+      "tabTrack": "Track Complaint",
+      "studentName": "Student Name",
+      "phone": "Phone Number",
+      "category": "Complaint Category",
+      "description": "Complaint Description",
+      "attachment": "Attachment (Optional)",
+      "submit": "Submit Complaint",
+      "track": "Track My Complaints",
+      "searchPlaceholder": "Enter phone number to track...",
+      "noComplaints": "No complaints found for this number.",
+      "complaintId": "Complaint ID",
+      "status": "Current Status",
+      "submittedOn": "Submitted On",
+      "resolvedOn": "Resolved On",
+      "notes": "Resolution Notes",
+      "categories": {
+        "maintenance": "Maintenance",
+        "food": "Food & Mess",
+        "hygiene": "Hygiene & Cleaning",
+        "noise": "Noise Disturbance",
+        "other": "Other"
+      },
+      "statuses": {
+        "open": "Open",
+        "in-progress": "In Progress",
+        "resolved": "Resolved"
+      },
+      "success": "Complaint submitted successfully!",
+      "idLabel": "Your Complaint ID is",
+      "minChars": "Minimum 20 characters required"
+    },
+    "feedbackPage": {
+      "title": "Your Feedback Matters",
+      "subtitle": "Help us improve our dental care services by sharing your experience.",
+      "ratingLabel": "How would you rate our overall service?",
+      "anonymous": "Submit Anonymously",
+      "category": "Feedback Category",
+      "message": "Your Message",
+      "messagePlaceholder": "Tell us what you liked or what we can improve...",
+      "submit": "Submit Feedback",
+      "successTitle": "Thank You!",
+      "successMessage": "Your feedback has been successfully submitted. We appreciate your input.",
+      "submitAnother": "Submit Another Response",
+      "ratings": {
+        "1": "Poor",
+        "2": "Average",
+        "3": "Good",
+        "4": "Very Good",
+        "5": "Excellent"
+      },
+      "categories": {
+        "quality": "Service Quality",
+        "facility": "Facility & Infrastructure",
+        "staff": "Staff Behavior",
+        "appointment": "Appointment Experience",
+        "other": "Other"
+      }
+    },
+    "aboutPage": {
+      "title": "About RRDCH",
+      "overviewTitle": "Institutional Overview",
+      "historyStory": "Rajarajeswari Dental College & Hospital (RRDCH) was established in 1992. Over the last three decades, it has grown from a humble beginning with 40 dental units to a world-class institution with over 250+ modern dental units, serving as a beacon of clinical excellence and academic brilliance in India.",
+      "stats": {
+        "units": "250+ Modern Units",
+        "patients": "450-500 Daily Patients",
+        "departments": "11 Specialized Depts",
+        "years": "30+ Years Legacy"
+      },
+      "vision": {
+        "title": "Vision",
+        "text": "To be a global leader in dental education and a premier center for accessible, high-quality oral healthcare services."
+      },
+      "mission": {
+        "title": "Mission",
+        "points": [
+          "To provide state-of-the-art dental education and training.",
+          "To deliver compassionate and comprehensive patient care.",
+          "To foster innovation and research in oral health sciences.",
+          "To serve the community through accessible dental outreach programs."
+        ]
+      },
+      "values": {
+        "title": "Core Values",
+        "items": ["Excellence", "Patient Care", "Innovation", "Ethics"]
+      },
+      "leadership": {
+        "title": "Our Leadership",
+        "name": "Dr. A.C. Shanmugam",
+        "role": "Chairman, Rajarajeswari Group of Institutions",
+        "quote": "Our commitment is to nurture the next generation of dental professionals while providing the highest standards of care to the common man."
+      },
+      "accreds": {
+        "title": "Accreditations & Recognitions",
+        "dci": "Dental Council of India (DCI) Recognized",
+        "naac": "NAAC 'A' Grade Accredited",
+        "royal": "Royal College of Physicians & Surgeons (MFDS) Training Center",
+        "iso": "ISO 9001:2015 Certified"
+      },
+      "facilities": {
+        "title": "World-Class Facilities",
+        "audio": { "t": "Modern Auditorium", "d": "Large capacity hall for conferences and student events." },
+        "library": { "t": "Digital Library", "d": "Extensive collection of dental journals and e-resources." },
+        "hostel": { "t": "In-Campus Hostels", "d": "Safe and comfortable living spaces for men and women." },
+        "radiology": { "t": "Advanced Radiology", "d": "Equipped with state-of-the-art CBCT and digital imaging." },
+        "cafeteria": { "t": "Hygienic Cafeteria", "d": "Providing nutritious meals for students and staff." },
+        "sports": { "t": "Sports Complex", "d": "Facilities for indoor and outdoor physical activities." }
+      },
+      "whyChoose": {
+        "title": "Why Choose RRDCH?",
+        "point1": { "t": "Global Recognition", "d": "Accredited by major international and national bodies." },
+        "point2": { "t": "Clinical Exposure", "d": "High patient inflow ensures unmatched practical learning." },
+        "point3": { "t": "Expert Faculty", "d": "Taught by industry leaders and experienced clinicians." },
+        "point4": { "t": "Advanced Research", "d": "Dedicated wings for innovation in dental sciences." },
+        "point5": { "t": "Community Impact", "d": "Frequent outreach camps for social well-being." },
+        "point6": { "t": "Student Support", "d": "Robust mentoring and career guidance systems." }
+      }
+    },
+    "contactPage": {
+      "title": "Contact Us",
+      "infoTitle": "Hospital Information",
+      "formTitle": "Send a Message",
+      "subject": "Subject",
+      "message": "Message",
+      "operatingHours": "Operating Hours",
+      "hoursText": "Mon-Sat: 9:00 AM - 5:00 PM",
+      "sunday": "Sunday: Emergency Only",
+      "success": "Thank you for contacting us! We will get back to you shortly.",
+      "quickHeading": "Quick Links"
+    },
+    "studentPortal": {
+      "title": "Student Portal & Clinical Dashboard",
+      "tabStatus": "Clinical Status Check",
+      "tabAcademics": "Syllabus & Schedules",
+      "searchLabel": "Patient/Student Phone",
+      "aptTable": {
+        "date": "Date & Time",
+        "dept": "Department",
+        "status": "Status",
+        "conf": "Confirmation",
+        "actions": "Actions"
+      },
+      "statuses": {
+        "scheduled": "Scheduled",
+        "confirmed": "Confirmed",
+        "in_progress": "In Progress",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "actions": {
+        "reschedule": "Reschedule",
+        "cancel": "Cancel",
+        "print": "Print Slip",
+        "download": "Download Syllabus"
+      },
+      "academics": {
+        "course": "Course",
+        "duration": "Duration",
+        "intake": "Annual Intake",
+        "description": "Program Overview"
+      },
+      "schedules": {
+        "title": "Departmental Clinical Hours",
+        "dept": "Department",
+        "hours": "Operating Hours"
+      },
+      "polling": "Status live - refreshing in",
+      "seconds": "seconds"
+    },
+    "admissionsPage": {
+      "title": "Admissions",
+      "subtitle": "Your journey to becoming a dental professional begins here.",
+      "eligTitle": "Eligibility Criteria",
+      "bdsElig": [
+        "10+2 / PUC with Physics, Chemistry, Biology",
+        "Minimum 50% aggregate (45% for SC/ST/OBC)",
+        "NEET-UG qualification is mandatory",
+        "Age: 17 years as on December 31 of admission year"
+      ],
+      "mdsElig": [
+        "BDS degree from a DCI-recognized institution",
+        "Valid NEET-MDS score required",
+        "Internship completion certificate mandatory"
+      ],
+      "processTitle": "How to Apply",
+      "steps": [
+        { "t": "NEET Qualification", "d": "Qualify the NEET-UG (for BDS) or NEET-MDS (for postgraduate) exam conducted by NBE." },
+        { "t": "Counseling", "d": "Participate in centralized state/national counseling conducted by DGHS or your state authority." },
+        { "t": "Document Verification", "d": "Submit original documents: NEET scorecard, 10+2 marks cards, transfer certificate, and photos." },
+        { "t": "Fee Payment", "d": "Complete the institutional admission fee payment to confirm your seat." },
+        { "t": "Enrollment", "d": "Collect your enrollment form and report to the college on the allotted date." }
+      ],
+      "feesTitle": "Fee Structure",
+      "datesTitle": "Important Dates",
+      "faqTitle": "Frequently Asked Questions",
+      "faqs": [
+        { "q": "Is there a management quota?", "a": "A limited number of management quota seats are available. Please contact the administration office for details." },
+        { "q": "Does RRDCH have hostel facilities?", "a": "Yes, separate and fully furnished hostels are available for both male and female students on campus." },
+        { "q": "What is the medium of instruction?", "a": "English is the primary medium of instruction for all dental programs." },
+        { "q": "Is RRDCH recognized by DCI?", "a": "Yes, Rajarajeswari Dental College & Hospital is fully recognized by the Dental Council of India (DCI)." }
+      ],
+      "ctaTitle": "Need Help with Admissions?",
+      "ctaText": "Our admissions team is ready to assist you. Contact us for queries about seat availability, scholarships, or eligibility.",
+      "ctaBtn": "Contact Admissions Office"
+    },
+    "footer": {
+      "collegeName": "Rajarajeswari Dental College and Hospital",
+      "address": "No.14, Ramohalli Cross, Kumbalgodu, Mysore Road, Bangalore - 560074",
+      "phone": "+91-80-28437468",
+      "email": "info@rrdch.org",
+      "quickLinks": "Quick Links",
+      "events": "Events",
+      "socialLinks": "Connect With Us",
+      "copyright": "© 2026 Rajarajeswari Dental College and Hospital. All rights reserved."
+    }
+  },
+  "kn": {
+    "navbar": {
+      "home": "ಮುಖಪುಟ",
+      "about": "ನಮ್ಮ ಬಗ್ಗೆ",
+      "academics": "ಶೈಕ್ಷಣಿಕ",
+      "departments": "ವಿಭಾಗಗಳು",
+      "admissions": "ಪ್ರವೇಶ",
+      "contact": "ನಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಿ",
+      "patientServices": "ರೋಗಿಗಳ ಸೇವೆಗಳು",
+      "bookAppointment": "ಅಪಾಯಿಂಟ್ಮೆಂಟ್ ಮೀಸಲಾಗಿಸಿ",
+      "checkStatus": "ಸ್ಥಿತಿಯನ್ನು ಪರಿಶೀಲಿಸಿ",
+      "academicServices": "ಶೈಕ್ಷಣಿಕ ಸೇವೆಗಳು",
+      "studentPortal": "ವಿದ್ಯಾರ್ಥಿ ಪೋರ್ಟಲ್",
+      "syllabus": "ಪಠ್ಯಕ್ರಮ",
+      "feedback": "ಪ್ರತಿಕ್ರಿಯೆ"
+    },
+    "home": {
+      "heroTitle": "ರಾಜರಾಜೇಶ್ವರಿ ದಂತ ವೈದ್ಯಕೀಯ ಕಾಲೇಜು ಮತ್ತು ಆಸ್ಪತ್ರೆ",
+      "heroSubtitle": "ದಂತ ವೈದ್ಯಕೀಯ ಶಿಕ್ಷಣ ಮತ್ತು ರೋಗಿಗಳ ಆರೈಕೆಯಲ್ಲಿ ಶ್ರೇಷ್ಠತೆ",
+      "bookAppointmentBtn": "ಅಪಾಯಿಂಟ್ಮೆಂಟ್ ಮೀಸಲಾಗಿಸಿ",
+      "learnMore": "ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ",
+      "featuredDepartments": "ಪ್ರಮುಖ ವಿಭಾಗಗಳು",
+      "whyChooseTitle": "RRDCH ಅನ್ನು ಏಕೆ ಆರಿಸಬೇಕು",
+      "stats": {
+        "dentalUnits": "250+ ದಂತ ಘಟಕಗಳು",
+        "establishment": "1992 ರಲ್ಲಿ ಸ್ಥಾಪನೆ",
+        "patients": "450-500 ದೈನಂದಿನ ರೋಗಿಗಳು",
+        "specializations": "11 ವಿಶೇಷತೆಗಳು"
+      },
+      "upcomingEvents": "ಮುಂಬರುವ ಕಾರ್ಯಕ್ರಮಗಳು",
+      "viewAllEvents": "ಎಲ್ಲಾ ಕಾರ್ಯಕ್ರಮಗಳನ್ನು ವೀಕ್ಷಿಸಿ",
+      "ctaCaption": "ನಿಮ್ಮ ಅಪಾಯಿಂಟ್ಮೆಂಟ್ ಅನ್ನು ನಿಗದಿಪಡಿಸಲು ಸಿದ್ಧರಿದ್ದೀರಾ?",
+      "bookNow": "ಈಗ ಕಾಯ್ದಿರಿಸಿ"
+    },
+    "appointments": {
+      "title": "ನಿಮ್ಮ ಅಪಾಯಿಂಟ್ಮೆಂಟ್ ಮೀಸಲಾಗಿಸಿ",
+      "name": "ಪೂರ್ಣ ಹೆಸರು",
+      "phone": "ದೂರವಾಣಿ ಸಂಖ್ಯೆ",
+      "email": "ಇಮೇಲ್ ವಿಳಾಸ",
+      "department": "ವಿಭಾಗವನ್ನು ಆರಿಸಿ",
+      "date": "ದಿನಾಂಕ",
+      "time": "ಸಮಯ",
+      "submit": "ಅಪಾಯಿಂಟ್ಮೆಂಟ್ ಕಾಯ್ದಿರಿಸಿ",
+      "success": "ಅಪಾಯಿಂಟ್ಮೆಂಟ್ ಯಶಸ್ವಿಯಾಗಿ ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ!",
+      "confirmationNumber": "ದೃಢೀಕರಣ ಸಂಖ್ಯೆ",
+      "notes": "ಹೆಚ್ಚುವರಿ ಟಿಪ್ಪಣಿಗಳು (ಐಚ್ಛಿಕ)",
+      "notesPlaceholder": "ಯಾವುದಾದರೂ ನಿರ್ದಿಷ್ಟ ಲಕ್ಷಣಗಳು ಅಥವಾ ಪ್ರಶ್ನೆಗಳಿವೆಯೇ?",
+      "whyInfoTitle": "ನಮಗೆ ಈ ಮಾಹಿತಿ ಏಕೆ ಬೇಕು",
+      "whyInfoText": "ನಿಮ್ಮ ಭೇಟಿಗೆ ನಾವು ಸರಿಯಾಗಿ ತಯಾರಿ ಮಾಡಿಕೊಳ್ಳಲು ಮತ್ತು ಪ್ರಮುಖ ನವೀಕರಣಗಳನ್ನು ಸಂವಹನ ಮಾಡಲು ನಿಮ್ಮ ವಿವರಗಳು ಅಗತ್ಯವಿದೆ.",
+      "confirmationTime": "ನಿಮ್ಮ ಅಪಾಯಿಂಟ್ಮೆಂಟ್ ಅನ್ನು 2 ಗಂಟೆಗಳ ಒಳಗೆ ದೃಢೀಕರಿಸಲಾಗುತ್ತದೆ.",
+      "backToHome": "ಮುಖ್ಯ ಪುಟಕ್ಕೆ ಹಿಂತಿರುಗಿ",
+      "print": "ದೃಢೀಕರಣವನ್ನು ಮುದ್ರಿಸಿ",
+      "appointmentDetails": "ಅಪಾಯಿಂಟ್ಮೆಂಟ್ ವಿವರಗಳು",
+      "errors": {
+        "nameReq": "ರೋಗಿಯ ಹೆಸರು ಕಡ್ಡಾಯವಾಗಿದೆ",
+        "phoneReq": "ದೂರವಾಣಿ ಸಂಖ್ಯೆ ಕಡ್ಡಾಯವಾಗಿದೆ",
+        "phoneInvalid": "ದೂರವಾಣಿ ಸಂಖ್ಯೆ ನಿಖರವಾಗಿ 10 ಅಂಕೆಗಳಿರಬೇಕು",
+        "emailInvalid": "ದಯವಿಟ್ಟು ಮಾನ್ಯವಾದ ಇಮೇಲ್ ವಿಳಾಸವನ್ನು ನಮೂದಿಸಿ",
+        "deptReq": "ದಯವಿಟ್ಟು ವಿಭಾಗವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+        "dateReq": "ದಯವಿಟ್ಟು ಆದ್ಯತೆಯ ದಿನಾಂಕವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+        "dateInvalid": "ದಯವಿಟ್ಟು ಭವಿಷ್ಯದ ದಿನಾಂಕವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+        "timeReq": "ದಯವಿಟ್ಟು ಆದ್ಯತೆಯ ಸಮಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+        "generic": "ನಿಮ್ಮ ಅಪಾಯಿಂಟ್ಮೆಂಟ್ ಅನ್ನು ಕಾಯ್ದಿರಿಸುವಲ್ಲಿ ದೋಷ ಸಂಭವಿಸಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ."
+      }
+    },
+    "departmentsPage": {
+      "title": "ನಮ್ಮ ವಿಭಾಗಗಳು",
+      "subtitle": "11 ವಿಶೇಷ ವಿಭಾಗಗಳು",
+      "searchPlaceholder": "ಹೆಸರಿನ ಮೂಲಕ ವಿಭಾಗಗಳನ್ನು ಹುಡುಕಿ...",
+      "noResults": "ನಿಮ್ಮ ಹುಡುಕಾಟಕ್ಕೆ ಹೊಂದಿಕೆಯಾಗುವ ಯಾವುದೇ ವಿಭಾಗಗಳು ಕಂಡುಬಂದಿಲ್ಲ.",
+      "headOfDept": "ವಿಭಾಗದ ಮುಖ್ಯಸ್ಥರು",
+      "facilities": "ಸೌಲಭ್ಯಗಳು ಮತ್ತು ಉಪಕರಣಗಳು",
+      "postgrad": "ನೀಡಲಾಗುವ ವಿಶೇಷತೆ",
+      "schedule": "ಕಾರ್ಯಾಚರಣೆಯ ವೇಳಾಪಟ್ಟಿ",
+      "bookInDept": "ಈ ವಿಭಾಗದಲ್ಲಿ ಅಪಾಯಿಂಟ್ಮೆಂಟ್ ಕಾಯ್ದಿರಿಸಿ",
+      "relatedDepts": "ಇತರ ವಿಭಾಗಗಳನ್ನು ಅನ್ವೇಷಿಸಿ",
+      "backToList": "ಎಲ್ಲಾ ವಿಭಾಗಗಳಿಗೆ ಹಿಂತಿರುಗಿ"
+    },
+    "eventsPage": {
+      "title": "ಕಾರ್ಯಕ್ರಮಗಳ ಕ್ಯಾಲೆಂಡರ್",
+      "upcomingThisMonth": "ಈ ತಿಂಗಳ ಮುಂಬರುವ ಕಾರ್ಯಕ್ರಮಗಳು",
+      "noEvents": "ಈ ದಿನ ಯಾವುದೇ ಕಾರ್ಯಕ್ರಮಗಳನ್ನು ನಿಗದಿಪಡಿಸಲಾಗಿಲ್ಲ.",
+      "selectedDate": "ದಿನದ ಕಾರ್ಯಕ್ರಮಗಳು",
+      "categories": {
+        "academic": "ಶೈಕ್ಷಣಿಕ",
+        "workshop": "ಕಾರ್ಯಾಗಾರ",
+        "cultural": "ಸಾಂಸ್ಕೃತಿಕ",
+        "sports": "ಕ್ರೀಡೆ",
+        "career": "ವೃತ್ತಿಜೀವನ"
+      },
+      "days": ["ಭಾನು", "ಸೋಮ", "ಮಂಗಳ", "ಬುಧ", "ಗುರು", "ಶುಕ್ರ", "ಶನಿ"],
+      "months": [
+        "ಜನವರಿ", "ಫೆಬ್ರವರಿ", "ಮಾರ್ಚ್", "ಏಪ್ರಿಲ್", "ಮೇ", "ಜೂನ್",
+        "ಜುಲೈ", "ಆಗಸ್ಟ್", "ಸೆಪ್ಟೆಂಬರ್", "ಅಕ್ಟೋಬರ್", "ನವೆಂಬರ್", "ಡಿಸೆಂಬರ್"
+      ]
+    },
+    "hostelComplaints": {
+      "title": "ವಸತಿ ನಿಲಯದ ಸೌಲಭ್ಯಗಳು ಮತ್ತು ದೂರುಗಳು",
+      "tabSubmit": "ಹೊಸ ದೂರನ್ನು ಸಲ್ಲಿಸಿ",
+      "tabTrack": "ದೂರನ್ನು ಪತ್ತೆಹಚ್ಚಿ",
+      "studentName": "ವಿದ್ಯಾರ್ಥಿಯ ಹೆಸರು",
+      "phone": "ದೂರವಾಣಿ ಸಂಖ್ಯೆ",
+      "category": "ದೂರಿನ ವರ್ಗ",
+      "description": "ದೂರಿನ ವಿವರಣೆ",
+      "attachment": "ಲಗತ್ತು (ಐಚ್ಛಿಕ)",
+      "submit": "ದೂರನ್ನು ಸಲ್ಲಿಸಿ",
+      "track": "ನನ್ನ ದೂರುಗಳನ್ನು ಪತ್ತೆಹಚ್ಚಿ",
+      "searchPlaceholder": "ಪತ್ತೆಹಚ್ಚಲು ದೂರವಾಣಿ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ...",
+      "noComplaints": "ಈ ಸಂಖ್ಯೆಗೆ ಯಾವುದೇ ದೂರುಗಳು ಕಂಡುಬಂದಿಲ್ಲ.",
+      "complaintId": "ದೂರು ಐಡಿ",
+      "status": "ಪ್ರಸ್ತುತ ಸ್ಥಿತಿ",
+      "submittedOn": "ಸಲ್ಲಿಸಿದ ದಿನಾಂಕ",
+      "resolvedOn": "ಪರಿಹರಿಸಲಾದ ದಿನಾಂಕ",
+      "notes": "ಪರಿಹಾರ ಟಿಪ್ಪಣಿಗಳು",
+      "categories": {
+        "maintenance": "ನಿರ್ವಹಣೆ",
+        "food": "ಆಹಾರ ಮತ್ತು ಮೆಸ್",
+        "hygiene": "ನೈರ್ಮಲ್ಯ ಮತ್ತು ಸ್ವಚ್ಛತೆ",
+        "noise": "ಶಬ್ದ ಮಾಲಿನ್ಯ",
+        "other": "ಇತರೆ"
+      },
+      "statuses": {
+        "open": "ತೆರೆದಿದೆ",
+        "in-progress": "ಪ್ರಗತಿಯಲ್ಲಿದೆ",
+        "resolved": "ಪರಿಹರಿಸಲಾಗಿದೆ"
+      },
+      "success": "ದೂರನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಸಲ್ಲಿಸಲಾಗಿದೆ!",
+      "idLabel": "ನಿಮ್ಮ ದೂರು ಐಡಿ",
+      "minChars": "ಕನಿಷ್ಠ 20 ಅಕ್ಷರಗಳು ಅಗತ್ಯವಿದೆ"
+    },
+    "feedbackPage": {
+      "title": "ನಿಮ್ಮ ಪ್ರತಿಕ್ರಿಯೆ ನಮಗೆ ಮುಖ್ಯ",
+      "subtitle": "ನಿಮ್ಮ ಅನುಭವವನ್ನು ಹಂಚಿಕೊಳ್ಳುವ ಮೂಲಕ ನಮ್ಮ ದಂತ ಆರೈಕೆ ಸೇವೆಗಳನ್ನು ಸುಧಾರಿಸಲು ನಮಗೆ ಸಹಾಯ ಮಾಡಿ.",
+      "ratingLabel": "ನಮ್ಮ ಒಟ್ಟಾರೆ ಸೇವೆಯನ್ನು ನೀವು ಹೇಗೆ ರೇಟ್ ಮಾಡುತ್ತೀರಿ?",
+      "anonymous": "ಅನಾಮಧೇಯವಾಗಿ ಸಲ್ಲಿಸಿ",
+      "category": "ಪ್ರತಿಕ್ರಿಯೆಯ ವರ್ಗ",
+      "message": "ನಿಮ್ಮ ಸಂದೇಶ",
+      "messagePlaceholder": "ನಿಮಗೆ ಏನು ಇಷ್ಟವಾಯಿತು ಅಥವಾ ನಾವು ಏನನ್ನು ಸುಧಾರಿಸಬಹುದು ಎಂಬುದನ್ನು ನಮಗೆ ತಿಳಿಸಿ...",
+      "submit": "ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಸಲ್ಲಿಸಿ",
+      "successTitle": "ಧನ್ಯವಾದಗಳು!",
+      "successMessage": "ನಿಮ್ಮ ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಸಲ್ಲಿಸಲಾಗಿದೆ. ನಿಮ್ಮ ಇನ್‌ಪುಟ್ ಅನ್ನು ನಾವು ಪ್ರಶಂಸಿಸುತ್ತೇವೆ.",
+      "submitAnother": "ಮತ್ತೊಂದು ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಸಲ್ಲಿಸಿ",
+      "ratings": {
+        "1": "ಕಳಪೆ",
+        "2": "ಸರಾಸರಿ",
+        "3": "ಉತ್ತಮ",
+        "4": "ತುಂಬಾ ಉತ್ತಮ",
+        "5": "ಅತ್ಯುತ್ತಮ"
+      },
+      "categories": {
+        "quality": "ಸೇವೆಯ ಗುಣಮಟ್ಟ",
+        "facility": "ಸೌಲಭ್ಯ ಮತ್ತು ಮೂಲಸೌಕರ್ಯ",
+        "staff": "ಸಿಬ್ಬಂದಿ ನಡವಳಿಕೆ",
+        "appointment": "ಅಪಾಯಿಂಟ್ಮೆಂಟ್ ಅನುಭವ",
+        "other": "ಇತರೆ"
+      }
+    },
+    "aboutPage": {
+      "title": "RRDCH ಬಗ್ಗೆ",
+      "overviewTitle": "ಸಾಂಸ್ಥಿಕ ಅವಲೋಕನ",
+      "historyStory": "ರಾಜರಾಜೇಶ್ವರಿ ದಂತ ವೈದ್ಯಕೀಯ ಕಾಲೇಜು ಮತ್ತು ಆಸ್ಪತ್ರೆ (RRDCH) 1992 ರಲ್ಲಿ ಸ್ಥಾಪನೆಯಾಯಿತು. ಕಳೆದ ಮೂರು ದಶಕಗಳಲ್ಲಿ, ಇದು 40 ದಂತ ಘಟಕಗಳೊಂದಿಗೆ ಸಾಧಾರಣ ಆರಂಭದಿಂದ ಇಂದು 250 ಕ್ಕೂ ಹೆಚ್ಚು ಆಧುನಿಕ ದಂತ ಘಟಕಗಳನ್ನು ಹೊಂದಿರುವ ವಿಶ್ವ ದರ್ಜೆಯ ಸಂಸ್ಥೆಯಾಗಿ ಬೆಳೆದಿದೆ.",
+      "stats": {
+        "units": "250+ ಆಧುನಿಕ ಘಟಕಗಳು",
+        "patients": "ದೈನಂದಿನ 450-500 ರೋಗಿಗಳು",
+        "departments": "11 ವಿಶೇಷ ವಿಭಾಗಗಳು",
+        "years": "30+ ವರ್ಷಗಳ ಪರಂಪರೆ"
+      },
+      "vision": {
+        "title": "ದೂರದೃಷ್ಟಿ",
+        "text": "ದಂತ ವೈದ್ಯಕೀಯ ಶಿಕ್ಷಣದಲ್ಲಿ ಜಾಗತಿಕ ನಾಯಕರಾಗುವುದು ಮತ್ತು ಉತ್ತಮ ಗುಣಮಟ್ಟದ ದಂತ ಆರೋಗ್ಯ ಸೇವೆಗಳ ಪ್ರಮುಖ ಕೇಂದ್ರವಾಗುವುದು."
+      },
+      "mission": {
+        "title": "ಧ್ಯೇಯೋದ್ದೇಶ",
+        "points": [
+          "ಅತ್ಯಾಧುನಿಕ ದಂತ ಶಿಕ್ಷಣ ಮತ್ತು ತರಬೇತಿಯನ್ನು ನೀಡುವುದು.",
+          "ರೋಗಿಗಳಿಗೆ ಕಾಳಜಿಯುಕ್ತ ಮತ್ತು ಸಮಗ್ರ ಚಿಕಿತ್ಸೆಯನ್ನು ನೀಡುವುದು.",
+          "ದಂತ ಆರೋಗ್ಯ ವಿಜ್ಞಾನದಲ್ಲಿ ನಾವೀನ್ಯತೆ ಮತ್ತು ಸಂಶೋಧನೆಯನ್ನು ಉತ್ತೇಜಿಸುವುದು.",
+          "ದಂತ ಶಿಬಿರಗಳ ಮೂಲಕ ಸಮುದಾಯಕ್ಕೆ ಸೇವೆ ಸಲ್ಲಿಸುವುದು."
+        ]
+      },
+      "values": {
+        "title": "ಮೂಲ ಮೌಲ್ಯಗಳು",
+        "items": ["ಶ್ರೇಷ್ಠತೆ", "ರೋಗಿಗಳ ಆರೈಕೆ", "ನಾವೀನ್ಯತೆ", "ನೈತಿಕತೆ"]
+      },
+      "leadership": {
+        "title": "ನಮ್ಮ ನಾಯಕತ್ವ",
+        "name": "ಡಾ. ಎ.ಸಿ. ಷಣ್ಮುಗಂ",
+        "role": "ಅಧ್ಯಕ್ಷರು, ರಾಜರಾಜೇಶ್ವರಿ ಸಮೂಹ ಸಂಸ್ಥೆಗಳು",
+        "quote": "ಸಾಮಾನ್ಯ ಮನುಷ್ಯನಿಗೆ ಉನ್ನತ ಗುಣಮಟ್ಟದ ಚಿಕಿತ್ಸೆಯನ್ನು ನೀಡುವ ಜೊತೆಗೆ ಮುಂದಿನ ಪೀಳಿಗೆಯ ದಂತ ವೈದ್ಯಕೀಯ ವೃತ್ತಿಪರರನ್ನು ಪೋಷಿಸುವುದು ನಮ್ಮ ಬದ್ಧತೆಯಾಗಿದೆ."
+      },
+      "accreds": {
+        "title": "ಮಾನ್ಯತೆಗಳು ಮತ್ತು ಗುರುತಿಸುವಿಕೆಗಳು",
+        "dci": "ಭಾರತೀಯ ದಂತ ಮಂಡಳಿ (DCI) ಮಾನ್ಯತೆ ಪಡೆದಿದೆ",
+        "naac": "NAAC 'A' ಗ್ರೇಡ್ ಮಾನ್ಯತೆ ಪಡೆದಿದೆ",
+        "royal": "ರಾಯಲ್ ಕಾಲೇಜ್ ಆಫ್ ಫಿಸಿಶಿಯನ್ಸ್ ಅಂಡ್ ಸರ್ಜನ್ಸ್ (MFDS) ತರಬೇತಿ ಕೇಂದ್ರ",
+        "iso": "ISO 9001:2015 ಪ್ರಮಾಣೀಕರಿಸಲ್ಪಟ್ಟಿದೆ"
+      },
+      "facilities": {
+        "title": "ವಿಶ್ವ ದರ್ಜೆಯ ಸೌಲಭ್ಯಗಳು",
+        "audio": { "t": "ಆಧುನಿಕ ಸಭಾಂಗಣ", "d": "ಸಮ್ಮೇಳನಗಳು ಮತ್ತು ವಿದ್ಯಾರ್ಥಿ ಕಾರ್ಯಕ್ರಮಗಳಿಗಾಗಿ ದೊಡ್ಡ ಸಭಾಂಗಣ." },
+        "library": { "t": "ಡಿಜಿಟಲ್ ಲೈಬ್ರರಿ", "d": "ದಂತ ನಿಯತಕಾಲಿಕಗಳ ದೊಡ್ಡ ಸಂಗ್ರಹ." },
+        "hostel": { "t": "ಕ್ಯಾಂಪಸ್ ಒಳಗಿನ ವಸತಿ ನಿಲಯ", "d": "ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಸುರಕ್ಷಿತ ವಸತಿ ವ್ಯವಸ್ಥೆ." },
+        "radiology": { "t": "CBCT ಮತ್ತು ಡಿಜಿಟಲ್ ಇಮೇಜಿಂಗ್ ಸೌಲಭ್ಯ.", "d": "" },
+        "cafeteria": { "t": "ನೈರ್ಮಲ್ಯದ ಕೆಫೆಟೇರಿಯಾ", "d": "ವಿದ್ಯಾರ್ಥಿಗಳು ಮತ್ತು ಸಿಬ್ಬಂದಿಗೆ ಪೌಷ್ಟಿಕ ಆಹಾರ." },
+        "sports": { "t": "ಕ್ರೀಡಾ ಸಂಕೀರ್ಣ", "d": "ಒಳಾಂಗಣ ಮತ್ತು ಹೊರಾಂಗಣ ಕ್ರೀಡಾ ಸೌಲಭ್ಯಗಳು." }
+      },
+      "whyChoose": {
+        "title": "RRDCH ಅನ್ನು ಏಕೆ ಆರಿಸಬೇಕು?",
+        "point1": { "t": "ಜಾಗತಿಕ ಗುರುತಿಸುವಿಕೆ", "d": "ಅಂತರರಾಷ್ಟ್ರೀಯ ಮತ್ತು ರಾಷ್ಟ್ರೀಯ ಮಂಡಳಿಗಳಿಂದ ಮಾನ್ಯತೆ ಪಡೆದಿದೆ." },
+        "point2": { "t": "ಕ್ಲಿನಿಕಲ್ ಅನುಭವ", "d": "ಹೆಚ್ಚಿನ ರೋಗಿಗಳ ಸಂಖ್ಯೆಯು ಉತ್ತಮ ಪ್ರಾಯೋಗಿಕ ಕಲಿಕೆಯನ್ನು ಖಚಿತಪಡಿಸುತ್ತದೆ." },
+        "point3": { "t": "ತಜ್ಞ ಶಿಕ್ಷಕರು", "d": "ಅನುಭವಿ ವೈದ್ಯರು ಮತ್ತು ಶಿಕ್ಷಕರಿಂದ ಮಾರ್ಗದರ್ಶನ." },
+        "point4": { "t": "ಸುಧಾರಿತ ಸಂಶೋಧನೆ", "d": "ದಂತ ವಿಜ್ಞಾನದಲ್ಲಿ ನಾವೀನ್ಯತೆಗಾಗಿ ವಿಶೇಷ ವಿಭಾಗ." },
+        "point5": { "t": "ಸಮುದಾಯದ ಮೇಲೆ ಪ್ರಭಾವ", "d": "ಸಾಮಾಜಿಕ ಕಲ್ಯಾಣಕ್ಕಾಗಿ ಆಗಾಗ್ಗೆ ಶಿಬಿರಗಳನ್ನು ಆಯೋಜಿಸಲಾಗುತ್ತದೆ." },
+        "point6": { "t": "ವಿದ್ಯಾರ್ಥಿ ಬೆಂಬಲ", "d": "ವೃತ್ತಿಜೀವನದ ಮಾರ್ಗದರ್ಶನಕ್ಕಾಗಿ ಬಲಿಷ್ಠ ವ್ಯವಸ್ಥೆ." }
+      }
+    },
+    "contactPage": {
+      "title": "ನಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಿ",
+      "infoTitle": "ಆಸ್ಪತ್ರೆಯ ಮಾಹಿತಿ",
+      "formTitle": "ಸಂದೇಶ ಕಳುಹಿಸಿ",
+      "subject": "ವಿಷಯ",
+      "message": "ಸಂದೇಶ",
+      "operatingHours": "ಕಾರ್ಯಾಚರಣೆಯ ಸಮಯ",
+      "hoursText": "ಸೋಮ-ಶನಿ: ಬೆಳಿಗ್ಗೆ 9:00 ರಿಂದ ಸಂಜೆ 5:00 ರವರೆಗೆ",
+      "sunday": "ಭಾನುವಾರ: ತುರ್ತು ಸೇವೆ ಮಾತ್ರ",
+      "success": "ನಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಿದ್ದಕ್ಕಾಗಿ ಧನ್ಯವಾದಗಳು! ನಾವು ಶೀಘ್ರದಲ್ಲೇ ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸುತ್ತೇವೆ.",
+      "quickHeading": "ತ್ವರಿತ ಕೊಂಡಿಗಳು"
+    },
+    "studentPortal": {
+      "title": "ವಿದ್ಯಾರ್ಥಿ ಪೋರ್ಟಲ್ ಮತ್ತು ಕ್ಲಿನಿಕಲ್ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
+      "tabStatus": "ಕ್ಲಿನಿಕಲ್ ಸ್ಥಿತಿ ಪರಿಶೀಲನೆ",
+      "tabAcademics": "ಪಠ್ಯಕ್ರಮ ಮತ್ತು ವೇಳಾಪಟ್ಟಿಗಳು",
+      "searchLabel": "ರೋಗಿ/ವಿದ್ಯಾರ್ಥಿ ದೂರವಾಣಿ",
+      "aptTable": {
+        "date": "ದಿನಾಂಕ ಮತ್ತು ಸಮಯ",
+        "dept": "ವಿಭಾಗ",
+        "status": "ಸ್ಥಿತಿ",
+        "conf": "ದೃಢೀಕರಣ",
+        "actions": "ಕ್ರಮಗಳು"
+      },
+      "statuses": {
+        "scheduled": "ನಿಗದಿಪಡಿಸಲಾಗಿದೆ",
+        "confirmed": "ದೃಢೀಕರಿಸಲಾಗಿದೆ",
+        "in_progress": "ಪ್ರಗತಿಯಲ್ಲಿದೆ",
+        "completed": "ಪೂರ್ಣಗೊಂಡಿದೆ",
+        "cancelled": "ರದ್ದುಗೊಳಿಸಲಾಗಿದೆ"
+      },
+      "actions": {
+        "reschedule": "ಮರುನಿಗದಿಪಡಿಸಿ",
+        "cancel": "ರದ್ದುಗೊಳಿಸಿ",
+        "print": "ಮುದ್ರಿಸಿ",
+        "download": "ಪಠ್ಯಕ್ರಮ ಡೌನ್‌ಲೋಡ್"
+      },
+      "academics": {
+        "course": "ಕೋರ್ಸ್",
+        "duration": "ಅವಧಿ",
+        "intake": "ವಾರ್ಷಿಕ ಪ್ರವೇಶ",
+        "description": "ಕಾರ್ಯಕ್ರಮದ ಅವಲೋಕನ"
+      },
+      "schedules": {
+        "title": "ವಿಭಾಗೀಯ ಕ್ಲಿನಿಕಲ್ ಸಮಯಗಳು",
+        "dept": "ವಿಭಾಗ",
+        "hours": "ಕಾರ್ಯಾಚರಣೆಯ ಸಮಯ"
+      },
+      "polling": "ಸಜೀವ ಸ್ಥಿತಿ - ಇನ್ನು",
+      "seconds": "ಸೆಕೆಂಡುಗಳಲ್ಲಿ ನವೀಕರಣ"
+    },
+    "admissionsPage": {
+      "title": "ಪ್ರವೇಶ",
+      "subtitle": "ದಂತ ವೈದ್ಯಕೀಯ ವೃತ್ತಿಪರರಾಗುವ ನಿಮ್ಮ ಪ್ರಯಾಣ ಇಲ್ಲಿ ಪ್ರಾರಂಭವಾಗುತ್ತದೆ.",
+      "eligTitle": "ಅರ್ಹತಾ ಮಾನದಂಡಗಳು",
+      "bdsElig": [
+        "ಭೌತಶಾಸ್ತ್ರ, ರಸಾಯನಶಾಸ್ತ್ರ, ಜೀವಶಾಸ್ತ್ರದೊಂದಿಗೆ 10+2 / PUC",
+        "ಕನಿಷ್ಠ 50% ಅಂಕಗಳು (SC/ST/OBC ಗೆ 45%)",
+        "NEET-UG ಅರ್ಹತೆ ಕಡ್ಡಾಯ",
+        "ವಯಸ್ಸು: ಪ್ರವೇಶ ವರ್ಷದ ಡಿಸೆಂಬರ್ 31 ರಂದು 17 ವರ್ಷ"
+      ],
+      "mdsElig": [
+        "DCI ಮಾನ್ಯತೆ ಪಡೆದ ಸಂಸ್ಥೆಯಿಂದ BDS ಪದವಿ",
+        "ಮಾನ್ಯ NEET-MDS ಅಂಕ ಅಗತ್ಯ",
+        "ಇಂಟರ್ನ್‌ಶಿಪ್ ಪೂರ್ಣಗೊಳಿಸಿದ ಪ್ರಮಾಣಪತ್ರ ಕಡ್ಡಾಯ"
+      ],
+      "processTitle": "ಅರ್ಜಿ ಸಲ್ಲಿಸುವ ವಿಧಾನ",
+      "steps": [
+        { "t": "NEET ಅರ್ಹತೆ", "d": "NBE ನಡೆಸುವ NEET-UG (BDS ಗೆ) ಅಥವಾ NEET-MDS (ಸ್ನಾತಕೋತ್ತರಕ್ಕೆ) ಪರೀಕ್ಷೆಯಲ್ಲಿ ಅರ್ಹತೆ ಪಡೆಯಿರಿ." },
+        { "t": "ಆಪ್ತ ಸಮಾಲೋಚನೆ", "d": "DGHS ಅಥವಾ ನಿಮ್ಮ ರಾಜ್ಯ ಸಂಸ್ಥೆ ನಡೆಸುವ ಕೇಂದ್ರೀಕೃತ ಸಮಾಲೋಚನೆಯಲ್ಲಿ ಭಾಗವಹಿಸಿ." },
+        { "t": "ದಾಖಲೆ ಪರಿಶೀಲನೆ", "d": "ಮೂಲ ದಾಖಲೆಗಳನ್ನು ಸಲ್ಲಿಸಿ: NEET ಸ್ಕೋರ್‌ಕಾರ್ಡ್, 10+2 ಅಂಕಪಟ್ಟಿ, ವರ್ಗಾವಣೆ ಪ್ರಮಾಣಪತ್ರ ಮತ್ತು ಚಿತ್ರಗಳು." },
+        { "t": "ಶುಲ್ಕ ಪಾವತಿ", "d": "ಸೀಟನ್ನು ದೃಢೀಕರಿಸಲು ಸಾಂಸ್ಥಿಕ ಪ್ರವೇಶ ಶುಲ್ಕ ಪಾವತಿಸಿ." },
+        { "t": "ನೋಂದಣಿ", "d": "ನಿಮ್ಮ ನೋಂದಣಿ ಫಾರ್ಮ್ ಪಡೆದುಕೊಳ್ಳಿ ಮತ್ತು ನಿಗದಿತ ದಿನಾಂಕದಂದು ಕಾಲೇಜಿಗೆ ವರದಿ ಮಾಡಿಕೊಳ್ಳಿ." }
+      ],
+      "feesTitle": "ಶುಲ್ಕದ ರಚನೆ",
+      "datesTitle": "ಪ್ರಮುಖ ದಿನಾಂಕಗಳು",
+      "faqTitle": "ಪದೇ ಕೇಳಲಾಗುವ ಪ್ರಶ್ನೆಗಳು",
+      "faqs": [
+        { "q": "ಮ್ಯಾನೇಜ್‌ಮೆಂಟ್ ಕೋಟಾ ಇದೆಯೇ?", "a": "ಸೀಮಿತ ಸಂಖ್ಯೆಯ ಮ್ಯಾನೇಜ್‌ಮೆಂಟ್ ಕೋಟಾ ಸೀಟುಗಳು ಲಭ್ಯವಿವೆ. ವಿವರಗಳಿಗಾಗಿ ಆಡಳಿತ ಕಚೇರಿಯನ್ನು ಸಂಪರ್ಕಿಸಿ." },
+        { "q": "RRDCH ನಲ್ಲಿ ಹಾಸ್ಟೆಲ್ ಸೌಲಭ್ಯ ಇದೆಯೇ?", "a": "ಹೌದು, ಕ್ಯಾಂಪಸ್‌ನಲ್ಲಿ ಪುರುಷ ಮತ್ತು ಮಹಿಳೆ ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಪ್ರತ್ಯೇಕ ಮತ್ತು ಸಂಪೂರ್ಣ ಹಾಸ್ಟೆಲ್‌ಗಳಿವೆ." },
+        { "q": "ಬೋಧನಾ ಮಾಧ್ಯಮ ಯಾವುದು?", "a": "ಎಲ್ಲ ದಂತ ಕಾರ್ಯಕ್ರಮಗಳಿಗೆ ಇಂಗ್ಲಿಷ್ ಪ್ರಾಥಮಿಕ ಬೋಧನಾ ಮಾಧ್ಯಮ." },
+        { "q": "RRDCH DCI ಗುರುತಿಸಿದೆಯೇ?", "a": "ಹೌದು, ರಾಜರಾಜೇಶ್ವರಿ ದಂತ ವೈದ್ಯಕೀಯ ಕಾಲೇಜು ಭಾರತೀಯ ದಂತ ಮಂಡಳಿ (DCI) ಯಿಂದ ಸಂಪೂರ್ಣ ಮಾನ್ಯತೆ ಪಡೆದಿದೆ." }
+      ],
+      "ctaTitle": "ಪ್ರವೇಶದಲ್ಲಿ ಸಹಾಯ ಬೇಕೇ?",
+      "ctaText": "ನಮ್ಮ ಪ್ರವೇಶ ತಂಡ ನಿಮಗೆ ಸಹಾಯ ಮಾಡಲು ಸಿದ್ಧವಾಗಿದೆ. ಸೀಟು ಲಭ್ಯತೆ, ವಿದ್ಯಾರ್ಥಿವೇತನ ಅಥವಾ ಅರ್ಹತೆ ಬಗ್ಗೆ ಪ್ರಶ್ನೆಗಳಿಗೆ ನಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಿ.",
+      "ctaBtn": "ಪ್ರವೇಶ ಕಚೇರಿಯನ್ನು ಸಂಪರ್ಕಿಸಿ"
+    },
+    "footer": {
+
+      "collegeName": "ರಾಜರಾಜೇಶ್ವರಿ ದಂತ ವೈದ್ಯಕೀಯ ಕಾಲೇಜು ಮತ್ತು ಆಸ್ಪತ್ರೆ",
+      "address": "ನಂ.14, ರಾಮೋಹಳ್ಳಿ ಕ್ರಾಸ್, ಕುಂಬಳಗೋಡು, ಮೈಸೂರು ರಸ್ತೆ, ಬೆಂಗಳೂರು - 560074",
+      "phone": "+91-80-28437468",
+      "email": "info@rrdch.org",
+      "quickLinks": "ತ್ವರಿತ ಕೊಂಡಿಗಳು",
+      "events": "ಕಾರ್ಯಕ್ರಮಗಳು",
+      "socialLinks": "ನಮ್ಮೊಂದಿಗೆ ಸಂಪರ್ಕದಲ್ಲಿರಿ",
+      "copyright": "© 2026 ರಾಜರಾಜೇಶ್ವರಿ ದಂತ ವೈದ್ಯಕೀಯ ಕಾಲೇಜು ಮತ್ತು ಆಸ್ಪತ್ರೆ. ಎಲ್ಲ ಹಕ್ಕುಗಳನ್ನು ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ."
+    }
+  }
+}
