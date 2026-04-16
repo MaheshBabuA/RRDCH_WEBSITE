@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../utils/i18n';
 import apiService from '../services/api';
@@ -7,6 +7,10 @@ import FormSelect from '../components/FormSelect';
 import FormTextarea from '../components/FormTextarea';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
+import { QRCodeSVG } from 'qrcode.react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import logo from '../assets/logo.jpg';
 
 const Appointments = () => {
   const { t } = useLanguage();
@@ -28,6 +32,7 @@ const Appointments = () => {
   
   // Modal State
   const [modalState, setModalState] = useState({ isOpen: false, data: null });
+  const ticketRef = useRef(null);
 
   // Options State
   const [departments, setDepartments] = useState([]);
@@ -160,6 +165,28 @@ const Appointments = () => {
       setModalState({ isOpen: true, data: localAppointment });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const downloadTicketPDF = async () => {
+    if (!ticketRef.current) return;
+    
+    try {
+      const canvas = await html2canvas(ticketRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight);
+      pdf.save(`RRDCH-Appointment-${modalState.data.confirmationNumber}.pdf`);
+    } catch (err) {
+      console.error('Failed to generate PDF:', err);
     }
   };
 
@@ -351,44 +378,82 @@ const Appointments = () => {
       >
         {modalState.data && (
           <div className="text-center print:text-left print:p-0">
-            {/* Modal Body */}
-            <div className="w-16 h-16 bg-success-green/10 rounded-full flex items-center justify-center mx-auto mb-4 print:hidden">
-              <svg className="w-8 h-8 text-success-green" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            
-            <h2 className="text-2xl font-bold text-secondary-blue mb-1 hidden print:block">RRDCH</h2>
-            
-            <p className="text-neutral-gray mb-6 print:hidden">Your booking details have been registered into our system.</p>
-            
-            <div className="bg-light-bg rounded-xl p-5 border border-border-light text-left mb-6">
-               <div className="mb-4 pb-4 border-b border-border-light">
-                 <span className="text-sm text-neutral-gray uppercase font-semibold">{t('appointments.confirmationNumber')}</span>
-                 <div className="text-xl font-bold text-primary-blue tracking-wider">{modalState.data.confirmationNumber}</div>
-               </div>
-               
-               <h4 className="font-bold text-secondary-blue mb-3">{t('appointments.appointmentDetails')}</h4>
-               
-               <div className="grid grid-cols-2 gap-y-3 text-sm">
-                 <div className="text-neutral-gray">{t('appointments.name')}:</div>
-                 <div className="font-medium text-secondary-blue text-right sm:text-left">{modalState.data.name}</div>
-                 
-                 <div className="text-neutral-gray">{t('appointments.department')}:</div>
-                 <div className="font-medium text-secondary-blue text-right sm:text-left">
-                   {departments.find(d => d.id === modalState.data.department)?.name || modalState.data.department}
-                 </div>
-                 
-                 <div className="text-neutral-gray">{t('appointments.date')}:</div>
-                 <div className="font-medium text-secondary-blue text-right sm:text-left">{modalState.data.date}</div>
-                 
-                 <div className="text-neutral-gray">{t('appointments.time')}:</div>
-                 <div className="text-secondary-blue text-right sm:text-left">{modalState.data.time}</div>
-               </div>
+            {/* Modal Body - Ticket Card */}
+            <div 
+              ref={ticketRef}
+              className="bg-white border-2 border-primary-blue/20 rounded-2xl overflow-hidden shadow-sm mb-6 max-w-sm mx-auto"
+            >
+              {/* Ticket Header */}
+              <div className="bg-primary-blue/5 p-4 border-b border-primary-blue/10 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <img src={logo} alt="Logo" className="w-10 h-10 object-contain rounded-full bg-white" />
+                  <div className="text-left">
+                    <div className="font-bold text-secondary-blue text-sm leading-tight">RRDCH</div>
+                    <div className="text-[10px] text-neutral-gray leading-tight">Rajarajeswari Dental College</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] text-neutral-gray uppercase font-bold block">Status</span>
+                  <span className="text-[10px] font-bold text-success-green px-1.5 py-0.5 bg-success-green/10 rounded-full">CONFIRMED</span>
+                </div>
+              </div>
+
+              {/* Ticket Content */}
+              <div className="p-6 text-left space-y-4">
+                <div className="flex justify-between items-start gap-4">
+                  <div>
+                    <label className="text-[10px] text-neutral-gray uppercase font-bold block mb-0.5">Patient Name</label>
+                    <div className="font-bold text-secondary-blue">{modalState.data.name}</div>
+                  </div>
+                  <div className="text-right">
+                    <label className="text-[10px] text-neutral-gray uppercase font-bold block mb-0.5">Appointment ID</label>
+                    <div className="font-mono text-sm font-bold text-primary-blue">{modalState.data.confirmationNumber}</div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-dashed border-border-light">
+                  <div>
+                    <label className="text-[10px] text-neutral-gray uppercase font-bold block mb-0.5">Department</label>
+                    <div className="text-sm font-medium text-secondary-blue">
+                      {departments.find(d => d.id === modalState.data.department)?.name || modalState.data.department}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <label className="text-[10px] text-neutral-gray uppercase font-bold block mb-0.5">Date & Time</label>
+                    <div className="text-sm font-medium text-secondary-blue">
+                      {modalState.data.date} <br/> {modalState.data.time}
+                    </div>
+                  </div>
+                </div>
+
+                {/* QR Code Section */}
+                <div className="flex flex-col items-center justify-center pt-6 pb-2">
+                  <div className="p-2 bg-white border border-border-light rounded-lg shadow-sm">
+                    <QRCodeSVG 
+                      value={modalState.data.confirmationNumber} 
+                      size={120}
+                      level="H"
+                      includeMargin={true}
+                    />
+                  </div>
+                  <p className="text-[10px] text-neutral-gray mt-2 text-center italic">Scan for verification at hospital reception</p>
+                </div>
+              </div>
+
+              {/* Ticket Footer */}
+              <div className="bg-light-bg p-3 text-[9px] text-neutral-gray text-center italic">
+                Rajarajeswari Dental College & Hospital, Bangalore
+              </div>
             </div>
 
             {/* Modal Actions */}
             <div className="flex flex-col sm:flex-row justify-center gap-3 print:hidden">
+               <Button 
+                 type="secondary" 
+                 text="Download PDF"
+                 onClick={downloadTicketPDF}
+                 className="flex-1"
+               />
                <Button 
                  type="secondary" 
                  text={t('appointments.print')}
