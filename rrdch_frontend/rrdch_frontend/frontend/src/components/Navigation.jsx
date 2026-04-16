@@ -19,22 +19,22 @@ const Navigation = () => {
   };
 
   const navLinkClasses = (path) => `
-    block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200
+    block px-3 py-2 rounded-xl text-base font-semibold transition-all duration-300
     ${isActive(path) 
-      ? 'text-primary-blue bg-blue-50' 
-      : 'text-neutral-gray hover:text-primary-blue hover:bg-gray-50'}
+      ? 'text-primary-blue bg-primary-blue/10 shadow-sm' 
+      : 'text-text-muted hover:text-primary-blue hover:bg-primary-blue/5'}
   `;
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b border-border-light shadow-sm">
+    <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-border-soft shadow-sm transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20">
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0 flex items-center gap-3" onClick={closeMenu}>
                <img src={logo} alt="RRDCH Logo" className="h-12 w-12 object-contain rounded-full" />
-               <div className="hidden sm:block">
-                 <span className="font-bold text-lg text-secondary-blue block leading-tight">RRDCH</span>
-                 <span className="text-xs text-neutral-gray leading-tight">Rajarajeswari Dental College</span>
+               <div className="hidden sm:block mt-0.5">
+                 <span className="font-bold text-xl text-secondary-blue block leading-tight tracking-tight">RRDCH</span>
+                 <span className="text-[10px] uppercase tracking-widest text-text-muted font-bold leading-tight">Centre of Excellence</span>
                </div>
             </Link>
           </div>
@@ -54,20 +54,20 @@ const Navigation = () => {
               onMouseEnter={() => setAcademicDropdownOpen(true)}
               onMouseLeave={() => setAcademicDropdownOpen(false)}
             >
-              <button className={`flex items-center block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 text-neutral-gray group-hover:text-primary-blue group-hover:bg-gray-50`}>
+              <button className={`flex items-center px-3 py-2 rounded-xl text-base font-semibold transition-all duration-300 text-text-muted group-hover:text-primary-blue group-hover:bg-primary-blue/5`}>
                 {t('navbar.academicServices')}
-                <svg className="ml-1 h-4 w-4 transition-transform group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
               {academicDropdownOpen && (
                 <div className="absolute left-0 top-full mt-0 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden transition-all duration-200 z-50">
-                  <div className="py-2">
-                    <Link to="/academics" className="block px-4 py-2 text-sm text-neutral-gray hover:bg-gray-50 hover:text-primary-blue transition-colors" onClick={closeMenu}>{t('navbar.academics')}</Link>
-                    <Link to="/departments" className="block px-4 py-2 text-sm text-neutral-gray hover:bg-gray-50 hover:text-primary-blue transition-colors" onClick={closeMenu}>{t('navbar.departments')}</Link>
-                    <Link to="/admissions" className="block px-4 py-2 text-sm text-neutral-gray hover:bg-gray-50 hover:text-primary-blue transition-colors" onClick={closeMenu}>{t('navbar.admissions')}</Link>
-                    <Link to="/student-portal" className="block px-4 py-2 text-sm text-neutral-gray hover:bg-gray-50 hover:text-primary-blue transition-colors" onClick={closeMenu}>{t('navbar.studentPortal')}</Link>
-                    <Link to="/syllabus" className="block px-4 py-2 text-sm text-neutral-gray hover:bg-gray-50 hover:text-primary-blue transition-colors" onClick={closeMenu}>{t('navbar.syllabus')}</Link>
+                  <div className="py-2 px-1">
+                    <Link to="/academics" className="block px-4 py-2 text-sm font-medium text-text-muted hover:bg-primary-blue/5 hover:text-primary-blue rounded-lg transition-colors" onClick={closeMenu}>{t('navbar.academics')}</Link>
+                    <Link to="/departments" className="block px-4 py-2 text-sm font-medium text-text-muted hover:bg-primary-blue/5 hover:text-primary-blue rounded-lg transition-colors" onClick={closeMenu}>{t('navbar.departments')}</Link>
+                    <Link to="/admissions" className="block px-4 py-2 text-sm font-medium text-text-muted hover:bg-primary-blue/5 hover:text-primary-blue rounded-lg transition-colors" onClick={closeMenu}>{t('navbar.admissions')}</Link>
+                    <Link to="/student-portal" className="block px-4 py-2 text-sm font-medium text-text-muted hover:bg-primary-blue/5 hover:text-primary-blue rounded-lg transition-colors" onClick={closeMenu}>{t('navbar.studentPortal')}</Link>
+                    <Link to="/syllabus" className="block px-4 py-2 text-sm font-medium text-text-muted hover:bg-primary-blue/5 hover:text-primary-blue rounded-lg transition-colors" onClick={closeMenu}>{t('navbar.syllabus')}</Link>
                   </div>
                 </div>
               )}
