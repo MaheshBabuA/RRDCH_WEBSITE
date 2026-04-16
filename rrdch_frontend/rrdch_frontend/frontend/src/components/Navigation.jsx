@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '../utils/i18n';
+import logo from '../assets/logo.jpg';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -28,16 +29,13 @@ const Navigation = () => {
     <nav className="sticky top-0 z-50 bg-white border-b border-border-light shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20">
-          {/* Logo / Brand */}
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0 flex items-center gap-3" onClick={closeMenu}>
-               {/* Medical Cross SVG as placeholder logo */}
-               <div className="w-10 h-10 bg-primary-blue rounded-full flex items-center justify-center text-white font-bold text-xl">
-                 +
+               <img src={logo} alt="RRDCH Logo" className="h-12 w-12 object-contain rounded-full" />
+               <div className="hidden sm:block">
+                 <span className="font-bold text-lg text-secondary-blue block leading-tight">RRDCH</span>
+                 <span className="text-xs text-neutral-gray leading-tight">Rajarajeswari Dental College</span>
                </div>
-               <span className="font-bold text-xl text-secondary-blue hidden sm:block">
-                 RRDCH
-               </span>
             </Link>
           </div>
 
