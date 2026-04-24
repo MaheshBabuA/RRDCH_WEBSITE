@@ -1,5 +1,4 @@
-/** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
     "./public/index.html",
@@ -7,15 +6,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'primary-blue': '#0ea5e9', // Vibrant Sky Blue
+        'primary-blue': '#0066CC', // Trust Blue
         'secondary-blue': '#0f172a', // Deep Professional Slate
         'accent-emerald': '#10b981', // Trust Emerald
         'soft-bg': '#f8fafc', // Clean Surface
         'text-main': '#1e293b', // Readable Slate
         'text-muted': '#64748b', // Softened Contrast
         'border-soft': '#e2e8f0', // Subtle Division
+        'border-light': '#e2e8f0', // Light border for legacy components
         'error-red': '#ef4444',
-        'success-green': '#10b981',
+        'success-green': '#28A745', // Success Green
       },
       fontFamily: {
         sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],

@@ -12,12 +12,21 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import StudentPortal from './pages/StudentPortal';
 import Admissions from './pages/Admissions';
+import AISymptomChecker from './pages/AISymptomChecker';
+import PatientPortal from './pages/PatientPortal';
+import VideoGallery from './pages/VideoGallery';
+import ContactUs from './pages/ContactUs';
+import DoctorDashboard from './pages/DoctorDashboard';
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<PageWrapper />}>
         <Route index element={<Home />} />
+        <Route path="video-gallery" element={<VideoGallery />} />
+        <Route path="ai-checker" element={<AISymptomChecker />} />
+        <Route path="patient-portal" element={<PatientPortal />} />
+        <Route path="contact" element={<ContactUs />} />
         <Route path="book-appointment" element={<Appointments />} />
         <Route path="departments">
           <Route index element={<Departments />} />
@@ -34,6 +43,9 @@ function App() {
         <Route path="syllabus" element={<Navigate to="/student-portal" replace />} />
         <Route path="academics" element={<Navigate to="/admissions" replace />} />
         
+        {/* Hidden Staff-Only Route — not linked in navigation */}
+        <Route path="staff/doctor-dashboard" element={<DoctorDashboard />} />
+
         {/* Fallback route for unimplemented pages */}
         <Route path="*" element={<div className="p-20 text-center scale-150">🚧 Page Under Construction 🚧</div>} />
       </Route>
