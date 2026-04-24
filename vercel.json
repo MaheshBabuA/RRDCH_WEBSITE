@@ -1,0 +1,9 @@
+{
+  "outputDirectory": "rrdch_frontend/rrdch_frontend/frontend/dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
