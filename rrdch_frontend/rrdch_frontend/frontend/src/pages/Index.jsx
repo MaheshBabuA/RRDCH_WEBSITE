@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import Layout from '../components/Layout';
+import MainLayout from '../components/MainLayout';
 
 /**
  * PageWrapper (Index)
@@ -13,7 +13,7 @@ const PageWrapper = () => {
   const location = useLocation();
 
   return (
-    <Layout>
+    <MainLayout>
       {/* 
         Using location.pathname as a key forces React to unmount and remount 
         the div on route changes, triggering the 'animate-fade-in' animation 
@@ -21,7 +21,7 @@ const PageWrapper = () => {
       <div key={location.pathname} className="w-full animate-fade-in">
         <Outlet />
       </div>
-    </Layout>
+    </MainLayout>
   );
 };
 

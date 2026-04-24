@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../utils/i18n';
 import Button from '../components/Button';
 import Card from '../components/Card';
+import PhotoGallery from '../components/PhotoGallery';
 
 const Home = () => {
   const { t } = useLanguage();
@@ -55,35 +56,98 @@ const Home = () => {
 
   return (
     <div className="flex flex-col gap-16 md:gap-24 -mt-8">
-       {/* 1. Hero Section */}
-      <section className="relative w-full h-[650px] flex items-center justify-center overflow-hidden rounded-[40px] shadow-2xl mx-auto max-w-[1400px]">
-        {/* Modern Background with dynamic gradient */}
+      {/* 1. Hero Section - Integrated Design */}
+      <section className="relative w-full min-h-[600px] flex items-center justify-center overflow-hidden -mx-4 sm:-mx-6 lg:-mx-8 w-[calc(100%+2rem)] sm:w-[calc(100%+3rem)] lg:w-[calc(100%+4rem)] -mt-8">
+        {/* Professional Background Image */}
         <div 
-          className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 hover:scale-105"
-          style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1629909613654-28e377c37b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80")' }}
+          className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: 'url("file:///C:/Users/PC/.gemini/antigravity/brain/edf29dfc-b96a-4dde-8b58-68570917d24a/rrdch_hero_bg_1776924994119.png")' }}
         >
-          {/* Advanced Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-secondary-blue via-secondary-blue/60 to-transparent"></div>
+          {/* Subtle overlay for depth */}
+          <div className="absolute inset-0 bg-secondary-blue/10"></div>
         </div>
 
-        <div className="relative z-10 text-left px-8 md:px-16 w-full max-w-7xl mx-auto space-y-8 animate-fade-in">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-sm font-bold uppercase tracking-widest shadow-lg">
-             <span className="w-2 h-2 rounded-full bg-accent-emerald animate-pulse"></span>
-             Leading Dental Excellence
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-12 flex flex-col items-center text-center">
+          
+          {/* Main Hero Card - Centered */}
+          <div className="animate-fade-in">
+            <div className="bg-white/70 backdrop-blur-xl border border-white/80 p-12 md:p-16 rounded-[40px] shadow-2xl max-w-3xl">
+              <h1 className="text-4xl md:text-6xl font-black text-secondary-blue leading-tight mb-8 tracking-tight">
+                RRDCH — <br/>
+                Leading the Way in <br/>
+                <span className="text-primary-blue">Dental Excellence.</span>
+              </h1>
+              <p className="text-xl text-text-muted font-bold mb-12 max-w-xl mx-auto">
+                Seamless Appointments, Expert Care. <br/>
+                Experience the future of dentistry today.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                <Link to="/book-appointment">
+                  <button className="bg-primary-blue hover:bg-secondary-blue text-white px-10 py-5 rounded-2xl font-black text-xl shadow-xl shadow-primary-blue/30 transition-all transform hover:-translate-y-1 active:scale-95">
+                    Book Appointment
+                  </button>
+                </Link>
+                <Link to="/ai-checker">
+                  <button className="bg-white/50 hover:bg-white text-secondary-blue border border-white/80 px-10 py-5 rounded-2xl font-bold text-xl backdrop-blur-sm shadow-xl transition-all transform hover:-translate-y-1 active:scale-95">
+                    Try AI Checker
+                  </button>
+                </Link>
+              </div>
+            </div>
           </div>
-          <h1 className="text-5xl md:text-7xl font-extrabold text-white tracking-tight drop-shadow-2xl mb-0 max-w-3xl leading-[1.1] text-balance">
-            {t('home.heroTitle')}
-          </h1>
-          <p className="text-xl md:text-2xl text-blue-100/90 font-medium drop-shadow-md max-w-2xl">
-            {t('home.heroSubtitle')}
-          </p>
-          <div className="flex flex-col sm:row items-center justify-start gap-4 pt-4">
-            <Link to="/book-appointment">
-              <Button type="primary" text={t('home.bookAppointmentBtn')} className="w-full sm:w-auto text-lg px-10 py-4" />
-            </Link>
-            <Link to="/about">
-              <Button type="secondary" text={t('home.learnMore')} className="w-full sm:w-auto text-lg px-10 py-4 bg-white/10 text-white border-white/30 hover:bg-white hover:text-secondary-blue backdrop-blur-sm" />
-            </Link>
+        </div>
+      </section>
+
+      {/* 1.5 Stats and Queue Section */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full -mt-20 relative z-20 space-y-8">
+        
+        {/* Quick Stats Bar */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white/80 backdrop-blur-md border border-white p-8 rounded-3xl shadow-xl flex items-center gap-6 group hover:bg-white transition-colors">
+            <div className="text-4xl font-black text-secondary-blue group-hover:text-primary-blue transition-colors">50,000+</div>
+            <div className="text-sm font-bold text-text-muted leading-tight">Happy<br/>Patients</div>
+          </div>
+          <div className="bg-white/80 backdrop-blur-md border border-white p-8 rounded-3xl shadow-xl flex items-center gap-6 group hover:bg-white transition-colors">
+            <div className="text-4xl font-black text-secondary-blue group-hover:text-primary-blue transition-colors">200+</div>
+            <div className="text-sm font-bold text-text-muted leading-tight">Expert<br/>Dentists</div>
+          </div>
+          <div className="bg-white/80 backdrop-blur-md border border-white p-8 rounded-3xl shadow-xl flex items-center gap-6 group hover:bg-white transition-colors">
+            <div className="text-4xl font-black text-secondary-blue group-hover:text-primary-blue transition-colors">230k+</div>
+            <div className="text-sm font-bold text-text-muted leading-tight">Successful<br/>Procedures</div>
+          </div>
+        </div>
+
+        {/* Real-time Queue Display */}
+        <div className="bg-white p-10 rounded-[40px] shadow-premium border border-border-soft">
+          <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
+            <h2 className="text-2xl font-black text-secondary-blue mb-0 tracking-tight">Real-time Queue Display</h2>
+            <div className="flex items-center gap-2 px-4 py-2 bg-success-green/10 text-success-green rounded-full text-sm font-black uppercase tracking-widest">
+              <span className="w-2 h-2 rounded-full bg-success-green animate-pulse"></span>
+              Live Tracking
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-success-green p-6 rounded-2xl text-white shadow-lg shadow-success-green/20 group hover:scale-[1.02] transition-transform">
+              <div className="text-[10px] font-black uppercase tracking-widest opacity-80 mb-1">Oral Surgery</div>
+              <div className="text-4xl font-black mb-1">99</div>
+              <div className="text-[10px] font-bold opacity-90">est. wait time: 12 min</div>
+            </div>
+            <div className="bg-secondary-blue p-6 rounded-2xl text-white shadow-lg shadow-secondary-blue/20 group hover:scale-[1.02] transition-transform">
+              <div className="text-[10px] font-black uppercase tracking-widest opacity-80 mb-1">Orthodontics</div>
+              <div className="text-4xl font-black mb-1">107</div>
+              <div className="text-[10px] font-bold opacity-90">est. wait time: 25 min</div>
+            </div>
+            <div className="bg-primary-blue p-6 rounded-2xl text-white shadow-lg shadow-primary-blue/20 group hover:scale-[1.02] transition-transform">
+              <div className="text-[10px] font-black uppercase tracking-widest opacity-80 mb-1">Current Token</div>
+              <div className="text-4xl font-black mb-1">163</div>
+              <div className="text-[10px] font-bold opacity-90">est. wait time: 5 min</div>
+            </div>
+            <div className="bg-[#FF9F43] p-6 rounded-2xl text-white shadow-lg shadow-[#FF9F43]/20 group hover:scale-[1.02] transition-transform">
+              <div className="text-[10px] font-black uppercase tracking-widest opacity-80 mb-1">Department OPD</div>
+              <div className="text-4xl font-black mb-1">139</div>
+              <div className="text-[10px] font-bold opacity-90">est. wait time: 18 min</div>
+            </div>
           </div>
         </div>
       </section>
@@ -197,6 +261,9 @@ const Home = () => {
           </Link>
         </div>
       </section>
+
+      {/* 4.5 Photo Gallery Section */}
+      <PhotoGallery />
 
       {/* 5. Call to Action */}
       <section className="mx-4 sm:mx-6 lg:mx-8 mb-24 max-w-7xl lg:mx-auto w-full">

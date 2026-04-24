@@ -6,7 +6,7 @@
 
 /* Modern Design System Variables */
 :root {
-  --primary-blue: #0ea5e9;
+  --primary-blue: #0066CC;
   --secondary-blue: #0f172a;
   --accent-emerald: #10b981;
   --soft-bg: #f8fafc;
@@ -14,7 +14,7 @@
   --text-muted: #64748b;
   --border-soft: #e2e8f0;
   --error-red: #ef4444;
-  --success-green: #10b981;
+  --success-green: #28A745;
 }
 
 @layer base {
