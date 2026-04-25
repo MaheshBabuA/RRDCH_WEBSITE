@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 5000;
 
 // Setup CORS configuration as requested
 const corsOptions = {
-  origin: 'http://localhost:5173', // specific frontend URL constraint
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173', // specific frontend URL constraint
   credentials: true, // allow sending cookies/auth headers
   optionsSuccessStatus: 200
 };
