@@ -4,8 +4,11 @@ const http = require('http');
 const path = require('path');
 const fs = require('fs');
 
-const MYSQLD_PATH = "C:\\Program Files\\MySQL\\MySQL Server 8.4\\bin\\mysqld.exe";
-const MYSQL_CLIENT_PATH = "C:\\Program Files\\MySQL\\MySQL Server 8.4\\bin\\mysql.exe";
+const IS_PRODUCTION = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
+const IS_WINDOWS = /^win/.test(process.platform);
+
+const MYSQLD_PATH = IS_WINDOWS ? "C:\\Program Files\\MySQL\\MySQL Server 8.4\\bin\\mysqld.exe" : "mysqld";
+const MYSQL_CLIENT_PATH = IS_WINDOWS ? "C:\\Program Files\\MySQL\\MySQL Server 8.4\\bin\\mysql.exe" : "mysql";
 const DATA_DIR = path.resolve(__dirname, '../backend/database/data');
 const SCHEMA_FILE = path.resolve(__dirname, '../backend/database/RRDCH_DATABASE_SCHEMA.sql');
 
@@ -81,6 +84,10 @@ const pollHttp = (url, interval = 1000, timeout = 30000) => {
 };
 
 const runInitSql = () => {
+    if (IS_PRODUCTION) {
+        console.log('[ORCHESTRATOR] Skipping local database initialization in production.');
+        return Promise.resolve();
+    }
     return new Promise((resolve, reject) => {
         console.log('[ORCHESTRATOR] Initializing Database users and schema...');
         
@@ -96,18 +103,22 @@ const runInitSql = () => {
             // Write temp SQL file to avoid complex CMD quoting issues
             const tempSqlPath = path.resolve(__dirname, 'temp_init.sql');
             fs.writeFileSync(tempSqlPath, createDbUserSql);
-            execSync(`"${MYSQL_CLIENT_PATH}" -u root < "${tempSqlPath}"`);
+            
+            const mysqlCmd = IS_WINDOWS ? `"${MYSQL_CLIENT_PATH}"` : MYSQL_CLIENT_PATH;
+            execSync(`${mysqlCmd} -u root < "${tempSqlPath}"`);
             fs.unlinkSync(tempSqlPath);
             console.log('[ORCHESTRATOR] Database and user verified.');
             
             // Load schema
             console.log('[ORCHESTRATOR] Loading schema from RRDCH_DATABASE_SCHEMA.sql...');
-            execSync(`"${MYSQL_CLIENT_PATH}" -u root rrdch_db < "${SCHEMA_FILE}"`);
+            execSync(`${mysqlCmd} -u root rrdch_db < "${SCHEMA_FILE}"`);
             console.log('[ORCHESTRATOR] Schema loaded successfully.');
             resolve();
         } catch (err) {
-            console.error('[ORCHESTRATOR] Failed to initialize database. Make sure MySQL root user does not require a password, or update orchestrator.js. Error: ', err.message);
-            reject(err);
+            console.error('[ORCHESTRATOR] Failed to initialize database locally. Error: ', err.message);
+            // In production we don't want to crash here if local mysql fails to start
+            if (IS_PRODUCTION) resolve(); 
+            else reject(err);
         }
     });
 };
@@ -115,47 +126,62 @@ const runInitSql = () => {
 const start = async () => {
     try {
         console.log('================================================================');
-        console.log('[ORCHESTRATOR] Starting RRDCH Full Stack Environment');
+        console.log(`[ORCHESTRATOR] Starting RRDCH Full Stack Environment (${IS_PRODUCTION ? 'PRODUCTION' : 'LOCAL'})`);
         console.log('================================================================');
 
-        // 1. Start DB
-        console.log('[ORCHESTRATOR] Checking if port 3306 is free...');
-        let dbNeedsStart = true;
-        try {
-            await pollPort(3306, '127.0.0.1', 500, 2000);
-            console.log('[ORCHESTRATOR] Port 3306 is already in use. Assuming MySQL is already running.');
-            dbNeedsStart = false;
-        } catch (e) {
-            console.log('[ORCHESTRATOR] Port 3306 is free. Starting MySQL...');
+        if (!IS_PRODUCTION) {
+            // 1. Start DB locally if not in production
+            console.log('[ORCHESTRATOR] Checking if port 3306 is free...');
+            let dbNeedsStart = true;
+            try {
+                await pollPort(3306, '127.0.0.1', 500, 2000);
+                console.log('[ORCHESTRATOR] Port 3306 is already in use. Assuming MySQL is already running.');
+                dbNeedsStart = false;
+            } catch (e) {
+                console.log('[ORCHESTRATOR] Port 3306 is free. Starting MySQL...');
+            }
+
+            if (dbNeedsStart) {
+                // Verify path exists on Windows
+                if (IS_WINDOWS && !fs.existsSync(MYSQLD_PATH)) {
+                    throw new Error(`MySQL binary not found at ${MYSQLD_PATH}. Please update the path in orchestrator.js.`);
+                }
+
+                dbProcess = spawn(MYSQLD_PATH, [
+                    `--datadir=${DATA_DIR}`,
+                    '--console',
+                    '--port=3306',
+                    '--mysqlx=0'
+                ]);
+
+                dbProcess.stdout.on('data', data => log('DB', data));
+                dbProcess.stderr.on('data', data => log('DB-ERR', data));
+                
+                dbProcess.on('error', (err) => {
+                    console.error('[DB] Failed to start:', err.message);
+                });
+
+                dbProcess.on('exit', (code) => {
+                    console.log(`[DB] Exited with code ${code}`);
+                });
+
+                // Wait for DB to be ready
+                console.log('[ORCHESTRATOR] Waiting for MySQL to accept connections...');
+                await pollPort(3306, '127.0.0.1', 1000, 30000);
+                console.log('[ORCHESTRATOR] MySQL is ready.');
+                
+                // Initialize DB Schema and User
+                await runInitSql();
+            }
+        } else {
+            console.log('[ORCHESTRATOR] Production environment detected. Skipping local MySQL startup.');
         }
-
-        if (dbNeedsStart) {
-            dbProcess = spawn(MYSQLD_PATH, [
-                `--datadir=${DATA_DIR}`,
-                '--console',
-                '--port=3306',
-                '--mysqlx=0'
-            ]);
-
-            dbProcess.stdout.on('data', data => log('DB', data));
-            dbProcess.stderr.on('data', data => log('DB-ERR', data));
-            
-            dbProcess.on('exit', (code) => {
-                console.log(`[DB] Exited with code ${code}`);
-            });
-        }
-
-        // Wait for DB to be ready
-        console.log('[ORCHESTRATOR] Waiting for MySQL to accept connections...');
-        await pollPort(3306, '127.0.0.1', 1000, 30000);
-        console.log('[ORCHESTRATOR] MySQL is ready.');
-
-        // Initialize DB Schema and User
-        await runInitSql();
 
         // 2. Start Backend
-        console.log('[ORCHESTRATOR] Checking dependencies for Backend...');
-        execSync('npm install', { cwd: path.resolve(__dirname, '../backend'), stdio: 'ignore' });
+        if (!IS_PRODUCTION) {
+            console.log('[ORCHESTRATOR] Checking dependencies for Backend...');
+            execSync('npm install', { cwd: path.resolve(__dirname, '../backend'), stdio: 'ignore' });
+        }
         
         console.log('[ORCHESTRATOR] Starting Backend...');
         backendProcess = spawn('npm', ['start'], { 
@@ -178,8 +204,10 @@ const start = async () => {
 
         // 3. Start Frontend
         const frontendDir = path.resolve(__dirname, '../rrdch_frontend/rrdch_frontend/frontend');
-        console.log('[ORCHESTRATOR] Checking dependencies for Frontend...');
-        execSync('npm install', { cwd: frontendDir, stdio: 'ignore' });
+        if (!IS_PRODUCTION) {
+            console.log('[ORCHESTRATOR] Checking dependencies for Frontend...');
+            execSync('npm install', { cwd: frontendDir, stdio: 'ignore' });
+        }
 
         console.log('[ORCHESTRATOR] Starting Frontend...');
         frontendProcess = spawn('npm', ['run', 'dev'], { 
