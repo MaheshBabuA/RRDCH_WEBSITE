@@ -5,6 +5,7 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import SuccessModal from '../components/SuccessModal';
+import { siteContent } from '../data/siteContent';
 
 const Events = () => {
   const { t } = useLanguage();
@@ -45,23 +46,22 @@ const Events = () => {
         setEvents(formattedEvents);
       } catch (err) {
         console.error('Failed to load events:', err);
-        // Demo fallback
-        setEvents([
-          { 
-            id: '1', 
-            title: 'MDS Final Exams', 
-            start: '2026-05-15', 
-            backgroundColor: categories.exam.color,
-            extendedProps: { location: 'Main Examination Hall', time: '09:30 AM', category: 'exam', description: 'Annual MDS clinical and theory examinations.', icon: '✍️' }
-          },
-          { 
-            id: '2', 
-            title: 'CDE Program: Modern Endodontics', 
-            start: '2026-05-20', 
-            backgroundColor: categories.workshop.color,
-            extendedProps: { location: 'SLL Auditorium', time: '10:00 AM', category: 'workshop', description: 'Advanced workshop on root canal treatments.', icon: '🔧' }
+        // Fallback to siteContent if API fails
+        const fallbackEvents = siteContent.events.map(event => ({
+          id: event.id.toString(),
+          title: event.title,
+          start: event.date,
+          backgroundColor: categories[event.category.toLowerCase()]?.color || '#3b82f6',
+          borderColor: 'transparent',
+          extendedProps: {
+            description: event.description,
+            location: event.location,
+            time: event.time,
+            category: event.category.toLowerCase(),
+            icon: categories[event.category.toLowerCase()]?.icon || '📅'
           }
-        ]);
+        }));
+        setEvents(fallbackEvents);
       } finally {
         setIsLoading(false);
       }

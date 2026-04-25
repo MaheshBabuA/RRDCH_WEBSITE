@@ -47,28 +47,52 @@ const Footer = () => {
             <h4 className="text-lg font-bold mb-5 border-b border-blue-800 pb-2 inline-block">
               {t('footer.quickLinks')}
             </h4>
-            <ul className="space-y-4">
-              <li>
-                <Link to="/departments" className="text-blue-100/80 hover:text-primary-blue transition-all flex items-center gap-3 group">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary-blue group-hover:w-3 transition-all"></span> {t('navbar.departments')}
-                </Link>
-              </li>
-              <li>
-                <Link to="/admissions" className="text-blue-100/80 hover:text-primary-blue transition-all flex items-center gap-3 group">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary-blue group-hover:w-3 transition-all"></span> {t('navbar.admissions')}
-                </Link>
-              </li>
-              <li>
-                <Link to="/events" className="text-blue-100/80 hover:text-primary-blue transition-all flex items-center gap-3 group">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary-blue group-hover:w-3 transition-all"></span> {t('footer.events')}
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="text-blue-100/80 hover:text-primary-blue transition-all flex items-center gap-3 group">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary-blue group-hover:w-3 transition-all"></span> {t('navbar.contact')}
-                </Link>
-              </li>
-            </ul>
+            <div className="grid grid-cols-2 gap-4">
+              <ul className="space-y-4">
+                <li>
+                  <Link to="/about" className="text-blue-100/80 hover:text-primary-blue transition-all flex items-center gap-3 group">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-blue group-hover:w-3 transition-all"></span> About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/courses" className="text-blue-100/80 hover:text-primary-blue transition-all flex items-center gap-3 group">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-blue group-hover:w-3 transition-all"></span> Courses
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/departments" className="text-blue-100/80 hover:text-primary-blue transition-all flex items-center gap-3 group">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-blue group-hover:w-3 transition-all"></span> Departments
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/academics" className="text-blue-100/80 hover:text-primary-blue transition-all flex items-center gap-3 group">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-blue group-hover:w-3 transition-all"></span> Academics
+                  </Link>
+                </li>
+              </ul>
+              <ul className="space-y-4">
+                <li>
+                  <Link to="/facilities" className="text-blue-100/80 hover:text-primary-blue transition-all flex items-center gap-3 group">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-blue group-hover:w-3 transition-all"></span> Facilities
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/events" className="text-blue-100/80 hover:text-primary-blue transition-all flex items-center gap-3 group">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-blue group-hover:w-3 transition-all"></span> Events
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/alumni" className="text-blue-100/80 hover:text-primary-blue transition-all flex items-center gap-3 group">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-blue group-hover:w-3 transition-all"></span> Alumni
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/contact" className="text-blue-100/80 hover:text-primary-blue transition-all flex items-center gap-3 group">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-blue group-hover:w-3 transition-all"></span> Contact
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
 
           {/* Social Links Section */}

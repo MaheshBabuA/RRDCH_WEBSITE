@@ -44,15 +44,29 @@ const Navigation = () => {
             <Link to="/" className={navLinkClasses('/')}>
               {t('navbar.home')}
             </Link>
-            <Link to="/about" className={navLinkClasses('/about')}>
-              {t('navbar.about')}
-            </Link>
-
-            {/* Academic Services Dropdown (Hover on Desktop) */}
+            {/* About Us Dropdown */}
             <div 
               className="relative group h-full flex items-center"
-              onMouseEnter={() => setAcademicDropdownOpen(true)}
-              onMouseLeave={() => setAcademicDropdownOpen(false)}
+            >
+              <button className={`flex items-center px-3 py-2 rounded-xl text-base font-semibold transition-all duration-300 text-text-muted group-hover:text-primary-blue group-hover:bg-primary-blue/5`}>
+                About Us
+                <svg className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div className="absolute left-0 top-[100%] w-56 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden transition-all duration-200 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible translate-y-2 group-hover:translate-y-0">
+                <div className="py-2 px-1">
+                  <Link to="/about" className="block px-4 py-2 text-sm font-medium text-text-muted hover:bg-primary-blue/5 hover:text-primary-blue rounded-lg transition-colors" onClick={closeMenu}>{t('navbar.about')}</Link>
+                  <Link to="/facilities" className="block px-4 py-2 text-sm font-medium text-text-muted hover:bg-primary-blue/5 hover:text-primary-blue rounded-lg transition-colors" onClick={closeMenu}>Facilities</Link>
+                  <Link to="/alumni" className="block px-4 py-2 text-sm font-medium text-text-muted hover:bg-primary-blue/5 hover:text-primary-blue rounded-lg transition-colors" onClick={closeMenu}>Alumni</Link>
+                  <Link to="/events" className="block px-4 py-2 text-sm font-medium text-text-muted hover:bg-primary-blue/5 hover:text-primary-blue rounded-lg transition-colors" onClick={closeMenu}>Events</Link>
+                </div>
+              </div>
+            </div>
+
+            {/* Academic Services Dropdown */}
+            <div 
+              className="relative group h-full flex items-center"
             >
               <button className={`flex items-center px-3 py-2 rounded-xl text-base font-semibold transition-all duration-300 text-text-muted group-hover:text-primary-blue group-hover:bg-primary-blue/5`}>
                 {t('navbar.academicServices')}
@@ -60,17 +74,15 @@ const Navigation = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
-              {academicDropdownOpen && (
-                <div className="absolute left-0 top-full mt-0 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden transition-all duration-200 z-50">
-                  <div className="py-2 px-1">
-                    <Link to="/academics" className="block px-4 py-2 text-sm font-medium text-text-muted hover:bg-primary-blue/5 hover:text-primary-blue rounded-lg transition-colors" onClick={closeMenu}>{t('navbar.academics')}</Link>
-                    <Link to="/departments" className="block px-4 py-2 text-sm font-medium text-text-muted hover:bg-primary-blue/5 hover:text-primary-blue rounded-lg transition-colors" onClick={closeMenu}>{t('navbar.departments')}</Link>
-                    <Link to="/admissions" className="block px-4 py-2 text-sm font-medium text-text-muted hover:bg-primary-blue/5 hover:text-primary-blue rounded-lg transition-colors" onClick={closeMenu}>{t('navbar.admissions')}</Link>
-                    <Link to="/student-portal" className="block px-4 py-2 text-sm font-medium text-text-muted hover:bg-primary-blue/5 hover:text-primary-blue rounded-lg transition-colors" onClick={closeMenu}>{t('navbar.studentPortal')}</Link>
-                    <Link to="/syllabus" className="block px-4 py-2 text-sm font-medium text-text-muted hover:bg-primary-blue/5 hover:text-primary-blue rounded-lg transition-colors" onClick={closeMenu}>{t('navbar.syllabus')}</Link>
-                  </div>
+              <div className="absolute left-0 top-[100%] w-56 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden transition-all duration-200 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible translate-y-2 group-hover:translate-y-0">
+                <div className="py-2 px-1">
+                  <Link to="/courses" className="block px-4 py-2 text-sm font-medium text-text-muted hover:bg-primary-blue/5 hover:text-primary-blue rounded-lg transition-colors" onClick={closeMenu}>Courses</Link>
+                  <Link to="/academics" className="block px-4 py-2 text-sm font-medium text-text-muted hover:bg-primary-blue/5 hover:text-primary-blue rounded-lg transition-colors" onClick={closeMenu}>{t('navbar.academics')}</Link>
+                  <Link to="/departments" className="block px-4 py-2 text-sm font-medium text-text-muted hover:bg-primary-blue/5 hover:text-primary-blue rounded-lg transition-colors" onClick={closeMenu}>{t('navbar.departments')}</Link>
+                  <Link to="/admissions" className="block px-4 py-2 text-sm font-medium text-text-muted hover:bg-primary-blue/5 hover:text-primary-blue rounded-lg transition-colors" onClick={closeMenu}>{t('navbar.admissions')}</Link>
+                  <Link to="/student-portal" className="block px-4 py-2 text-sm font-medium text-text-muted hover:bg-primary-blue/5 hover:text-primary-blue rounded-lg transition-colors" onClick={closeMenu}>{t('navbar.studentPortal')}</Link>
                 </div>
-              )}
+              </div>
             </div>
 
             {/* Patient Services Dropdown */}
@@ -149,16 +161,25 @@ const Navigation = () => {
         <div className="md:hidden border-t border-border-light bg-white shadow-lg absolute w-full" id="mobile-menu">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 max-h-[80vh] overflow-y-auto">
             <Link to="/" className={navLinkClasses('/')} onClick={closeMenu}>{t('navbar.home')}</Link>
-            <Link to="/about" className={navLinkClasses('/about')} onClick={closeMenu}>{t('navbar.about')}</Link>
+            
+            <div className="pt-2 pb-1 mt-1 border-t border-gray-100">
+              <span className="block px-3 py-1 text-xs font-semibold text-primary-blue uppercase tracking-wider">About Us</span>
+              <div className="mt-1 space-y-1 pl-3 border-l-2 border-gray-100 ml-3">
+                <Link to="/about" className={navLinkClasses('/about')} onClick={closeMenu}>{t('navbar.about')}</Link>
+                <Link to="/facilities" className={navLinkClasses('/facilities')} onClick={closeMenu}>Facilities</Link>
+                <Link to="/alumni" className={navLinkClasses('/alumni')} onClick={closeMenu}>Alumni</Link>
+                <Link to="/events" className={navLinkClasses('/events')} onClick={closeMenu}>Events</Link>
+              </div>
+            </div>
             
             <div className="pt-2 pb-1 mt-1 border-t border-gray-100">
               <span className="block px-3 py-1 text-xs font-semibold text-primary-blue uppercase tracking-wider">{t('navbar.academicServices')}</span>
               <div className="mt-1 space-y-1 pl-3 border-l-2 border-gray-100 ml-3">
+                <Link to="/courses" className={navLinkClasses('/courses')} onClick={closeMenu}>Courses</Link>
                 <Link to="/academics" className={navLinkClasses('/academics')} onClick={closeMenu}>{t('navbar.academics')}</Link>
                 <Link to="/departments" className={navLinkClasses('/departments')} onClick={closeMenu}>{t('navbar.departments')}</Link>
                 <Link to="/admissions" className={navLinkClasses('/admissions')} onClick={closeMenu}>{t('navbar.admissions')}</Link>
                 <Link to="/student-portal" className={navLinkClasses('/student-portal')} onClick={closeMenu}>{t('navbar.studentPortal')}</Link>
-                <Link to="/syllabus" className={navLinkClasses('/syllabus')} onClick={closeMenu}>{t('navbar.syllabus')}</Link>
               </div>
             </div>
 

@@ -16,8 +16,14 @@ import AISymptomChecker from './pages/AISymptomChecker';
 import PatientPortal from './pages/PatientPortal';
 import VideoGallery from './pages/VideoGallery';
 import ContactUs from './pages/ContactUs';
+import DoctorDashboard from './pages/DoctorDashboard';
 import ReceptionDashboard from './pages/ReceptionDashboard';
 
+// New Pages for Migration
+import Courses from './pages/Courses';
+import Facilities from './pages/Facilities';
+import Alumni from './pages/Alumni';
+import Academics from './pages/Academics';
 
 function App() {
   return (
@@ -37,19 +43,24 @@ function App() {
         <Route path="hostel-complaints" element={<HostelComplaints />} />
         <Route path="feedback" element={<Feedback />} />
         <Route path="about" element={<About />} />
-        <Route path="contact" element={<Contact />} />
         <Route path="student-portal" element={<StudentPortal />} />
         <Route path="admissions" element={<Admissions />} />
+        
+        {/* New Routes */}
+        <Route path="courses" element={<Courses />} />
+        <Route path="facilities" element={<Facilities />} />
+        <Route path="alumni" element={<Alumni />} />
+        <Route path="academics" element={<Academics />} />
+        
         <Route path="check-status" element={<Navigate to="/student-portal" replace />} />
         <Route path="syllabus" element={<Navigate to="/student-portal" replace />} />
-        <Route path="academics" element={<Navigate to="/admissions" replace />} />
         
-        {/* Hidden Staff-Only Route — not linked in navigation */}
+        {/* Hidden Staff-Only Routes */}
+        <Route path="staff/doctor-dashboard" element={<DoctorDashboard />} />
         <Route path="staff/reception-dashboard" element={<ReceptionDashboard />} />
 
-
-        {/* Fallback route for unimplemented pages */}
-        <Route path="*" element={<div className="p-20 text-center scale-150">🚧 Page Under Construction 🚧</div>} />
+        {/* Fallback route */}
+        <Route path="*" element={<div className="p-20 text-center text-xl font-bold text-gray-500">🚧 Page Under Construction 🚧</div>} />
       </Route>
     </Routes>
   );
