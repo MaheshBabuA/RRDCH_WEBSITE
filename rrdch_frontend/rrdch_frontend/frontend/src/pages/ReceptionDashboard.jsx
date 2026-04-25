@@ -274,13 +274,15 @@ const ReceptionDashboard = () => {
                     onClick={() => setActiveTab('current')}
                     className={`flex-1 py-4 text-xs font-black uppercase tracking-widest rounded-2xl transition-all ${activeTab === 'current' ? 'bg-[#008080] text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
                 >
-                    [1] Today's Visit
+                    [1] Current Appointment Details
+
                 </button>
                 <button 
                     onClick={() => setActiveTab('history')}
                     className={`flex-1 py-4 text-xs font-black uppercase tracking-widest rounded-2xl transition-all ${activeTab === 'history' ? 'bg-[#008080] text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
                 >
-                    [2] Medical History
+                    [2] Past Dental Records
+
                 </button>
             </div>
 

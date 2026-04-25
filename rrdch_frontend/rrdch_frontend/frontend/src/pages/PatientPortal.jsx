@@ -23,7 +23,7 @@ const STATUS_ICONS = {
 };
 
 const PatientPortal = () => {
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState(localStorage.getItem('rrdch_patient_phone') || '');
   const [isSearching, setIsSearching] = useState(false);
   const [appointments, setAppointments] = useState([]);
   const [selectedApt, setSelectedApt] = useState(null);
@@ -35,6 +35,13 @@ const PatientPortal = () => {
   const [queueStatus, setQueueStatus] = useState({
     'Oral Surgery': 12, 'Orthodontics': 8, 'Periodontics': 15
   });
+
+  // Auto-fetch if phone exists in localStorage
+  useEffect(() => {
+    if (phone) {
+      handleSearch();
+    }
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -48,13 +55,16 @@ const PatientPortal = () => {
   }, []);
 
   const handleSearch = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!phone.trim()) return;
+    
+    // Save to localStorage for persistence
+    localStorage.setItem('rrdch_patient_phone', phone);
+    
     setIsSearching(true);
     setSelectedApt(null);
     try {
-      // Using the newly created Node.js API endpoint
-      const res = await fetch(`${API_URL}/get-patient-appointments?phone_number=${phone}`);
+      const res = await fetch(`${API_URL}/portal/my-appointments?phone=${phone}`);
       const data = await res.json();
       
       if (data.success) {
@@ -73,7 +83,6 @@ const PatientPortal = () => {
     e.preventDefault();
     setIsBooking(true);
     try {
-      // Maps to existing appointments router logic
       const res = await fetch(`${API_URL}/appointments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -87,15 +96,17 @@ const PatientPortal = () => {
       });
       const data = await res.json();
       if (data.success) {
+          // Save phone to localStorage even for guests
+          localStorage.setItem('rrdch_patient_phone', phone);
           setBookingSuccess(data);
-          // Refresh search to show new appointment with progress bar
-          handleSearch(new Event('submit'));
+          handleSearch();
           setShowBooking(false);
           setBookingForm({ patient_name: '', dept: '', date: '', time_slot: '' });
       }
     } catch (err) { console.error(err); }
     finally { setIsBooking(false); }
   };
+
 
   const getStepIndex = (status) => STATUS_STEPS.indexOf(status);
 

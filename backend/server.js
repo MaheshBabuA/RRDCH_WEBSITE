@@ -10,6 +10,8 @@ const eventsRouter = require('./routes/events');
 const feedbackRouter = require('./routes/feedback');
 const doctorsRouter = require('./routes/doctors');
 const receptionRouter = require('./routes/reception');
+const portalRouter = require('./routes/portal');
+
 
 
 const app = express();
@@ -35,6 +37,8 @@ app.use('/api/events', eventsRouter);
 app.use('/api/feedback', feedbackRouter);
 app.use('/api/doctors', doctorsRouter);
 app.use('/api/reception', receptionRouter);
+app.use('/api/portal', portalRouter);
+
 
 
 // Base health check endpoint

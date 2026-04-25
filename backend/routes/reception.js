@@ -48,16 +48,12 @@ router.get('/check-in', async (req, res) => {
 
     // 2. Fetch Patient's Last 3 Medical History Records
     const historyQuery = `
-      SELECT 
-        visit_date,
-        treatment_type,
-        notes,
-        doctor_name
-      FROM medical_history 
+      SELECT * FROM medical_history 
       WHERE patient_id = ? 
       ORDER BY visit_date DESC 
       LIMIT 3
     `;
+
     
     const [historyRows] = await pool.execute(historyQuery, [patient_id]);
 
