@@ -1,89 +1,123 @@
 import React from 'react';
+import Button from '../components/Button';
 
 const ContactUs = () => {
-  return (
-    <div className="min-h-screen bg-soft-bg py-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16 space-y-4">
-           <h1 className="text-4xl md:text-5xl font-black text-secondary-blue tracking-tight uppercase">Contact Us</h1>
-           <p className="text-lg text-text-muted font-bold">Rajarajeswari Dental College & Hospital - Your pathway to dental health and education.</p>
-        </div>
+  const mapUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.751225841022!2d77.447171575747!3d12.8915440173003!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae3f707f433767%3A0xa632a4e9b9423c!2sRajarajeswari%20Dental%20College%20and%20Hospital!5e0!3m2!1sen!2sin!4v1713858000000!5m2!1sen!2sin";
+  const googleMapsDeepLink = "https://www.google.com/maps/dir/?api=1&destination=Rajarajeswari+Dental+College+and+Hospital";
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+  return (
+    <div className="min-h-screen bg-soft-bg animate-fade-in pb-20">
+      
+      {/* Hero Header */}
+      <div className="bg-secondary-blue py-24 px-4 text-center relative overflow-hidden">
+         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&q=80&w=2000')] bg-cover bg-center opacity-10 mix-blend-overlay"></div>
+         <div className="max-w-4xl mx-auto relative z-10 space-y-4">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-[10px] font-black uppercase tracking-widest shadow-lg">
+               Reach Out to Us
+            </div>
+            <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter uppercase leading-tight">Get In <span className="text-primary-blue">Touch</span></h1>
+            <p className="text-xl text-blue-100/80 font-medium">Have questions? Our support team and clinical staff are here to assist you.</p>
+         </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto -mt-12 px-4 sm:px-6 lg:px-8 relative z-20">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* Left Column: Mail Us Form */}
-          <div className="bg-white rounded-[40px] shadow-2xl p-10 border border-border-soft">
-            <h2 className="text-3xl font-black text-secondary-blue mb-8 uppercase tracking-tight flex items-center">
-              <span className="w-10 h-10 bg-[#008080] text-white rounded-xl flex items-center justify-center mr-4 shadow-lg text-xl">📧</span>
-              Mail Us
+          {/* Main Contact Form (2 Cols) */}
+          <div className="lg:col-span-2 bg-white/90 backdrop-blur-3xl rounded-[48px] shadow-2xl p-10 border border-white">
+            <h2 className="text-3xl font-black text-secondary-blue mb-10 tracking-tight flex items-center gap-4">
+              <span className="w-12 h-12 bg-primary-blue/10 text-primary-blue rounded-2xl flex items-center justify-center shadow-inner">📧</span>
+              Send us a Message
             </h2>
-            <form className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-2">
-                  <label className="text-[11px] font-black text-text-muted uppercase tracking-widest ml-1">Full Name</label>
-                  <input type="text" placeholder="John Doe" className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-[#008080] focus:bg-white rounded-2xl transition-all font-bold text-secondary-blue outline-none" />
+                  <label className="text-[11px] font-black text-neutral-gray uppercase tracking-widest ml-2">Your Name</label>
+                  <input type="text" placeholder="John Doe" className="w-full px-8 py-5 bg-soft-bg border-2 border-transparent focus:border-primary-blue focus:bg-white rounded-[24px] transition-all font-bold text-secondary-blue outline-none shadow-sm" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[11px] font-black text-text-muted uppercase tracking-widest ml-1">Email Address</label>
-                  <input type="email" placeholder="john@example.com" className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-[#008080] focus:bg-white rounded-2xl transition-all font-bold text-secondary-blue outline-none" />
+                  <label className="text-[11px] font-black text-neutral-gray uppercase tracking-widest ml-2">Email Address</label>
+                  <input type="email" placeholder="john@example.com" className="w-full px-8 py-5 bg-soft-bg border-2 border-transparent focus:border-primary-blue focus:bg-white rounded-[24px] transition-all font-bold text-secondary-blue outline-none shadow-sm" />
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-[11px] font-black text-text-muted uppercase tracking-widest ml-1">Subject</label>
-                <input type="text" placeholder="Admission Inquiry" className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-[#008080] focus:bg-white rounded-2xl transition-all font-bold text-secondary-blue outline-none" />
+                <label className="text-[11px] font-black text-neutral-gray uppercase tracking-widest ml-2">Inquiry Type</label>
+                <select className="w-full px-8 py-5 bg-soft-bg border-2 border-transparent focus:border-primary-blue focus:bg-white rounded-[24px] transition-all font-bold text-secondary-blue outline-none shadow-sm appearance-none cursor-pointer">
+                    <option>General Inquiry</option>
+                    <option>Admissions</option>
+                    <option>Patient Appointments</option>
+                    <option>Hostel Facilities</option>
+                </select>
               </div>
               <div className="space-y-2">
-                <label className="text-[11px] font-black text-text-muted uppercase tracking-widest ml-1">Message</label>
-                <textarea rows="5" placeholder="How can we help you?" className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-[#008080] focus:bg-white rounded-2xl transition-all font-bold text-secondary-blue outline-none resize-none"></textarea>
+                <label className="text-[11px] font-black text-neutral-gray uppercase tracking-widest ml-2">Detailed Message</label>
+                <textarea rows="5" placeholder="Tell us more about your inquiry..." className="w-full px-8 py-5 bg-soft-bg border-2 border-transparent focus:border-primary-blue focus:bg-white rounded-[24px] transition-all font-bold text-secondary-blue outline-none resize-none shadow-sm"></textarea>
               </div>
-              <button className="w-full py-5 bg-[#008080] text-white rounded-2xl font-black text-lg shadow-xl shadow-[#008080]/20 hover:scale-[1.02] active:scale-95 transition-all">
-                Send Message
+              <button className="w-full py-6 bg-secondary-blue text-white rounded-[24px] font-black text-xl shadow-2xl hover:bg-primary-blue hover:-translate-y-1 transition-all">
+                Send Inquiry
               </button>
             </form>
           </div>
 
-          {/* Right Column: General Info & Map */}
+          {/* Contact Details & Directions (1 Col) */}
           <div className="space-y-8">
-            <div className="bg-white rounded-[40px] shadow-2xl p-10 border border-border-soft">
-              <h2 className="text-2xl font-black text-secondary-blue mb-8 uppercase tracking-tight flex items-center">
-                <span className="w-10 h-10 bg-primary-blue text-white rounded-xl flex items-center justify-center mr-4 shadow-lg text-xl">📍</span>
-                General Information
-              </h2>
-              <div className="space-y-6">
-                <div className="flex items-start gap-6">
-                  <div className="w-12 h-12 bg-primary-blue/10 text-primary-blue rounded-2xl flex items-center justify-center shrink-0">🏛️</div>
-                  <div>
-                    <h4 className="text-sm font-black text-secondary-blue uppercase tracking-widest mb-1">Address</h4>
-                    <p className="text-text-muted font-bold leading-relaxed">No.14, Ramohalli Cross, Kumbalgodu,<br/>Mysore Road, Bangalore - 560074.</p>
-                  </div>
+            <div className="bg-white rounded-[48px] shadow-xl p-10 border border-border-soft overflow-hidden relative">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary-blue/5 rounded-full blur-3xl -mr-10 -mt-10"></div>
+              <h3 className="text-2xl font-black text-secondary-blue mb-8 tracking-tight">Campus Info</h3>
+              <div className="space-y-8">
+                <div className="flex gap-6">
+                    <span className="text-3xl w-14 h-14 bg-soft-bg rounded-2xl flex items-center justify-center shrink-0 border border-border-light shadow-sm">📍</span>
+                    <div>
+                        <p className="text-[10px] font-black text-neutral-gray uppercase tracking-widest mb-1">Location</p>
+                        <p className="text-sm font-bold text-secondary-blue leading-relaxed">No.14, Ramohalli Cross, Kumbalgodu, Mysore Road, Bangalore - 560074.</p>
+                    </div>
                 </div>
-                <div className="flex items-start gap-6">
-                  <div className="w-12 h-12 bg-success-green/10 text-success-green rounded-2xl flex items-center justify-center shrink-0">📞</div>
-                  <div>
-                    <h4 className="text-sm font-black text-secondary-blue uppercase tracking-widest mb-1">Contact Numbers</h4>
-                    <p className="text-text-muted font-bold">+91-80-28437102 / +91-80-28437103</p>
-                  </div>
+                <div className="flex gap-6">
+                    <span className="text-3xl w-14 h-14 bg-soft-bg rounded-2xl flex items-center justify-center shrink-0 border border-border-light shadow-sm">📞</span>
+                    <div>
+                        <p className="text-[10px] font-black text-neutral-gray uppercase tracking-widest mb-1">Call Desk</p>
+                        <p className="text-sm font-bold text-secondary-blue">+91-80-28437102</p>
+                    </div>
                 </div>
-                <div className="flex items-start gap-6">
-                  <div className="w-12 h-12 bg-[#008080]/10 text-[#008080] rounded-2xl flex items-center justify-center shrink-0">📧</div>
-                  <div>
-                    <h4 className="text-sm font-black text-secondary-blue uppercase tracking-widest mb-1">General Email</h4>
-                    <p className="text-text-muted font-bold">info@rrdch.edu.in</p>
-                  </div>
+                <div className="flex gap-6">
+                    <span className="text-3xl w-14 h-14 bg-soft-bg rounded-2xl flex items-center justify-center shrink-0 border border-border-light shadow-sm">🕒</span>
+                    <div>
+                        <p className="text-[10px] font-black text-neutral-gray uppercase tracking-widest mb-1">Hospital Hours</p>
+                        <p className="text-sm font-bold text-secondary-blue">Mon - Sat: 9:00 AM - 4:00 PM</p>
+                    </div>
                 </div>
               </div>
             </div>
 
-            {/* Embedded Google Map */}
-            <div className="bg-white rounded-[40px] shadow-2xl overflow-hidden border-8 border-white h-80">
-              <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.751225841022!2d77.447171575747!3d12.8915440173003!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae3f707f433767%3A0xa632a4e9b9423c!2sRajarajeswari%20Dental%20College%20and%20Hospital!5e0!3m2!1sen!2sin!4v1713858000000!5m2!1sen!2sin" 
-                className="w-full h-full"
-                style={{ border: 0 }} 
-                allowFullScreen="" 
-                loading="lazy" 
-                referrerPolicy="no-referrer-when-downgrade"
-              ></iframe>
+            {/* Hospital Directions Section */}
+            <div className="bg-white rounded-[48px] shadow-2xl overflow-hidden border-4 border-white flex flex-col group">
+                <div className="h-64 relative overflow-hidden">
+                    <iframe 
+                        src={mapUrl} 
+                        className="w-full h-full grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700"
+                        style={{ border: 0 }} 
+                        allowFullScreen="" 
+                        loading="lazy" 
+                        referrerPolicy="no-referrer-when-downgrade"
+                    ></iframe>
+                    <div className="absolute inset-0 bg-secondary-blue/10 pointer-events-none"></div>
+                </div>
+                <div className="p-8 bg-white border-t border-border-light text-center">
+                    <h4 className="text-lg font-black text-secondary-blue mb-2 tracking-tight">Need Navigation?</h4>
+                    <p className="text-xs text-neutral-gray font-bold mb-6">Get real-time directions to our Mysore Road campus.</p>
+                    <a 
+                        href={googleMapsDeepLink} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-3 w-full py-4 bg-success-green text-white font-black rounded-2xl shadow-lg hover:shadow-success-green/30 hover:-translate-y-1 transition-all group/btn"
+                    >
+                        <span className="text-xl">🗺️</span>
+                        Open in Google Maps
+                        <svg className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                    </a>
+                </div>
             </div>
           </div>
 
