@@ -82,22 +82,29 @@ const ReceptionDashboard = () => {
     } catch (err) { console.error(err); }
   };
 
-  // --- UPDATED QR SCAN LOGIC ---
+  // --- REFACTORED QR SCAN SUCCESS HANDLER ---
   const handleSimulateScan = async () => {
     const scanResult = prompt("Simulate QR Scan - Enter JSON String:", '{"patient_id": "P-1001", "current_appointment_id": "APT-44201"}');
     if (!scanResult) return;
 
     try {
-      // Step 1: Parse JSON string
-      let data = JSON.parse(scanResult);
+      // Step 1: Use JSON.parse() to extract IDs
+      const parsedData = JSON.parse(scanResult);
+      if (!parsedData.patient_id) throw new Error("Missing patient_id");
+
       setIsScanning(true);
       
-      // Step 2: GET request to /api/reception/check-in
-      const res = await fetch(`${API_URL}/reception/check-in?patient_id=${data.patient_id}&apt_id=${data.current_appointment_id}`);
+      // Step 2: GET request to /api/reception/patient-profile
+      const res = await fetch(`${API_URL}/reception/patient-profile?id=${parsedData.patient_id}`);
       
       const responseData = await res.json();
       if (responseData.success) {
-        setScannedData(responseData);
+        // Map the new response structure to our state
+        setScannedData({
+          appointment: responseData.current_appointment,
+          medical_history: responseData.medical_history,
+          patient_name: parsedData.patient_name || "Patient" // Fallback if name not in profile
+        });
         setIsModalOpen(true);
         setActiveTab('current');
       } else {
@@ -110,6 +117,7 @@ const ReceptionDashboard = () => {
       setIsScanning(false);
     }
   };
+
 
   const countByStatus = (s) => appointments.filter(a => a.status === s).length;
 
@@ -273,13 +281,17 @@ const ReceptionDashboard = () => {
                     onClick={() => setActiveTab('current')}
                     className={`flex-1 py-4 text-xs font-black uppercase tracking-widest rounded-2xl transition-all ${activeTab === 'current' ? 'bg-[#008080] text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
                 >
-                    [1] Today's Visit
+                    Current Visit
+
+
                 </button>
                 <button 
                     onClick={() => setActiveTab('history')}
                     className={`flex-1 py-4 text-xs font-black uppercase tracking-widest rounded-2xl transition-all ${activeTab === 'history' ? 'bg-[#008080] text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
                 >
-                    [2] Medical History
+                    Past Records
+
+
                 </button>
             </div>
 

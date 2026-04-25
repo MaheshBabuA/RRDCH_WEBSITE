@@ -48,16 +48,12 @@ router.get('/check-in', async (req, res) => {
 
     // 2. Fetch Patient's Last 3 Medical History Records
     const historyQuery = `
-      SELECT 
-        visit_date,
-        treatment_type,
-        notes,
-        doctor_name
-      FROM medical_history 
+      SELECT * FROM medical_history 
       WHERE patient_id = ? 
       ORDER BY visit_date DESC 
       LIMIT 3
     `;
+
     
     const [historyRows] = await pool.execute(historyQuery, [patient_id]);
 
@@ -85,4 +81,52 @@ router.get('/check-in', async (req, res) => {
   }
 });
 
+/**
+ * Endpoint: GET /api/reception/patient-profile
+ * Fetches current visit and past records for a specific patient ID.
+ */
+router.get('/patient-profile', async (req, res) => {
+  const { id } = req.query;
+
+  if (!id) {
+    return res.status(400).json({ success: false, message: 'Patient ID is required' });
+  }
+
+  try {
+    // 1. Fetch Current Appointment
+    const appointmentQuery = `
+      SELECT 
+        a.appointment_time as time,
+        a.doctor_name as doctor,
+        d.name as department
+      FROM appointments a
+      LEFT JOIN departments d ON a.department_id = d.id
+      WHERE a.patient_id = ? AND a.status IN ('scheduled', 'confirmed', 'in_progress')
+      ORDER BY a.appointment_date ASC, a.appointment_time ASC
+      LIMIT 1
+    `;
+    const [appointmentRows] = await pool.execute(appointmentQuery, [id]);
+
+    // 2. Fetch Medical History from patient_records table
+    const recordsQuery = `
+      SELECT * FROM patient_records 
+      WHERE patient_id = ? 
+      ORDER BY visit_date DESC 
+      LIMIT 5
+    `;
+    const [recordRows] = await pool.execute(recordsQuery, [id]);
+
+    res.status(200).json({
+      success: true,
+      current_appointment: appointmentRows[0] || null,
+      medical_history: recordRows || []
+    });
+
+  } catch (error) {
+    console.error('Error in /api/reception/patient-profile:', error);
+    res.status(500).json({ success: false, message: 'Server error retrieving profile' });
+  }
+});
+
 module.exports = router;
+

@@ -1,79 +1,118 @@
 import React, { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:5000');
 
 // Points to the Node.js backend (server.js)
 const API_URL = 'http://localhost:5000/api';
 
 const DEPARTMENTS = [
-  'Oral Surgery', 'Orthodontics', 'Periodontics', 'Prosthodontics',
-  'Conservative Dentistry', 'Pedodontics', 'Oral Medicine', 'Oral Pathology'
+  { name: 'Oral Medicine & Radiology', icon: '📸' },
+  { name: 'Prosthodontics', icon: '😁' },
+  { name: 'Oral & Maxillofacial Surgery', icon: '🏥' },
+  { name: 'Periodontology', icon: '🦷' },
+  { name: 'Pedodontics', icon: '👶' },
+  { name: 'Conservative Dentistry', icon: '🩹' },
+  { name: 'Orthodontics', icon: '😬' },
+  { name: 'Public Health Dentistry', icon: '🌍' },
+  { name: 'Oral & Maxillofacial Pathology', icon: '🔬' },
+  { name: 'Implantology', icon: '🔩' },
+  { name: 'Orofacial Pain', icon: '⚡' }
 ];
 
-// Aligned with the backend API response status labels
-const STATUS_STEPS = ['Pending', 'Confirmed', 'Completed'];
-const STATUS_LABELS = { 
-  Pending: 'Under Review', 
-  Confirmed: 'Confirmed', 
-  Completed: 'Treatment Done' 
+
+const TIME_SLOTS = [
+  "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
+  "02:00 PM", "02:30 PM", "03:00 PM"
+];
+
+// Refined Status Colors
+const STATUS_COLORS = { 
+  Pending: 'bg-amber-400 text-white shadow-amber-400/20', // In-Queue
+  Confirmed: 'bg-emerald-500 text-white shadow-emerald-500/20', // Doctor is ready
+  Completed: 'bg-slate-400 text-white shadow-slate-400/20' // Completed
 };
-const STATUS_ICONS = { 
-  Pending: '📋', 
-  Confirmed: '✅', 
-  Completed: '🦷' 
+
+const STATUS_LABELS = {
+  Pending: 'In-Queue',
+  Confirmed: 'Doctor is Ready',
+  Completed: 'Completed'
 };
 
 const PatientPortal = () => {
-  const [phone, setPhone] = useState('');
+  const [liveTicker, setLiveTicker] = useState(null);
+
+  useEffect(() => {
+    socket.on('live-ticker-update', (data) => {
+      setLiveTicker(data);
+      // Auto-hide ticker after 10 seconds
+      setTimeout(() => setLiveTicker(null), 10000);
+    });
+    return () => socket.off('live-ticker-update');
+  }, []);
+  const [view, setView] = useState('home'); // home, booking, tracking
+  const [bookingStep, setBookingStep] = useState(1);
+  const [phone, setPhone] = useState(localStorage.getItem('current_user_phone') || '');
+
   const [isSearching, setIsSearching] = useState(false);
   const [appointments, setAppointments] = useState([]);
   const [selectedApt, setSelectedApt] = useState(null);
-  const [showBooking, setShowBooking] = useState(false);
   const [bookingForm, setBookingForm] = useState({ patient_name: '', dept: '', date: '', time_slot: '' });
   const [isBooking, setIsBooking] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(null);
 
-  const [queueStatus, setQueueStatus] = useState({
-    'Oral Surgery': 12, 'Orthodontics': 8, 'Periodontics': 15
-  });
+  // Sound Feedback Helpers
+  const playSound = (type) => {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    if (type === 'success') {
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+      oscillator.frequency.exponentialRampToValueAtTime(1320, audioCtx.currentTime + 0.1); // E6
+      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.3);
+    } else {
+      oscillator.type = 'square';
+      oscillator.frequency.setValueAtTime(220, audioCtx.currentTime); // A3
+      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.2);
+    }
+  };
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setQueueStatus(prev => ({
-        'Oral Surgery': Math.max(1, prev['Oral Surgery'] + (Math.random() > 0.5 ? 1 : -1)),
-        'Orthodontics': Math.max(1, prev['Orthodontics'] + (Math.random() > 0.6 ? 1 : -1)),
-        'Periodontics': Math.max(1, prev['Periodontics'] + (Math.random() > 0.4 ? 1 : -1))
-      }));
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    if (phone && view === 'home') {
+      fetchAppointments();
+    }
+  }, [view]);
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
+  const fetchAppointments = async () => {
     if (!phone.trim()) return;
     setIsSearching(true);
-    setSelectedApt(null);
     try {
-      // Using the newly created Node.js API endpoint
-      const res = await fetch(`${API_URL}/get-patient-appointments?phone_number=${phone}`);
+      const res = await fetch(`${API_URL}/portal/my-appointments?phone=${phone}`);
       const data = await res.json();
-      
       if (data.success) {
         setAppointments(data.appointments);
         if (data.appointments.length > 0) setSelectedApt(data.appointments[0]);
-      } else {
-        setAppointments([]);
       }
     } catch (err) {
-      console.error('Search Error:', err);
-      setAppointments([]);
+      console.error(err);
     } finally { setIsSearching(false); }
   };
 
-  const handleBook = async (e) => {
-    e.preventDefault();
+  const handleBook = async () => {
     setIsBooking(true);
     try {
-      // Maps to existing appointments router logic
       const res = await fetch(`${API_URL}/appointments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -87,266 +126,428 @@ const PatientPortal = () => {
       });
       const data = await res.json();
       if (data.success) {
+          playSound('success');
+          localStorage.setItem('current_user_phone', phone);
+
           setBookingSuccess(data);
-          // Refresh search to show new appointment with progress bar
-          handleSearch(new Event('submit'));
-          setShowBooking(false);
-          setBookingForm({ patient_name: '', dept: '', date: '', time_slot: '' });
+          setView('tracking');
+          fetchAppointments();
+      } else {
+          playSound('error');
+          alert("Booking failed. Please try again.");
       }
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+        playSound('error');
+        console.error(err); 
+    }
     finally { setIsBooking(false); }
   };
 
-  const getStepIndex = (status) => STATUS_STEPS.indexOf(status);
+  // --- VOICE INTEGRATION (WEB SPEECH API) ---
+  const [isListening, setIsListening] = useState(false);
+  const [activeVoiceField, setActiveVoiceField] = useState(null); // 'phone' or 'name'
 
-  const ProgressBar = ({ status }) => {
-    const currentStep = getStepIndex(status);
+  const startListening = (field, lang = 'kn-IN') => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Voice recognition not supported in this browser.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = lang;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setActiveVoiceField(field);
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      if (field === 'phone') setPhone(transcript.replace(/\D/g, ''));
+      if (field === 'name') setBookingForm(p => ({...p, patient_name: transcript}));
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+      setActiveVoiceField(null);
+    };
+
+    recognition.onerror = () => {
+      setIsListening(false);
+      setActiveVoiceField(null);
+    };
+
+    recognition.start();
+  };
+
+  const VoiceButton = ({ field }) => (
+    <div className="flex flex-col items-center gap-2 mt-6">
+      <button 
+        onClick={() => startListening(field, 'en-IN')}
+        className={`w-20 h-20 rounded-full flex items-center justify-center transition-all border-4 ${
+          isListening && activeVoiceField === field 
+          ? 'bg-red-500 border-red-200 animate-pulse scale-110 shadow-xl shadow-red-500/50' 
+          : 'bg-white border-gray-100 text-slate-400 hover:border-[#008080] hover:text-[#008080]'
+        }`}
+      >
+        <span className="text-3xl">🎤</span>
+      </button>
+      <div className="flex gap-2">
+        <button onClick={() => startListening(field, 'kn-IN')} className="text-[10px] font-black bg-gray-100 px-2 py-1 rounded">ಕನ್ನಡ</button>
+        <button onClick={() => startListening(field, 'en-IN')} className="text-[10px] font-black bg-gray-100 px-2 py-1 rounded">ENG</button>
+      </div>
+    </div>
+  );
+
+  // --- UI COMPONENTS ---
+
+  const StatusCircle = ({ status }) => {
+    // Red: Check-in Needed (Scheduled)
+    // Yellow: Waiting (Pending/In-Queue)
+    // Green: Your Turn (Confirmed/Ready)
+    const color = status === 'Confirmed' ? 'bg-emerald-500' : (status === 'Pending' ? 'bg-amber-400' : 'bg-red-500');
+    const label = status === 'Confirmed' ? 'YOUR TURN' : (status === 'Pending' ? 'WAITING' : 'CHECK-IN NEEDED');
+    
     return (
-      <div className="w-full py-6">
-        <div className="flex items-center justify-between relative">
-          {/* Background Line */}
-          <div className="absolute top-5 left-[10%] right-[10%] h-1 bg-gray-200 rounded-full"></div>
-          <div className="absolute top-5 left-[10%] h-1 bg-[#008080] rounded-full transition-all duration-700" style={{ width: `${(currentStep / (STATUS_STEPS.length - 1)) * 80}%` }}></div>
-
-          {STATUS_STEPS.map((step, idx) => (
-            <div key={step} className="flex flex-col items-center relative z-10 flex-1">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg shadow-md transition-all duration-500 ${
-                idx <= currentStep
-                  ? 'bg-[#008080] text-white scale-110 shadow-[#008080]/30'
-                  : 'bg-gray-100 text-gray-400 border-2 border-gray-200'
-              }`}>
-                {STATUS_ICONS[step]}
-              </div>
-              <span className={`text-[10px] font-black uppercase tracking-wider mt-2 ${
-                idx <= currentStep ? 'text-[#008080]' : 'text-gray-400'
-              }`}>{STATUS_LABELS[step]}</span>
-            </div>
-          ))}
+      <div className="flex flex-col items-center gap-6 py-10">
+        <div className={`w-48 h-48 rounded-full ${color} shadow-2xl flex items-center justify-center animate-pulse border-[12px] border-white/30`}>
+          <div className="w-full h-full rounded-full border-[8px] border-black/5 flex items-center justify-center">
+             <span className="text-white text-6xl">🏥</span>
+          </div>
         </div>
+        <div className={`text-4xl font-black ${color.replace('bg-', 'text-')} tracking-tighter`}>{label}</div>
       </div>
     );
   };
 
-  return (
-    <div className="min-h-screen bg-[#f4f7f6] py-12 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="max-w-5xl mx-auto space-y-8">
-        
-        {/* Live Queue Ticker */}
-        <div className="bg-secondary-blue text-white overflow-hidden rounded-2xl shadow-lg border border-white/10">
-          <div className="flex items-center px-6 py-3 bg-white/5 border-b border-white/10">
-            <span className="flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-primary-blue">
-               <span className="w-2 h-2 rounded-full bg-primary-blue animate-ping mr-2"></span>
-               Live Queue Ticker
-            </span>
-          </div>
-          <div className="flex whitespace-nowrap animate-marquee py-4 px-6 items-center space-x-12">
-            {Object.entries(queueStatus).map(([dept, mins]) => (
-              <span key={dept} className="text-sm font-bold">{dept}: <span className="text-primary-blue">{mins} mins wait</span></span>
-            ))}
-            {Object.entries(queueStatus).map(([dept, mins]) => (
-              <span key={`dup-${dept}`} className="text-sm font-bold">{dept}: <span className="text-primary-blue">{mins} mins wait</span></span>
-            ))}
-          </div>
-        </div>
+  const GiantButton = ({ onClick, children, className = "", icon = "" }) => (
+    <button 
+      onClick={onClick}
+      className={`w-full h-24 md:h-32 flex flex-col items-center justify-center gap-2 rounded-[32px] font-black text-lg md:text-xl transition-all active:scale-95 shadow-xl ${className}`}
+    >
+      {icon && <span className="text-4xl md:text-5xl">{icon}</span>}
+      {children}
+    </button>
+  );
 
-        {/* Header */}
-        <div className="bg-white rounded-3xl p-10 shadow-xl border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="space-y-2 text-center md:text-left">
-             <h1 className="text-4xl font-black text-secondary-blue tracking-tight">Patient Portal</h1>
-             <p className="text-text-muted font-bold text-lg italic">Book, Track & Verify Appointments</p>
-          </div>
-          <button onClick={() => setShowBooking(!showBooking)} className="px-8 py-4 bg-[#008080] text-white rounded-2xl font-black shadow-lg shadow-[#008080]/20 hover:scale-105 active:scale-95 transition-all">
-            {showBooking ? '← Back to Tracking' : '+ Book Appointment'}
+  const StepWrapper = ({ title, children, onNext, nextDisabled, onBack }) => (
+    <div className="max-w-2xl mx-auto space-y-10 animate-fade-in py-10">
+      <div className="space-y-2 text-center">
+        <h2 className="text-3xl md:text-4xl font-black text-secondary-blue tracking-tight">{title}</h2>
+        <div className="flex justify-center gap-1">
+          {[1,2,3,4,5].map(i => (
+            <div key={i} className={`h-1.5 w-8 rounded-full ${i <= bookingStep ? 'bg-[#008080]' : 'bg-gray-200'}`}></div>
+          ))}
+        </div>
+      </div>
+      
+      <div className="bg-white rounded-[48px] p-10 shadow-2xl border border-gray-100 min-h-[300px] flex flex-col justify-center">
+        {children}
+      </div>
+
+      <div className="flex gap-4">
+        {onBack && (
+          <button onClick={onBack} className="flex-1 h-20 bg-gray-100 text-slate-600 rounded-[28px] font-black text-lg hover:bg-gray-200 transition-all">
+            ← BACK
           </button>
-        </div>
+        )}
+        {onNext && (
+          <button 
+            disabled={nextDisabled} 
+            onClick={onNext} 
+            className="flex-[2] h-20 bg-[#008080] text-white rounded-[28px] font-black text-lg shadow-xl shadow-[#008080]/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-30"
+          >
+            NEXT →
+          </button>
+        )}
+      </div>
+    </div>
+  );
 
-        {/* Booking Success Toast */}
-        {bookingSuccess && (
-          <div className="animate-fade-in bg-emerald-50 border border-emerald-200 rounded-2xl p-6 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <span className="text-3xl">✅</span>
-              <div>
-                <div className="font-black text-emerald-800">Appointment Booked Successfully!</div>
-                <div className="text-sm text-emerald-600 font-medium">Confirmation: {bookingSuccess.confirmationNumber}</div>
-              </div>
+  return (
+    <div className="min-h-screen bg-soft-bg relative overflow-hidden font-sans pb-20">
+      {/* LIVE TICKER BANNER */}
+      {liveTicker && (
+        <div className="fixed top-0 left-0 w-full bg-[#008080] text-white py-4 px-6 z-[100] shadow-2xl animate-slide-down flex items-center justify-between">
+           <div className="flex items-center gap-4">
+             <div className="w-3 h-3 bg-white rounded-full animate-ping"></div>
+             <span className="text-[10px] font-black uppercase tracking-widest">Live Update</span>
+             <span className="text-sm font-bold">Now Serving: <span className="text-white font-black uppercase">{liveTicker.patient_name}</span> with {liveTicker.doctor_name}</span>
+           </div>
+           <button onClick={() => setLiveTicker(null)} className="text-white/50 hover:text-white font-black">✕</button>
+        </div>
+      )}
+      <div className="max-w-5xl mx-auto">
+        
+        {/* --- HOME VIEW --- */}
+        {view === 'home' && (
+          <div className="space-y-12 animate-fade-in">
+            <div className="text-center space-y-4">
+              <h1 className="text-5xl md:text-6xl font-black text-secondary-blue tracking-tight">RRDCH Portal</h1>
+              <p className="text-xl text-text-muted font-bold italic">Select an action to continue</p>
             </div>
-            <button onClick={() => setBookingSuccess(null)} className="text-emerald-400 hover:text-emerald-600 font-bold text-xl">✕</button>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+              <GiantButton 
+                onClick={() => setView('booking')}
+                icon="🏥"
+                className="bg-white text-secondary-blue border-4 border-transparent hover:border-[#008080]"
+              >
+                Book Appointment
+              </GiantButton>
+              <GiantButton 
+                onClick={() => {
+                   if (phone) setView('tracking');
+                   else {
+                     const p = prompt("Enter your registered phone number:");
+                     if (p) {
+                       setPhone(p);
+                       localStorage.setItem('current_user_phone', p);
+
+                       setView('tracking');
+                     }
+                   }
+                }}
+                icon="📱"
+                className="bg-[#008080] text-white"
+              >
+                Track Status
+              </GiantButton>
+            </div>
+
+            {/* Quick Status Preview */}
+            {phone && appointments.length > 0 && (
+              <div className="bg-white rounded-[40px] p-8 shadow-xl border border-gray-100 max-w-2xl mx-auto">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="font-black text-secondary-blue uppercase tracking-widest text-sm">Active Appointment</h3>
+                  <button onClick={() => setView('tracking')} className="text-[#008080] font-black text-xs hover:underline">VIEW FULL PASS →</button>
+                </div>
+                <div className="flex items-center gap-6">
+                   <div className={`w-4 h-4 rounded-full ${STATUS_COLORS[appointments[0].status] || 'bg-gray-400'}`}></div>
+                   <div>
+                     <div className="font-black text-xl">{appointments[0].dept}</div>
+                     <div className="text-sm text-text-muted font-bold">{appointments[0].time_slot} • {appointments[0].date}</div>
+                   </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        {showBooking ? (
-          /* ===== BOOKING FORM ===== */
-          <div className="bg-white rounded-[32px] p-10 shadow-xl border border-gray-100 max-w-2xl mx-auto animate-fade-in">
-            <h2 className="text-2xl font-black text-secondary-blue mb-8 flex items-center gap-3">
-              <span className="w-10 h-10 bg-[#008080]/10 rounded-xl flex items-center justify-center text-xl">📅</span>
-              New Appointment
-            </h2>
-            <form onSubmit={handleBook} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="text-[11px] font-black text-text-muted uppercase tracking-wider mb-2 block">Patient Name</label>
-                  <input required value={bookingForm.patient_name} onChange={e => setBookingForm(p => ({...p, patient_name: e.target.value}))} className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-[#008080] focus:bg-white rounded-2xl font-bold text-secondary-blue outline-none transition-all" placeholder="Full name" />
-                </div>
-                <div>
-                  <label className="text-[11px] font-black text-text-muted uppercase tracking-wider mb-2 block">Phone Number</label>
-                  <input required value={phone} onChange={e => setPhone(e.target.value)} className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-[#008080] focus:bg-white rounded-2xl font-bold text-secondary-blue outline-none transition-all" placeholder="10-digit number" />
-                </div>
-                <div>
-                  <label className="text-[11px] font-black text-text-muted uppercase tracking-wider mb-2 block">Department</label>
-                  <select required value={bookingForm.dept} onChange={e => setBookingForm(p => ({...p, dept: e.target.value}))} className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-[#008080] focus:bg-white rounded-2xl font-bold text-secondary-blue outline-none transition-all">
-                    <option value="">Select...</option>
-                    {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-[11px] font-black text-text-muted uppercase tracking-wider mb-2 block">Date</label>
-                  <input required type="date" value={bookingForm.date} onChange={e => setBookingForm(p => ({...p, date: e.target.value}))} className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-[#008080] focus:bg-white rounded-2xl font-bold text-secondary-blue outline-none transition-all" />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="text-[11px] font-black text-text-muted uppercase tracking-wider mb-2 block">Time Slot</label>
-                  <select required value={bookingForm.time_slot} onChange={e => setBookingForm(p => ({...p, time_slot: e.target.value}))} className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-[#008080] focus:bg-white rounded-2xl font-bold text-secondary-blue outline-none transition-all">
-                    <option value="">Select...</option>
-                    <option value="09:00 AM">09:00 AM</option>
-                    <option value="09:30 AM">09:30 AM</option>
-                    <option value="10:00 AM">10:00 AM</option>
-                    <option value="10:30 AM">10:30 AM</option>
-                    <option value="11:00 AM">11:00 AM</option>
-                    <option value="11:30 AM">11:30 AM</option>
-                    <option value="02:00 PM">02:00 PM</option>
-                    <option value="02:30 PM">02:30 PM</option>
-                    <option value="03:00 PM">03:00 PM</option>
-                  </select>
-                </div>
-              </div>
-              <button type="submit" disabled={isBooking} className="w-full py-5 bg-[#008080] text-white rounded-2xl font-black text-lg shadow-xl shadow-[#008080]/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50">
-                {isBooking ? 'Booking...' : 'Confirm Appointment'}
-              </button>
-            </form>
-          </div>
-        ) : (
-          /* ===== TRACKING VIEW ===== */
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left: Search */}
-            <div className="lg:col-span-1 space-y-8">
-              <div className="bg-white rounded-[32px] p-8 shadow-lg border border-gray-100">
-                <h2 className="text-xl font-black text-secondary-blue mb-6 flex items-center">
-                  <svg className="w-6 h-6 mr-3 text-[#008080]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                  Find Appointment
-                </h2>
-                <form onSubmit={handleSearch} className="space-y-4">
-                  <div>
-                    <label className="text-[11px] font-black text-text-muted uppercase tracking-wider ml-1 mb-2 block">Phone Number</label>
-                    <input type="text" placeholder="e.g. 9876543210" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-[#008080] focus:bg-white rounded-2xl transition-all font-bold text-secondary-blue outline-none" />
-                  </div>
-                  <button disabled={isSearching} className="w-full py-4 bg-[#008080] text-white rounded-2xl font-black shadow-lg shadow-[#008080]/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50">
-                    {isSearching ? 'Searching...' : 'Track My Appointment'}
-                  </button>
-                </form>
-              </div>
+        {/* --- BOOKING VIEW (Multi-Step) --- */}
+        {view === 'booking' && (
+          <>
+            {bookingStep === 1 && (
+              <StepWrapper 
+                title="Phone Number?" 
+                onNext={() => setBookingStep(2)} 
+                nextDisabled={!phone || phone.length < 10}
+                onBack={() => setView('home')}
+              >
+                <input 
+                  type="tel" 
+                  value={phone} 
+                  onChange={e => setPhone(e.target.value)} 
+                  className="w-full text-center text-4xl md:text-5xl font-black text-secondary-blue bg-transparent border-none outline-none placeholder-gray-100"
+                  placeholder="9876543210"
+                  autoFocus
+                />
+                <VoiceButton field="phone" />
 
-              {/* List of appointments for this phone */}
-              {appointments.length > 1 && (
-                <div className="bg-white rounded-[32px] p-6 shadow-lg border border-gray-100">
-                  <h3 className="text-sm font-black text-secondary-blue mb-4 uppercase tracking-wider">Your Appointments ({appointments.length})</h3>
-                  <div className="space-y-3">
+              </StepWrapper>
+            )}
+
+            {bookingStep === 2 && (
+              <StepWrapper 
+                title="What is your name?" 
+                onNext={() => setBookingStep(3)} 
+                nextDisabled={!bookingForm.patient_name}
+                onBack={() => setBookingStep(1)}
+              >
+                <input 
+                  type="text" 
+                  value={bookingForm.patient_name} 
+                  onChange={e => setBookingForm(p => ({...p, patient_name: e.target.value}))} 
+                  className="w-full text-center text-3xl md:text-4xl font-black text-secondary-blue bg-transparent border-none outline-none"
+                  placeholder="Full Name"
+                  autoFocus
+                />
+                <VoiceButton field="name" />
+
+              </StepWrapper>
+            )}
+
+            {bookingStep === 3 && (
+              <StepWrapper title="Select Department" onBack={() => setBookingStep(2)}>
+                <div className="grid grid-cols-2 gap-4">
+                  {DEPARTMENTS.map(d => (
+                    <button 
+                      key={d.name}
+                      onClick={() => {
+                        setBookingForm(p => ({...p, dept: d.name}));
+                        setBookingStep(4);
+                      }}
+                      className={`p-8 rounded-[40px] border-4 transition-all flex flex-col items-center gap-4 ${
+                        bookingForm.dept === d.name ? 'border-[#008080] bg-[#008080]/5' : 'border-gray-50 bg-gray-50 hover:bg-gray-100'
+                      }`}
+                    >
+                      <span className="text-6xl">{d.icon}</span>
+                      <span className="text-[10px] font-black uppercase text-center leading-tight">{d.name}</span>
+                    </button>
+
+                  ))}
+                </div>
+              </StepWrapper>
+            )}
+
+            {bookingStep === 4 && (
+              <StepWrapper 
+                title="Choose a Date" 
+                onNext={() => setBookingStep(5)} 
+                nextDisabled={!bookingForm.date}
+                onBack={() => setBookingStep(3)}
+              >
+                <input 
+                  type="date" 
+                  value={bookingForm.date} 
+                  onChange={e => setBookingForm(p => ({...p, date: e.target.value}))} 
+                  className="w-full text-center text-3xl font-black text-secondary-blue bg-transparent outline-none"
+                />
+              </StepWrapper>
+            )}
+
+            {bookingStep === 5 && (
+              <StepWrapper title="Pick a Time" onBack={() => setBookingStep(4)}>
+                <div className="grid grid-cols-3 gap-3">
+                  {TIME_SLOTS.map(t => (
+                    <button 
+                      key={t}
+                      onClick={() => {
+                        setBookingForm(p => ({...p, time_slot: t}));
+                        // We use a small delay for the "Complete" action
+                        setTimeout(handleBook, 100);
+                      }}
+                      className={`py-4 rounded-2xl border-2 font-bold text-sm transition-all ${
+                        bookingForm.time_slot === t ? 'border-[#008080] bg-[#008080] text-white' : 'border-gray-100 bg-gray-50 hover:bg-gray-100'
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+                {isBooking && <div className="mt-8 text-center font-black animate-pulse text-[#008080]">CONFIRMING...</div>}
+              </StepWrapper>
+            )}
+          </>
+        )}
+
+        {/* --- TRACKING VIEW --- */}
+        {view === 'tracking' && (
+          <div className="space-y-8 animate-fade-in">
+             <div className="flex justify-between items-center bg-white p-6 rounded-[32px] shadow-lg border border-gray-100">
+               <button onClick={() => setView('home')} className="p-3 bg-gray-100 rounded-2xl hover:bg-gray-200 transition-all font-black text-xl">←</button>
+               <h2 className="text-xl font-black text-secondary-blue">Patient Status</h2>
+               <div className="w-12"></div>
+             </div>
+
+             {selectedApt ? (
+               <div className="bg-white rounded-[48px] shadow-2xl overflow-hidden border border-gray-100">
+                  <div className={`p-10 text-white flex justify-between items-center ${STATUS_COLORS[selectedApt.status] || 'bg-slate-400'}`}>
+                    <div>
+                      <div className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-1">Appointment Pass</div>
+                      <h2 className="text-3xl font-black">{selectedApt.id}</h2>
+                    </div>
+                    <div className="px-6 py-3 bg-white/20 backdrop-blur-md rounded-2xl font-black uppercase text-xs">
+                      {STATUS_LABELS[selectedApt.status]}
+                    </div>
+                  </div>
+
+                  <div className="p-10 space-y-10">
+                    {/* Illiterate-Friendly Status Circle */}
+                    <StatusCircle status={selectedApt.status} />
+                    
+                    <div className="flex flex-col items-center gap-4 py-6">
+
+                       <div className="bg-white p-6 rounded-[40px] shadow-2xl border border-gray-100">
+                         <QRCodeSVG 
+                           value={JSON.stringify({
+                             patient_id: selectedApt.patient_id || selectedApt.patientId, 
+                             current_appointment_id: selectedApt.id
+                           })} 
+                           size={200} 
+                         />
+                       </div>
+                       <p className="text-sm font-bold text-text-muted">Scan at OPD for Quick Entry</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                       <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100">
+                         <div className="text-[10px] font-black text-text-muted uppercase mb-1">Department</div>
+                         <div className="text-lg font-black">{selectedApt.dept}</div>
+                       </div>
+                       <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100">
+                         <div className="text-[10px] font-black text-text-muted uppercase mb-1">Time Slot</div>
+                         <div className="text-lg font-black">{selectedApt.time_slot}</div>
+                       </div>
+                    </div>
+
+                    <button 
+                      onClick={() => window.print()}
+                      className="w-full py-5 bg-secondary-blue text-white rounded-3xl font-black text-lg shadow-xl"
+                    >
+                      Download Pass
+                    </button>
+                  </div>
+               </div>
+             ) : (
+               <div className="text-center py-32 bg-white rounded-[48px] border-4 border-dashed border-gray-100">
+                  <div className="text-6xl mb-6">🔍</div>
+                  <h3 className="text-2xl font-black text-secondary-blue">No Appointments</h3>
+                  <p className="text-text-muted font-bold mt-2">Book your first visit today!</p>
+               </div>
+             )}
+
+             {appointments.length > 1 && (
+                <div className="space-y-4">
+                  <h3 className="font-black text-secondary-blue uppercase tracking-widest text-xs px-6">Other Appointments</h3>
+                  <div className="flex gap-4 overflow-x-auto pb-4 px-2 no-scrollbar">
                     {appointments.map(apt => (
-                      <button key={apt.id} onClick={() => setSelectedApt(apt)} className={`w-full text-left p-4 rounded-2xl transition-all border-2 ${selectedApt?.id === apt.id ? 'border-[#008080] bg-[#008080]/5' : 'border-transparent bg-gray-50 hover:bg-gray-100'}`}>
-                        <div className="font-black text-secondary-blue text-sm">{apt.doctor_name || 'Consultation'}</div>
-                        <div className="text-xs text-text-muted font-medium">{apt.time_slot}</div>
+                      <button 
+                        key={apt.id} 
+                        onClick={() => setSelectedApt(apt)}
+                        className={`min-w-[200px] p-6 rounded-[32px] border-2 transition-all text-left ${
+                          selectedApt?.id === apt.id ? 'border-[#008080] bg-[#008080]/5' : 'border-white bg-white shadow-lg'
+                        }`}
+                      >
+                        <div className="font-black text-lg">{apt.dept}</div>
+                        <div className="text-xs font-bold text-text-muted">{apt.date}</div>
                       </button>
                     ))}
                   </div>
                 </div>
-              )}
-
-              <div className="bg-secondary-blue text-white rounded-[32px] p-8 shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16"></div>
-                <h3 className="text-lg font-black mb-4">Patient Support</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4"><div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">📞</div><div className="text-sm font-bold">1800-425-XXXX</div></div>
-                  <div className="flex items-center gap-4"><div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">💬</div><div className="text-sm font-bold">Chat with Concierge</div></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right: Results */}
-            <div className="lg:col-span-2">
-              {selectedApt ? (
-                <div className="animate-fade-in bg-white rounded-[40px] shadow-2xl overflow-hidden border border-gray-100">
-                  <div className="bg-gradient-to-r from-[#008080] to-primary-blue p-10 text-white flex justify-between items-center">
-                    <div>
-                      <div className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-2">Electronic Appointment Pass</div>
-                      <h2 className="text-3xl font-black tracking-tight">{selectedApt.appointment_id || selectedApt.id}</h2>
-                    </div>
-                    <div className="px-4 py-2 bg-white/20 backdrop-blur-md rounded-xl font-black uppercase text-xs">
-                      {STATUS_LABELS[selectedApt.status] || selectedApt.status}
-                    </div>
-                  </div>
-
-                  {/* Progress Bar */}
-                  <div className="px-10 pt-6">
-                    <ProgressBar status={selectedApt.status} />
-                  </div>
-                  
-                  <div className="p-10 pt-4 grid grid-cols-1 md:grid-cols-2 gap-10">
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-2 gap-6">
-                        <div>
-                          <div className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Doctor Name</div>
-                          <div className="text-lg font-black text-secondary-blue">{selectedApt.doctor_name || 'Assigned on arrival'}</div>
-                        </div>
-                        <div>
-                          <div className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Status</div>
-                          <div className="text-lg font-black text-[#008080]">{selectedApt.status}</div>
-                        </div>
-                        <div className="col-span-2">
-                          <div className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Time Slot</div>
-                          <div className="text-lg font-black text-secondary-blue">{selectedApt.time_slot}</div>
-                        </div>
-                      </div>
-                      <div className="pt-6 border-t border-gray-100 flex items-center gap-6">
-                        <button className="bg-gray-100 hover:bg-gray-200 text-secondary-blue px-6 py-3 rounded-xl font-bold text-sm transition-all">Download PDF</button>
-                        <button className="text-[#008080] font-black text-sm hover:underline">Request Reschedule</button>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-center justify-center space-y-6 bg-gray-50 p-8 rounded-[32px] border border-dashed border-gray-200">
-                      <div className="bg-white p-4 rounded-3xl shadow-lg">
-                        <QRCodeSVG 
-                          value={JSON.stringify({
-                            patient_id: selectedApt.patient_id || selectedApt.patientId, 
-                            current_appointment_id: selectedApt.appointment_id || selectedApt.appointmentId || selectedApt.id
-                          })} 
-                          size={160} 
-                        />
-                      </div>
-                      <div className="text-center">
-                         <div className="text-sm font-black text-secondary-blue mb-1">Digital QR Pass</div>
-                         <div className="text-[10px] font-bold text-text-muted">Scan at OPD reception for quick entry</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="h-full min-h-[500px] bg-white/50 backdrop-blur-sm border-4 border-dashed border-gray-200 rounded-[40px] flex flex-col items-center justify-center text-center p-12">
-                   <div className="w-32 h-32 bg-gray-100 rounded-full flex items-center justify-center mb-8 text-5xl grayscale opacity-50">📂</div>
-                   <h3 className="text-2xl font-black text-secondary-blue mb-2 opacity-50">No Data Displayed</h3>
-                   <p className="max-w-md text-text-muted font-bold opacity-60">Enter your phone number to track your appointments, or click "Book Appointment" to create a new one.</p>
-                </div>
-              )}
-            </div>
+             )}
           </div>
         )}
+
       </div>
       
       <style>{`
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
+        .animate-fade-in {
+          animation: fadeIn 0.4s ease-out;
         }
-        .animate-marquee {
-          display: inline-flex;
-          animation: marquee 20s linear infinite;
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
     </div>
