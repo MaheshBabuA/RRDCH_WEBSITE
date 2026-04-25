@@ -314,8 +314,8 @@ const PatientPortal = () => {
                       <div className="bg-white p-4 rounded-3xl shadow-lg">
                         <QRCodeSVG 
                           value={JSON.stringify({
-                            patient_id: selectedApt.patient_id, 
-                            current_appointment_id: selectedApt.appointment_id
+                            patient_id: selectedApt.patient_id || selectedApt.patientId, 
+                            current_appointment_id: selectedApt.appointment_id || selectedApt.appointmentId || selectedApt.id
                           })} 
                           size={160} 
                         />
