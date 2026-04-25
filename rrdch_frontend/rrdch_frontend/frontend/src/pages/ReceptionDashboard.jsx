@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React, { useState, useEffect, useCallback } from 'react';
 import { io } from 'socket.io-client';
 
@@ -152,7 +151,6 @@ const ReceptionDashboard = () => {
           </div>
         </div>
 
-        {/* ... (rest of the dashboard UI remains same as DoctorDashboard but with "Receptionist" branding) */}
         <div className="mb-10">
           <label className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3 block">Select Department Queue</label>
           <div className="flex flex-wrap gap-3">
@@ -367,27 +365,6 @@ const ReceptionDashboard = () => {
           to { opacity: 1; }
         }
       `}</style>
-=======
-import React from 'react';
-
-const ReceptionDashboard = () => {
-  return (
-    <div className="p-10">
-      <h1 className="text-3xl font-bold mb-6">Reception Dashboard</h1>
-      <div className="bg-white p-8 rounded-2xl shadow-premium border border-border-soft">
-        <p className="text-neutral-gray font-medium">Welcome to the Reception Management System.</p>
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="p-6 bg-primary-blue/5 rounded-xl border border-primary-blue/10">
-            <h3 className="font-bold text-primary-blue mb-2">Patient Check-in</h3>
-            <p className="text-sm text-neutral-gray">Manage new arrivals and appointment verification.</p>
-          </div>
-          <div className="p-6 bg-secondary-blue/5 rounded-xl border border-secondary-blue/10">
-            <h3 className="font-bold text-secondary-blue mb-2">Queue Management</h3>
-            <p className="text-sm text-neutral-gray">Monitor and optimize patient flow across departments.</p>
-          </div>
-        </div>
-      </div>
->>>>>>> 38d36a3 (Resolved App.jsx merge conflict by merging Doctor and Reception dashboards)
     </div>
   );
 };
