@@ -17,6 +17,9 @@ import PatientPortal from './pages/PatientPortal';
 import VideoGallery from './pages/VideoGallery';
 import ContactUs from './pages/ContactUs';
 import ReceptionDashboard from './pages/ReceptionDashboard';
+import Achievements from './pages/Achievements';
+import DoctorConsole from './pages/DoctorConsole';
+
 
 
 function App() {
@@ -40,6 +43,11 @@ function App() {
         <Route path="contact" element={<Contact />} />
         <Route path="student-portal" element={<StudentPortal />} />
         <Route path="admissions" element={<Admissions />} />
+        <Route path="research" element={<Research />} />
+        <Route path="achievements" element={<Achievements />} />
+        <Route path="doctor-console" element={<DoctorConsole />} />
+
+
         <Route path="check-status" element={<Navigate to="/student-portal" replace />} />
         <Route path="syllabus" element={<Navigate to="/student-portal" replace />} />
         <Route path="academics" element={<Navigate to="/admissions" replace />} />

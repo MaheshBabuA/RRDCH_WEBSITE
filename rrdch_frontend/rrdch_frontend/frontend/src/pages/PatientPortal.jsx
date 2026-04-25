@@ -1,19 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:5000');
 
 // Points to the Node.js backend (server.js)
 const API_URL = 'http://localhost:5000/api';
 
 const DEPARTMENTS = [
-  { name: 'Oral Surgery', icon: '🦷' },
-  { name: 'Orthodontics', icon: '📏' },
-  { name: 'Periodontics', icon: '🦷' },
-  { name: 'Prosthodontics', icon: '👄' },
-  { name: 'Conservative Dentistry', icon: '🩹' },
+  { name: 'Oral Medicine & Radiology', icon: '📸' },
+  { name: 'Prosthodontics', icon: '😁' },
+  { name: 'Oral & Maxillofacial Surgery', icon: '🏥' },
+  { name: 'Periodontology', icon: '🦷' },
   { name: 'Pedodontics', icon: '👶' },
-  { name: 'Oral Medicine', icon: '🧪' },
-  { name: 'Oral Pathology', icon: '🔬' }
+  { name: 'Conservative Dentistry', icon: '🩹' },
+  { name: 'Orthodontics', icon: '😬' },
+  { name: 'Public Health Dentistry', icon: '🌍' },
+  { name: 'Oral & Maxillofacial Pathology', icon: '🔬' },
+  { name: 'Implantology', icon: '🔩' },
+  { name: 'Orofacial Pain', icon: '⚡' }
 ];
+
 
 const TIME_SLOTS = [
   "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
@@ -34,9 +41,20 @@ const STATUS_LABELS = {
 };
 
 const PatientPortal = () => {
+  const [liveTicker, setLiveTicker] = useState(null);
+
+  useEffect(() => {
+    socket.on('live-ticker-update', (data) => {
+      setLiveTicker(data);
+      // Auto-hide ticker after 10 seconds
+      setTimeout(() => setLiveTicker(null), 10000);
+    });
+    return () => socket.off('live-ticker-update');
+  }, []);
   const [view, setView] = useState('home'); // home, booking, tracking
   const [bookingStep, setBookingStep] = useState(1);
-  const [phone, setPhone] = useState(localStorage.getItem('rrdch_patient_phone') || '');
+  const [phone, setPhone] = useState(localStorage.getItem('current_user_phone') || '');
+
   const [isSearching, setIsSearching] = useState(false);
   const [appointments, setAppointments] = useState([]);
   const [selectedApt, setSelectedApt] = useState(null);
@@ -109,7 +127,8 @@ const PatientPortal = () => {
       const data = await res.json();
       if (data.success) {
           playSound('success');
-          localStorage.setItem('rrdch_patient_phone', phone);
+          localStorage.setItem('current_user_phone', phone);
+
           setBookingSuccess(data);
           setView('tracking');
           fetchAppointments();
@@ -124,7 +143,85 @@ const PatientPortal = () => {
     finally { setIsBooking(false); }
   };
 
+  // --- VOICE INTEGRATION (WEB SPEECH API) ---
+  const [isListening, setIsListening] = useState(false);
+  const [activeVoiceField, setActiveVoiceField] = useState(null); // 'phone' or 'name'
+
+  const startListening = (field, lang = 'kn-IN') => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Voice recognition not supported in this browser.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = lang;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setActiveVoiceField(field);
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      if (field === 'phone') setPhone(transcript.replace(/\D/g, ''));
+      if (field === 'name') setBookingForm(p => ({...p, patient_name: transcript}));
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+      setActiveVoiceField(null);
+    };
+
+    recognition.onerror = () => {
+      setIsListening(false);
+      setActiveVoiceField(null);
+    };
+
+    recognition.start();
+  };
+
+  const VoiceButton = ({ field }) => (
+    <div className="flex flex-col items-center gap-2 mt-6">
+      <button 
+        onClick={() => startListening(field, 'en-IN')}
+        className={`w-20 h-20 rounded-full flex items-center justify-center transition-all border-4 ${
+          isListening && activeVoiceField === field 
+          ? 'bg-red-500 border-red-200 animate-pulse scale-110 shadow-xl shadow-red-500/50' 
+          : 'bg-white border-gray-100 text-slate-400 hover:border-[#008080] hover:text-[#008080]'
+        }`}
+      >
+        <span className="text-3xl">🎤</span>
+      </button>
+      <div className="flex gap-2">
+        <button onClick={() => startListening(field, 'kn-IN')} className="text-[10px] font-black bg-gray-100 px-2 py-1 rounded">ಕನ್ನಡ</button>
+        <button onClick={() => startListening(field, 'en-IN')} className="text-[10px] font-black bg-gray-100 px-2 py-1 rounded">ENG</button>
+      </div>
+    </div>
+  );
+
   // --- UI COMPONENTS ---
+
+  const StatusCircle = ({ status }) => {
+    // Red: Check-in Needed (Scheduled)
+    // Yellow: Waiting (Pending/In-Queue)
+    // Green: Your Turn (Confirmed/Ready)
+    const color = status === 'Confirmed' ? 'bg-emerald-500' : (status === 'Pending' ? 'bg-amber-400' : 'bg-red-500');
+    const label = status === 'Confirmed' ? 'YOUR TURN' : (status === 'Pending' ? 'WAITING' : 'CHECK-IN NEEDED');
+    
+    return (
+      <div className="flex flex-col items-center gap-6 py-10">
+        <div className={`w-48 h-48 rounded-full ${color} shadow-2xl flex items-center justify-center animate-pulse border-[12px] border-white/30`}>
+          <div className="w-full h-full rounded-full border-[8px] border-black/5 flex items-center justify-center">
+             <span className="text-white text-6xl">🏥</span>
+          </div>
+        </div>
+        <div className={`text-4xl font-black ${color.replace('bg-', 'text-')} tracking-tighter`}>{label}</div>
+      </div>
+    );
+  };
 
   const GiantButton = ({ onClick, children, className = "", icon = "" }) => (
     <button 
@@ -171,7 +268,18 @@ const PatientPortal = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#f4f7f6] py-12 px-4 sm:px-6 lg:px-8 font-sans">
+    <div className="min-h-screen bg-soft-bg relative overflow-hidden font-sans pb-20">
+      {/* LIVE TICKER BANNER */}
+      {liveTicker && (
+        <div className="fixed top-0 left-0 w-full bg-[#008080] text-white py-4 px-6 z-[100] shadow-2xl animate-slide-down flex items-center justify-between">
+           <div className="flex items-center gap-4">
+             <div className="w-3 h-3 bg-white rounded-full animate-ping"></div>
+             <span className="text-[10px] font-black uppercase tracking-widest">Live Update</span>
+             <span className="text-sm font-bold">Now Serving: <span className="text-white font-black uppercase">{liveTicker.patient_name}</span> with {liveTicker.doctor_name}</span>
+           </div>
+           <button onClick={() => setLiveTicker(null)} className="text-white/50 hover:text-white font-black">✕</button>
+        </div>
+      )}
       <div className="max-w-5xl mx-auto">
         
         {/* --- HOME VIEW --- */}
@@ -197,7 +305,8 @@ const PatientPortal = () => {
                      const p = prompt("Enter your registered phone number:");
                      if (p) {
                        setPhone(p);
-                       localStorage.setItem('rrdch_patient_phone', p);
+                       localStorage.setItem('current_user_phone', p);
+
                        setView('tracking');
                      }
                    }
@@ -246,6 +355,8 @@ const PatientPortal = () => {
                   placeholder="9876543210"
                   autoFocus
                 />
+                <VoiceButton field="phone" />
+
               </StepWrapper>
             )}
 
@@ -264,6 +375,8 @@ const PatientPortal = () => {
                   placeholder="Full Name"
                   autoFocus
                 />
+                <VoiceButton field="name" />
+
               </StepWrapper>
             )}
 
@@ -277,13 +390,14 @@ const PatientPortal = () => {
                         setBookingForm(p => ({...p, dept: d.name}));
                         setBookingStep(4);
                       }}
-                      className={`p-6 rounded-3xl border-4 transition-all flex flex-col items-center gap-2 ${
+                      className={`p-8 rounded-[40px] border-4 transition-all flex flex-col items-center gap-4 ${
                         bookingForm.dept === d.name ? 'border-[#008080] bg-[#008080]/5' : 'border-gray-50 bg-gray-50 hover:bg-gray-100'
                       }`}
                     >
-                      <span className="text-3xl">{d.icon}</span>
-                      <span className="text-[10px] font-black uppercase text-center">{d.name}</span>
+                      <span className="text-6xl">{d.icon}</span>
+                      <span className="text-[10px] font-black uppercase text-center leading-tight">{d.name}</span>
                     </button>
+
                   ))}
                 </div>
               </StepWrapper>
@@ -352,7 +466,11 @@ const PatientPortal = () => {
                   </div>
 
                   <div className="p-10 space-y-10">
+                    {/* Illiterate-Friendly Status Circle */}
+                    <StatusCircle status={selectedApt.status} />
+                    
                     <div className="flex flex-col items-center gap-4 py-6">
+
                        <div className="bg-white p-6 rounded-[40px] shadow-2xl border border-gray-100">
                          <QRCodeSVG 
                            value={JSON.stringify({

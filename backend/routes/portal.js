@@ -20,8 +20,9 @@ router.get('/my-appointments', async (req, res) => {
     const query = `
       SELECT * FROM appointments 
       WHERE patient_phone = ? 
-      ORDER BY created_at DESC
+      ORDER BY date DESC
     `;
+
     
     const [rows] = await pool.execute(query, [phone]);
 

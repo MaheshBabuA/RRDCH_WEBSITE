@@ -1,201 +1,116 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../utils/i18n';
-import Card from '../components/Card';
-
-const FeeRow = ({ program, tuition, hostel, other, total }) => (
-  <tr className="border-b border-border-light hover:bg-light-bg transition-colors">
-    <td className="px-6 py-4 font-bold text-secondary-blue">{program}</td>
-    <td className="px-6 py-4 text-neutral-gray">{tuition}</td>
-    <td className="px-6 py-4 text-neutral-gray">{hostel}</td>
-    <td className="px-6 py-4 text-neutral-gray">{other}</td>
-    <td className="px-6 py-4 font-bold text-primary-blue">{total}</td>
-  </tr>
-);
-
-const DateRow = ({ event, date, note }) => (
-  <tr className="border-b border-border-light hover:bg-light-bg transition-colors">
-    <td className="px-6 py-4 font-medium text-secondary-blue">{event}</td>
-    <td className="px-6 py-4 font-bold text-primary-blue">{date}</td>
-    <td className="px-6 py-4 text-xs text-neutral-gray">{note}</td>
-  </tr>
-);
 
 const Admissions = () => {
   const { t } = useLanguage();
-  const [openFaq, setOpenFaq] = useState(null);
-  const [activeElig, setActiveElig] = useState('bds');
+  const [activeStep, setActiveStep] = useState(0);
 
-  const faqs = t('admissionsPage.faqs');
-  const steps = t('admissionsPage.steps');
+  const steps = [
+    { title: "NEET Qualification", desc: "Mandatory qualification in NEET-UG (for BDS) or NEET-MDS (for PG) as per DCI norms.", icon: "📝" },
+    { title: "Counseling Registration", desc: "Register on the KEA (Karnataka Examination Authority) portal for state-level counseling.", icon: "🖥️" },
+    { title: "Document Verification", desc: "Submit original certificates at the designated nodal center for physical verification.", icon: "📂" },
+    { title: "Seat Allotment", desc: "Choose RRDCH as your preferred college during the choice filling rounds.", icon: "🏥" },
+    { title: "College Reporting", desc: "Report to the RRDCH campus with the allotment letter to complete final formalities.", icon: "🤝" }
+  ];
 
   return (
-    <div className="animate-fade-in">
-      {/* Hero */}
-      <section className="relative py-24 bg-secondary-blue overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="absolute rounded-full bg-white"
-              style={{ width: `${60 + i * 30}px`, height: `${60 + i * 30}px`, top: `${Math.random() * 100}%`, left: `${Math.random() * 100}%`, opacity: 0.3 }}
-            />
-          ))}
+    <div className="min-h-screen bg-[#0f172a] text-white overflow-hidden relative font-sans">
+      {/* Dynamic Glass Background */}
+      <div className="fixed inset-0 z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary-blue/20 rounded-full blur-[150px] animate-pulse"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-accent-emerald/10 rounded-full blur-[150px] animate-pulse" style={{animationDelay: '2s'}}></div>
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-20">
+        {/* Glass Hero */}
+        <div className="text-center mb-20">
+          <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 text-[10px] font-black uppercase tracking-[0.3em] mb-6 shadow-2xl">
+            Admission 2026-27
+          </div>
+          <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tighter bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent">
+            Join the Next Generation <br/> of Dental Excellence
+          </h1>
+          <p className="text-lg text-slate-400 font-medium max-w-2xl mx-auto">
+            Rajarajeshwari Dental College & Hospital offers world-class infrastructure and clinical exposure for BDS and MDS aspirants.
+          </p>
         </div>
-        <div className="relative max-w-4xl mx-auto px-4 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 rounded-full text-white/80 text-sm font-bold mb-6 border border-white/20">
-            🎓 DCI Recognized • NAAC 'A' Grade
-          </div>
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">{t('admissionsPage.title')}</h1>
-          <p className="text-xl text-white/80 leading-relaxed max-w-2xl mx-auto">{t('admissionsPage.subtitle')}</p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
-            <Link to="/book-appointment" className="px-8 py-4 bg-white text-secondary-blue font-bold rounded-2xl hover:bg-white/90 transition-all shadow-xl">
-              {t('navbar.bookAppointment')}
-            </Link>
-            <Link to="/contact" className="px-8 py-4 bg-white/10 text-white font-bold rounded-2xl hover:bg-white/20 transition-all border border-white/30">
-              {t('admissionsPage.ctaBtn')}
-            </Link>
-          </div>
-        </div>
-      </section>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 space-y-24">
-
-        {/* Eligibility */}
-        <section>
-          <h2 className="text-3xl font-bold text-secondary-blue text-center mb-12">{t('admissionsPage.eligTitle')}</h2>
-          <div className="flex gap-3 mb-8 justify-center">
-            {['bds', 'mds'].map(prog => (
-              <button key={prog} onClick={() => setActiveElig(prog)}
-                className={`px-8 py-3 rounded-2xl font-bold transition-all ${activeElig === prog ? 'bg-primary-blue text-white shadow-lg scale-105' : 'bg-light-bg text-neutral-gray hover:bg-border-light'}`}>
-                {prog.toUpperCase()}
-              </button>
-            ))}
-          </div>
-          <Card className="max-w-2xl mx-auto p-10 shadow-xl">
-            <ul className="space-y-5">
-              {t(`admissionsPage.${activeElig}Elig`).map((point, i) => (
-                <li key={i} className="flex items-start gap-4">
-                  <span className="w-7 h-7 rounded-full bg-primary-blue/10 flex items-center justify-center text-primary-blue font-black text-sm flex-shrink-0 mt-0.5">{i + 1}</span>
-                  <span className="text-neutral-gray leading-relaxed font-medium">{point}</span>
-                </li>
-              ))}
-            </ul>
-          </Card>
-        </section>
-
-        {/* How to Apply – Timeline */}
-        <section className="bg-light-bg rounded-[40px] p-10 md:p-16">
-          <h2 className="text-3xl font-bold text-secondary-blue mb-16 text-center">{t('admissionsPage.processTitle')}</h2>
-          <div className="relative max-w-3xl mx-auto">
-            {/* Vertical line */}
-            <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border-light hidden md:block"></div>
-            <div className="space-y-10">
-              {steps.map((step, i) => (
-                <div key={i} className="flex gap-6 group">
-                  <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white border-4 border-primary-blue/20 group-hover:border-primary-blue group-hover:bg-primary-blue transition-all flex items-center justify-center z-10">
-                    <span className="font-black text-primary-blue group-hover:text-white transition-colors text-lg">{i + 1}</span>
-                  </div>
-                  <div className="flex-1 pt-2">
-                    <h4 className="font-bold text-secondary-blue text-lg mb-1">{step.t}</h4>
-                    <p className="text-neutral-gray leading-relaxed">{step.d}</p>
-                  </div>
+        {/* Step-by-Step Visual Guide */}
+        <section className="mb-32">
+          <h2 className="text-2xl font-black mb-12 text-center uppercase tracking-widest text-[#008080]">Enrollment Journey</h2>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 relative">
+            {/* Connection Line */}
+            <div className="absolute top-1/2 left-0 w-full h-0.5 bg-white/5 hidden md:block"></div>
+            
+            {steps.map((step, idx) => (
+              <div 
+                key={idx}
+                onMouseEnter={() => setActiveStep(idx)}
+                className={`relative p-8 rounded-[32px] backdrop-blur-2xl border transition-all duration-500 cursor-pointer group ${
+                  activeStep === idx 
+                  ? 'bg-white/10 border-white/20 shadow-2xl scale-105 z-20' 
+                  : 'bg-white/5 border-white/5 opacity-60'
+                }`}
+              >
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-inner transition-all ${
+                  activeStep === idx ? 'bg-primary-blue text-white' : 'bg-white/5 text-slate-400'
+                }`}>
+                  {step.icon}
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Fee Structure */}
-        <section>
-          <h2 className="text-3xl font-bold text-secondary-blue mb-10 text-center">{t('admissionsPage.feesTitle')}</h2>
-          <div className="overflow-hidden rounded-3xl border border-border-light shadow-xl">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-secondary-blue text-white">
-                  <tr>
-                    <th className="px-6 py-4 font-bold">Program</th>
-                    <th className="px-6 py-4 font-bold">Tuition Fee (Annual)</th>
-                    <th className="px-6 py-4 font-bold">Hostel Fee (Annual)</th>
-                    <th className="px-6 py-4 font-bold">Other Charges</th>
-                    <th className="px-6 py-4 font-bold text-accent-green">Approx. Total</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white">
-                  <FeeRow program="BDS (5 Years)" tuition="₹5,50,000" hostel="₹85,000" other="₹15,000" total="₹6,50,000" />
-                  <FeeRow program="MDS – Orthodontics" tuition="₹8,00,000" hostel="₹85,000" other="₹20,000" total="₹9,05,000" />
-                  <FeeRow program="MDS – Oral Surgery" tuition="₹8,00,000" hostel="₹85,000" other="₹20,000" total="₹9,05,000" />
-                  <FeeRow program="Fellowship in Implantology" tuition="₹2,50,000" hostel="₹85,000" other="₹10,000" total="₹3,45,000" />
-                </tbody>
-              </table>
-            </div>
-            <div className="text-xs text-neutral-gray p-4 bg-light-bg border-t border-border-light italic">
-              * Fee structure is indicative for 2026–27 academic year and subject to revision. Refer to your admission counseling letter for exact amounts.
-            </div>
-          </div>
-        </section>
-
-        {/* Important Dates */}
-        <section>
-          <h2 className="text-3xl font-bold text-secondary-blue mb-10 text-center">{t('admissionsPage.datesTitle')}</h2>
-          <div className="overflow-hidden rounded-3xl border border-border-light shadow-xl">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-accent-green text-white">
-                <tr>
-                  <th className="px-6 py-4 font-bold">Event</th>
-                  <th className="px-6 py-4 font-bold">Tentative Date</th>
-                  <th className="px-6 py-4 font-bold">Note</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white">
-                <DateRow event="NEET-UG 2026 Exam" date="May 4, 2026" note="Conducted by NTA" />
-                <DateRow event="NEET-UG Result Declaration" date="June 2026" note="Approximate" />
-                <DateRow event="State Counseling Round 1" date="July 2026" note="Subject to NMC notification" />
-                <DateRow event="State Counseling Round 2" date="August 2026" note="Subject to NMC notification" />
-                <DateRow event="Commencement of Classes" date="September 1, 2026" note="Final date as per university" />
-                <DateRow event="Management Quota Deadline" date="August 31, 2026" note="Contact admissions office" />
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        {/* FAQ Accordion */}
-        <section className="max-w-3xl mx-auto">
-          <h2 className="text-3xl font-bold text-secondary-blue mb-10 text-center">{t('admissionsPage.faqTitle')}</h2>
-          <div className="space-y-4">
-            {faqs.map((faq, i) => (
-              <div key={i} className="border border-border-light rounded-2xl overflow-hidden shadow-sm">
-                <button
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="w-full flex items-center justify-between p-6 text-left hover:bg-light-bg transition-colors"
-                >
-                  <span className="font-bold text-secondary-blue pr-4">{faq.q}</span>
-                  <span className={`flex-shrink-0 w-8 h-8 rounded-full bg-primary-blue/10 flex items-center justify-center text-primary-blue font-black transition-transform ${openFaq === i ? 'rotate-45' : ''}`}>
-                    +
-                  </span>
-                </button>
-                {openFaq === i && (
-                  <div className="px-6 pb-6 text-neutral-gray leading-relaxed border-t border-border-light pt-4 animate-fade-in">
-                    {faq.a}
-                  </div>
-                )}
+                <h3 className="font-black text-sm uppercase tracking-widest mb-3">{step.title}</h3>
+                <p className="text-[11px] leading-relaxed text-slate-400 font-medium">{step.desc}</p>
+                <div className={`absolute -top-3 -right-3 w-8 h-8 rounded-full flex items-center justify-center font-black text-xs ${
+                   activeStep === idx ? 'bg-accent-emerald text-white shadow-lg' : 'bg-white/10 text-slate-500'
+                }`}>
+                  0{idx + 1}
+                </div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* CTA Banner */}
-        <section className="bg-gradient-to-r from-primary-blue to-secondary-blue rounded-[40px] p-12 md:p-20 text-center text-white">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">{t('admissionsPage.ctaTitle')}</h2>
-          <p className="text-white/80 text-lg leading-relaxed max-w-2xl mx-auto mb-10">{t('admissionsPage.ctaText')}</p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/contact" className="px-10 py-4 bg-white text-secondary-blue font-bold rounded-2xl hover:bg-white/90 transition-all shadow-xl">
-              {t('admissionsPage.ctaBtn')}
-            </Link>
-            <a href="tel:+918028437150" className="px-10 py-4 bg-white/10 text-white font-bold rounded-2xl hover:bg-white/20 transition-all border border-white/30">
-              📞 +91-80-2843 7150
-            </a>
+        {/* Program Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          <div className="p-12 rounded-[48px] bg-gradient-to-br from-white/10 to-transparent backdrop-blur-3xl border border-white/10 group hover:border-[#008080]/50 transition-all shadow-2xl">
+            <h3 className="text-4xl font-black mb-6">BDS Program</h3>
+            <p className="text-slate-400 mb-10 text-lg leading-relaxed">A 5-year comprehensive course (4 years academic + 1 year internship) recognized by the Dental Council of India.</p>
+            <ul className="space-y-4 mb-12">
+              {["100 seats annual intake", "NEET-UG Qualification mandatory", "State-of-the-art simulation labs"].map((item, i) => (
+                <li key={i} className="flex items-center gap-3 text-sm font-bold">
+                  <span className="w-5 h-5 rounded-full bg-accent-emerald/20 flex items-center justify-center text-accent-emerald text-[10px]">✓</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <button className="w-full py-4 bg-white text-secondary-blue font-black rounded-2xl shadow-xl hover:scale-[1.02] transition-all">Download Prospectus</button>
           </div>
-        </section>
 
+          <div className="p-12 rounded-[48px] bg-gradient-to-br from-white/10 to-transparent backdrop-blur-3xl border border-white/10 group hover:border-primary-blue/50 transition-all shadow-2xl">
+            <h3 className="text-4xl font-black mb-6">MDS Program</h3>
+            <p className="text-slate-400 mb-10 text-lg leading-relaxed">Specialized 3-year postgraduate degree across 9 distinct dental specialties with intensive clinical training.</p>
+            <ul className="space-y-4 mb-12">
+              {["NEET-MDS Qualification mandatory", "High patient inflow for clinicals", "International student exchange"].map((item, i) => (
+                <li key={i} className="flex items-center gap-3 text-sm font-bold">
+                  <span className="w-5 h-5 rounded-full bg-primary-blue/20 flex items-center justify-center text-primary-blue text-[10px]">✓</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <button className="w-full py-4 bg-primary-blue text-white font-black rounded-2xl shadow-xl hover:scale-[1.02] transition-all">View Specialties</button>
+          </div>
+        </div>
+
+        {/* Footer CTA */}
+        <div className="mt-32 p-16 rounded-[60px] bg-white/5 backdrop-blur-xl border border-white/10 text-center relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-[#008080]/10 rounded-full blur-[80px]"></div>
+          <h2 className="text-4xl font-black mb-6">Have Questions?</h2>
+          <p className="text-slate-400 mb-10 max-w-xl mx-auto">Our admissions office is ready to help you with the counseling process and document verification details.</p>
+          <div className="flex flex-col sm:flex-row gap-6 justify-center">
+             <Link to="/contact" className="px-12 py-5 bg-[#008080] text-white font-black rounded-2xl shadow-lg shadow-[#008080]/20 hover:scale-105 transition-all uppercase tracking-widest text-xs">Contact Admissions</Link>
+             <a href="tel:+918028437150" className="px-12 py-5 bg-white/5 text-white border border-white/20 font-black rounded-2xl hover:bg-white/10 transition-all uppercase tracking-widest text-xs">Call Us Now</a>
+          </div>
+        </div>
       </div>
     </div>
   );
