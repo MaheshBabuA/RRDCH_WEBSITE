@@ -1,16 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 
-const API_URL = 'http://localhost:4000/api';
+// Points to the Node.js backend (server.js)
+const API_URL = 'http://localhost:5000/api';
 
 const DEPARTMENTS = [
   'Oral Surgery', 'Orthodontics', 'Periodontics', 'Prosthodontics',
   'Conservative Dentistry', 'Pedodontics', 'Oral Medicine', 'Oral Pathology'
 ];
 
-const STATUS_STEPS = ['scheduled', 'confirmed', 'in_queue', 'treatment'];
-const STATUS_LABELS = { scheduled: 'Booked', confirmed: 'Confirmed', in_queue: 'In Queue', treatment: 'Treatment' };
-const STATUS_ICONS = { scheduled: '📋', confirmed: '✅', in_queue: '⏳', treatment: '🩺' };
+// Aligned with the backend API response status labels
+const STATUS_STEPS = ['Pending', 'Confirmed', 'Completed'];
+const STATUS_LABELS = { 
+  Pending: 'Under Review', 
+  Confirmed: 'Confirmed', 
+  Completed: 'Treatment Done' 
+};
+const STATUS_ICONS = { 
+  Pending: '📋', 
+  Confirmed: '✅', 
+  Completed: '🦷' 
+};
 
 const PatientPortal = () => {
   const [phone, setPhone] = useState('');
@@ -43,12 +53,18 @@ const PatientPortal = () => {
     setIsSearching(true);
     setSelectedApt(null);
     try {
-      const res = await fetch(`${API_URL}/appointments/status/${phone}`);
+      // Using the newly created Node.js API endpoint
+      const res = await fetch(`${API_URL}/get-patient-appointments?phone_number=${phone}`);
       const data = await res.json();
-      setAppointments(data);
-      if (data.length > 0) setSelectedApt(data[0]);
+      
+      if (data.success) {
+        setAppointments(data.appointments);
+        if (data.appointments.length > 0) setSelectedApt(data.appointments[0]);
+      } else {
+        setAppointments([]);
+      }
     } catch (err) {
-      console.error(err);
+      console.error('Search Error:', err);
       setAppointments([]);
     } finally { setIsSearching(false); }
   };
@@ -57,17 +73,26 @@ const PatientPortal = () => {
     e.preventDefault();
     setIsBooking(true);
     try {
+      // Maps to existing appointments router logic
       const res = await fetch(`${API_URL}/appointments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...bookingForm, patient_phone: phone }),
+        body: JSON.stringify({ 
+            patient_name: bookingForm.patient_name,
+            patient_phone: phone,
+            department_id: bookingForm.dept,
+            appointment_date: bookingForm.date,
+            appointment_time: bookingForm.time_slot.split(' ')[0]
+        }),
       });
       const data = await res.json();
-      setBookingSuccess(data);
-      setAppointments(prev => [data, ...prev]);
-      setSelectedApt(data);
-      setShowBooking(false);
-      setBookingForm({ patient_name: '', dept: '', date: '', time_slot: '' });
+      if (data.success) {
+          setBookingSuccess(data);
+          // Refresh search to show new appointment with progress bar
+          handleSearch(new Event('submit'));
+          setShowBooking(false);
+          setBookingForm({ patient_name: '', dept: '', date: '', time_slot: '' });
+      }
     } catch (err) { console.error(err); }
     finally { setIsBooking(false); }
   };
@@ -142,7 +167,7 @@ const PatientPortal = () => {
               <span className="text-3xl">✅</span>
               <div>
                 <div className="font-black text-emerald-800">Appointment Booked Successfully!</div>
-                <div className="text-sm text-emerald-600 font-medium">ID: {bookingSuccess.id} | Token: {bookingSuccess.token_no}</div>
+                <div className="text-sm text-emerald-600 font-medium">Confirmation: {bookingSuccess.confirmationNumber}</div>
               </div>
             </div>
             <button onClick={() => setBookingSuccess(null)} className="text-emerald-400 hover:text-emerald-600 font-bold text-xl">✕</button>
@@ -226,8 +251,8 @@ const PatientPortal = () => {
                   <div className="space-y-3">
                     {appointments.map(apt => (
                       <button key={apt.id} onClick={() => setSelectedApt(apt)} className={`w-full text-left p-4 rounded-2xl transition-all border-2 ${selectedApt?.id === apt.id ? 'border-[#008080] bg-[#008080]/5' : 'border-transparent bg-gray-50 hover:bg-gray-100'}`}>
-                        <div className="font-black text-secondary-blue text-sm">{apt.dept}</div>
-                        <div className="text-xs text-text-muted font-medium">{apt.date} • {apt.time_slot}</div>
+                        <div className="font-black text-secondary-blue text-sm">{apt.doctor_name || 'Consultation'}</div>
+                        <div className="text-xs text-text-muted font-medium">{apt.time_slot}</div>
                       </button>
                     ))}
                   </div>
@@ -251,7 +276,7 @@ const PatientPortal = () => {
                   <div className="bg-gradient-to-r from-[#008080] to-primary-blue p-10 text-white flex justify-between items-center">
                     <div>
                       <div className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-2">Electronic Appointment Pass</div>
-                      <h2 className="text-3xl font-black tracking-tight">{selectedApt.id}</h2>
+                      <h2 className="text-3xl font-black tracking-tight">{selectedApt.appointment_id || selectedApt.id}</h2>
                     </div>
                     <div className="px-4 py-2 bg-white/20 backdrop-blur-md rounded-xl font-black uppercase text-xs">
                       {STATUS_LABELS[selectedApt.status] || selectedApt.status}
@@ -267,20 +292,16 @@ const PatientPortal = () => {
                     <div className="space-y-6">
                       <div className="grid grid-cols-2 gap-6">
                         <div>
-                          <div className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Patient Name</div>
-                          <div className="text-lg font-black text-secondary-blue">{selectedApt.patient_name}</div>
+                          <div className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Doctor Name</div>
+                          <div className="text-lg font-black text-secondary-blue">{selectedApt.doctor_name || 'Assigned on arrival'}</div>
                         </div>
                         <div>
-                          <div className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Department</div>
-                          <div className="text-lg font-black text-[#008080]">{selectedApt.dept}</div>
+                          <div className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Status</div>
+                          <div className="text-lg font-black text-[#008080]">{selectedApt.status}</div>
                         </div>
-                        <div>
-                          <div className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Date</div>
-                          <div className="text-lg font-black text-secondary-blue">{selectedApt.date}</div>
-                        </div>
-                        <div>
-                          <div className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Token No.</div>
-                          <div className="text-2xl font-black text-primary-blue">{selectedApt.token_no}</div>
+                        <div className="col-span-2">
+                          <div className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Time Slot</div>
+                          <div className="text-lg font-black text-secondary-blue">{selectedApt.time_slot}</div>
                         </div>
                       </div>
                       <div className="pt-6 border-t border-gray-100 flex items-center gap-6">
@@ -291,11 +312,13 @@ const PatientPortal = () => {
 
                     <div className="flex flex-col items-center justify-center space-y-6 bg-gray-50 p-8 rounded-[32px] border border-dashed border-gray-200">
                       <div className="bg-white p-4 rounded-3xl shadow-lg">
-                         {selectedApt.qr_string ? (
-                           <img src={selectedApt.qr_string} alt="QR Code" width={160} height={160} />
-                         ) : (
-                           <QRCodeSVG value={JSON.stringify({id: selectedApt.id, token: selectedApt.token_no})} size={160} />
-                         )}
+                        <QRCodeSVG 
+                          value={JSON.stringify({
+                            patient_id: selectedApt.patient_id, 
+                            current_appointment_id: selectedApt.appointment_id
+                          })} 
+                          size={160} 
+                        />
                       </div>
                       <div className="text-center">
                          <div className="text-sm font-black text-secondary-blue mb-1">Digital QR Pass</div>

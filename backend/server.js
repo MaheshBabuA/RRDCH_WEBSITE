@@ -38,6 +38,119 @@ app.get('/api', (req, res) => {
   res.status(200).json({ success: true, message: 'API is operational' });
 });
 
+/**
+ * Endpoint: GET /api/get-patient-appointments
+ * Retrieves appointments for a specific patient using a phone number.
+ * Uses a JOIN between patients, appointments, and doctors tables.
+ */
+app.get('/api/get-patient-appointments', async (req, res) => {
+  const { phone_number } = req.query;
+  
+  if (!phone_number) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'phone_number query parameter is required' 
+    });
+  }
+
+  try {
+    const { pool } = require('./config/database');
+    
+    // Updated query to include patient_id and appointment_id
+    const query = `
+      SELECT 
+        a.appointment_id,
+        p.patient_id,
+        a.status, 
+        d.doctor_name, 
+        a.appointment_date AS time_slot
+      FROM appointments a
+      JOIN patients p ON a.patient_phone = p.patient_phone
+      JOIN doctors d ON a.doctor_id = d.doctor_id
+      WHERE p.patient_phone = ?
+      ORDER BY a.appointment_date DESC
+    `;
+
+    const [rows] = await pool.execute(query, [phone_number]);
+
+    const formattedAppointments = rows.map(app => {
+      let displayStatus = app.status;
+      if (displayStatus.toUpperCase() === 'PENDING') displayStatus = 'Pending';
+      if (displayStatus.toUpperCase() === 'CONFIRMED') displayStatus = 'Confirmed';
+      if (displayStatus.toUpperCase() === 'COMPLETED') displayStatus = 'Completed';
+      
+      return {
+        ...app,
+        status: displayStatus
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      count: formattedAppointments.length,
+      appointments: formattedAppointments
+    });
+
+  } catch (error) {
+    console.error('Error in /api/get-patient-appointments:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to retrieve patient appointments'
+    });
+  }
+});
+
+/**
+ * Endpoint: POST /api/scan-appointment
+ * Triggered when a QR code is scanned.
+ * Retrieves current appointment details and past medical history.
+ */
+app.post('/api/scan-appointment', async (req, res) => {
+  const { patient_id, appointment_id } = req.body;
+
+  if (!patient_id || !appointment_id) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'patient_id and appointment_id are required' 
+    });
+  }
+
+  try {
+    const { pool } = require('./config/database');
+
+    // 1. Get Current Appointment Details
+    const [appointment] = await pool.execute(
+      `SELECT a.*, d.doctor_name 
+       FROM appointments a 
+       LEFT JOIN doctors d ON a.doctor_id = d.doctor_id 
+       WHERE a.appointment_id = ?`,
+      [appointment_id]
+    );
+
+    // 2. Get Past Dental Records (Last 3 Visits)
+    const [history] = await pool.execute(
+      `SELECT * FROM medical_history 
+       WHERE patient_id = ? 
+       ORDER BY visit_date DESC 
+       LIMIT 3`,
+      [patient_id]
+    );
+
+    res.status(200).json({
+      success: true,
+      appointment: appointment[0] || null,
+      history: history
+    });
+
+  } catch (error) {
+    console.error('Error in /api/scan-appointment:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to retrieve patient data from scan'
+    });
+  }
+});
+
 // 404 Handler for unknown routes
 app.use((req, res, next) => {
   res.status(404).json({
