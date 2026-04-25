@@ -3,15 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "db": "cmd /c \"set PATH=%PATH%;C:\\Program Files\\MySQL\\MySQL Server 8.4\\bin && mysqld --datadir=\\\"./backend/database/data\\\" --console --port=3306 --mysqlx=0\"",
-    "backend": "cd backend && cmd /c \"set PATH=%PATH%;C:\\Program Files\\nodejs && npm start\"",
-    "frontend": "cd frontend && cmd /c \"set PATH=%PATH%;C:\\Program Files\\nodejs && npm run dev\"",
-    "dev": "npx concurrently \"npm run db\" \"npm run backend\" \"npm run frontend\"",
-    "start": "cd rrdch-website/backend && npm start",
-    "backend-start": "cd rrdch-website/backend && npm start",
+    "db": "node scripts/orchestrator.js",
+    "backend": "cd backend && npm start",
+    "frontend": "cd rrdch_frontend/rrdch_frontend/frontend && npm run dev",
+    "dev": "node scripts/orchestrator.js",
+    "start": "node scripts/orchestrator.js",
     "build": "cd rrdch_frontend/rrdch_frontend/frontend && npm install && npm run build",
-    "postinstall": "cd rrdch-website/backend && npm install",
-    "frontend-dev": "cd rrdch_frontend/rrdch_frontend/frontend && npm run dev",
-    "backend-dev": "cd rrdch-website/backend && npm start"
+    "postinstall": "cd backend && npm install && cd ../rrdch_frontend/rrdch_frontend/frontend && npm install"
   }
 }
