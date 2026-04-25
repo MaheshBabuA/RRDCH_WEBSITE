@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useLanguage } from '../utils/i18n';
-import apiService from '../services/api';
 import Button from '../components/Button';
-import Card from '../components/Card';
+import { siteContent } from '../data/siteContent';
 
 const DepartmentDetail = () => {
   const { id } = useParams();
@@ -11,23 +10,29 @@ const DepartmentDetail = () => {
   
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchDeptData = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const result = await apiService.departments.getById(id);
-        setData(result);
-      } catch (err) {
-        console.error('Failed to load department details:', err);
-        setError('Department not found or failed to load.');
-      } finally {
-        setIsLoading(false);
+    setIsLoading(true);
+    // Simulate slight delay for smooth transition
+    const timer = setTimeout(() => {
+      const deptId = parseInt(id);
+      const department = siteContent.departments.find(d => d.id === deptId);
+      
+      if (department) {
+        // Find related departments (excluding current)
+        const related = siteContent.departments
+          .filter(d => d.id !== deptId)
+          .sort(() => 0.5 - Math.random())
+          .slice(0, 3);
+          
+        setData({ department, related });
+      } else {
+        setData(null);
       }
-    };
-    fetchDeptData();
+      setIsLoading(false);
+    }, 100);
+    
+    return () => clearTimeout(timer);
   }, [id]);
 
   if (isLoading) {
@@ -38,11 +43,11 @@ const DepartmentDetail = () => {
     );
   }
 
-  if (error || !data) {
+  if (!data) {
     return (
       <div className="max-w-4xl mx-auto py-20 px-4 text-center">
          <div className="text-6xl mb-4">⚕️</div>
-         <h2 className="text-3xl font-black text-secondary-blue mb-6">{error || 'Unknown Error'}</h2>
+         <h2 className="text-3xl font-black text-secondary-blue mb-6">Department Not Found</h2>
          <Link to="/departments">
            <Button type="secondary" text={t('departmentsPage.backToList')} className="px-10 py-3" />
          </Link>

@@ -11,7 +11,7 @@ USE rrdch_db;
 -- ====================================================================
 -- USERS TABLE (for patient/student login)
 -- ====================================================================
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id INT PRIMARY KEY AUTO_INCREMENT,
   role ENUM('patient', 'student', 'doctor', 'admin') DEFAULT 'patient',
   phone VARCHAR(15) UNIQUE NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE users (
 -- ====================================================================
 -- DEPARTMENTS TABLE
 -- ====================================================================
-CREATE TABLE departments (
+CREATE TABLE IF NOT EXISTS departments (
   id INT PRIMARY KEY AUTO_INCREMENT,
   name VARCHAR(150) UNIQUE NOT NULL,
   short_name VARCHAR(50),
@@ -47,7 +47,7 @@ CREATE TABLE departments (
 -- ====================================================================
 -- APPOINTMENTS TABLE (Core booking system)
 -- ====================================================================
-CREATE TABLE appointments (
+CREATE TABLE IF NOT EXISTS appointments (
   id INT PRIMARY KEY AUTO_INCREMENT,
   appointment_id VARCHAR(20) UNIQUE,
   patient_id INT,
@@ -75,7 +75,7 @@ CREATE TABLE appointments (
 -- ====================================================================
 -- HOSTEL COMPLAINTS TABLE
 -- ====================================================================
-CREATE TABLE hostel_complaints (
+CREATE TABLE IF NOT EXISTS hostel_complaints (
   id INT PRIMARY KEY AUTO_INCREMENT,
   complaint_id VARCHAR(20) UNIQUE,
   student_id INT NOT NULL,
@@ -100,7 +100,7 @@ CREATE TABLE hostel_complaints (
 -- ====================================================================
 -- FEEDBACK TABLE
 -- ====================================================================
-CREATE TABLE feedback (
+CREATE TABLE IF NOT EXISTS feedback (
   id INT PRIMARY KEY AUTO_INCREMENT,
   user_id INT,
   user_name VARCHAR(100),
@@ -121,7 +121,7 @@ CREATE TABLE feedback (
 -- ====================================================================
 -- EVENTS TABLE (Calendar)
 -- ====================================================================
-CREATE TABLE events (
+CREATE TABLE IF NOT EXISTS events (
   id INT PRIMARY KEY AUTO_INCREMENT,
   title VARCHAR(200) NOT NULL,
   description TEXT,
@@ -144,7 +144,7 @@ CREATE TABLE events (
 -- ====================================================================
 -- DOCTORS TABLE (for real-time availability)
 -- ====================================================================
-CREATE TABLE doctors (
+CREATE TABLE IF NOT EXISTS doctors (
   id INT PRIMARY KEY AUTO_INCREMENT,
   user_id INT,
   name VARCHAR(100) NOT NULL,
@@ -169,7 +169,7 @@ CREATE TABLE doctors (
 -- ====================================================================
 -- COURSES TABLE
 -- ====================================================================
-CREATE TABLE courses (
+CREATE TABLE IF NOT EXISTS courses (
   id INT PRIMARY KEY AUTO_INCREMENT,
   course_code VARCHAR(20) UNIQUE NOT NULL,
   course_name VARCHAR(150) NOT NULL,
@@ -185,7 +185,7 @@ CREATE TABLE courses (
 -- ====================================================================
 -- ANNOUNCEMENTS TABLE
 -- ====================================================================
-CREATE TABLE announcements (
+CREATE TABLE IF NOT EXISTS announcements (
   id INT PRIMARY KEY AUTO_INCREMENT,
   title VARCHAR(200) NOT NULL,
   content TEXT NOT NULL,
@@ -203,7 +203,7 @@ CREATE TABLE announcements (
 -- ====================================================================
 -- SEED DATA - DEPARTMENTS
 -- ====================================================================
-INSERT INTO departments (name, short_name, description, head_name, contact_phone, postgraduate_specialization) VALUES
+INSERT IGNORE INTO departments (name, short_name, description, head_name, contact_phone, postgraduate_specialization) VALUES
 ('Oral Medicine & Radiology', 'OMR', 'Diagnosis and treatment of oral diseases, diagnostic imaging services', 'Dr. Ramesh Kumar', '+91-9900112233', 'MDS in Oral Medicine'),
 ('Prosthetics & Crown & Bridge', 'Prostho', 'Restorative dentistry, prosthodontics, implant prosthetics', 'Dr. Anjali Singh', '+91-9900112234', 'MDS in Prosthodontics'),
 ('Oral & Maxillofacial Surgery', 'OMFS', 'Surgical procedures, implant placement, complex extractions, jaw surgery', 'Dr. Vikram Patel', '+91-9900112235', 'MDS in Oral Surgery'),
@@ -219,7 +219,7 @@ INSERT INTO departments (name, short_name, description, head_name, contact_phone
 -- ====================================================================
 -- SEED DATA - COURSES
 -- ====================================================================
-INSERT INTO courses (course_code, course_name, course_type, duration_years, intake, description, regulatory_body) VALUES
+INSERT IGNORE INTO courses (course_code, course_name, course_type, duration_years, intake, description, regulatory_body) VALUES
 ('BDS', 'Bachelor of Dental Surgery', 'BDS', 4, 60, 'Comprehensive 4-year undergraduate program in dental surgery with clinical training', 'DCI'),
 ('MDS', 'Master of Dental Surgery', 'MDS', 3, 50, 'Postgraduate specialization programs across various dental disciplines', 'DCI'),
 ('CERT-IMPLANT', 'Certificate in Implantology', 'CERTIFICATE', 1, 20, 'Advanced skill-based certificate program in dental implantology', 'DCI');
@@ -227,7 +227,7 @@ INSERT INTO courses (course_code, course_name, course_type, duration_years, inta
 -- ====================================================================
 -- SEED DATA - SAMPLE EVENTS
 -- ====================================================================
-INSERT INTO events (title, description, event_date, event_time, location, category, organizer) VALUES
+INSERT IGNORE INTO events (title, description, event_date, event_time, location, category, organizer) VALUES
 ('Annual Dental Conference 2026', 'International speakers on latest techniques and clinical innovations in dentistry', '2026-04-20', '10:00:00', 'Main Auditorium', 'academic', 'Academic Affairs'),
 ('Student Workshop: Implant Dentistry', 'Hands-on practical workshop on implant placement techniques and protocols', '2026-04-25', '14:00:00', 'Surgical Clinic', 'workshop', 'Implantology Department'),
 ('Intra-College Sports Day', 'Annual sports competition featuring various games for all students', '2026-05-10', '08:00:00', 'Sports Complex', 'sports', 'Sports Committee'),
@@ -237,7 +237,7 @@ INSERT INTO events (title, description, event_date, event_time, location, catego
 -- ====================================================================
 -- SEED DATA - SAMPLE DOCTORS (for real-time updates)
 -- ====================================================================
-INSERT INTO doctors (name, department_id, qualification, experience_years, phone, availability_status, current_patient_queue) VALUES
+INSERT IGNORE INTO doctors (name, department_id, qualification, experience_years, phone, availability_status, current_patient_queue) VALUES
 ('Dr. Ramesh Kumar', 1, 'BDS, MDS', 15, '+91-9900112250', 'available', 3),
 ('Dr. Anjali Singh', 2, 'BDS, MDS', 12, '+91-9900112251', 'busy', 7),
 ('Dr. Vikram Patel', 3, 'BDS, MDS', 18, '+91-9900112252', 'available', 2),
@@ -253,15 +253,15 @@ INSERT INTO doctors (name, department_id, qualification, experience_years, phone
 -- ====================================================================
 -- INDEXES FOR PERFORMANCE
 -- ====================================================================
-CREATE INDEX idx_appointments_date_department ON appointments(appointment_date, department_id);
-CREATE INDEX idx_complaints_student_status ON hostel_complaints(student_id, status);
-CREATE INDEX idx_events_upcoming ON events(event_date, is_published);
-CREATE INDEX idx_doctors_department_status ON doctors(department_id, availability_status);
+-- CREATE INDEX idx_appointments_date_department ON appointments(appointment_date, department_id);
+-- CREATE INDEX idx_complaints_student_status ON hostel_complaints(student_id, status);
+-- CREATE INDEX idx_events_upcoming ON events(event_date, is_published);
+-- CREATE INDEX idx_doctors_department_status ON doctors(department_id, availability_status);
 
 -- ====================================================================
 -- VIEW: Available Doctors Dashboard
 -- ====================================================================
-CREATE VIEW available_doctors_dashboard AS
+CREATE OR REPLACE VIEW available_doctors_dashboard AS
 SELECT 
   d.id,
   d.name,
@@ -279,7 +279,7 @@ ORDER BY d.availability_status, d.current_patient_queue;
 -- ====================================================================
 -- VIEW: Upcoming Events
 -- ====================================================================
-CREATE VIEW upcoming_events_view AS
+CREATE OR REPLACE VIEW upcoming_events_view AS
 SELECT 
   id,
   title,

@@ -84,26 +84,31 @@ const Header = () => {
             <NavDropdown 
               label="About Us" 
               items={[
-                { label: 'Our History', to: '/about' },
-                { label: 'Vision & Mission', to: '/about' },
-                { label: 'Leadership', to: '/about' },
-                { label: 'Video Gallery', to: '/video-gallery', highlight: true },
-                { label: 'Quality Policy', to: '/about' }
+                { label: 'Our Legacy', to: '/about' },
+                { label: 'Campus Facilities', to: '/facilities' },
+                { label: 'Alumni Network', to: '/alumni' },
+                { label: 'News & Events', to: '/events' },
+                { label: 'Video Gallery', to: '/video-gallery', highlight: true }
               ]} 
             />
-            <NavDropdown label="Departments" items={['Oral Surgery', 'Orthodontics', 'Periodontics', 'Prosthodontics', 'Conservative Dentistry']} />
+            <NavLink to="/departments" label="Departments" />
             <NavDropdown 
               label="Academics" 
               items={[
-                { label: 'BDS Course', to: '/admissions' },
-                { label: 'MDS Specializations', to: '/admissions' },
-                { label: 'PhD Programs', to: '/admissions' },
-                { label: 'Certificate Courses', to: '/admissions' },
+                { label: 'Courses Offered', to: '/courses' },
+                { label: 'Academics & Research', to: '/academics' },
+                { label: 'Admissions', to: '/admissions' },
                 { label: 'Student Portal', to: '/student-portal', highlight: true }
               ]} 
             />
-            <NavLink to="/campus-life" label="Campus Life" />
-            <NavLink to="/research" label="Research" />
+            <NavDropdown 
+              label="Patient Services" 
+              items={[
+                { label: 'Book Appointment', to: '/book-appointment' },
+                { label: 'Patient Portal', to: '/patient-portal', highlight: true },
+                { label: 'AI Symptom Checker', to: '/ai-checker' }
+              ]} 
+            />
             <NavLink to="/contact" label="Contact" />
           </div>
 

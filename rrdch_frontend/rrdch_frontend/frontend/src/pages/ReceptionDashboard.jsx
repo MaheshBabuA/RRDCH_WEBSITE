@@ -159,7 +159,6 @@ const ReceptionDashboard = () => {
           </div>
         </div>
 
-        {/* ... (rest of the dashboard UI remains same as DoctorDashboard but with "Receptionist" branding) */}
         <div className="mb-10">
           <label className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3 block">Select Department Queue</label>
           <div className="flex flex-wrap gap-3">

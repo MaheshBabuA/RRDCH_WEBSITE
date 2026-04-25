@@ -22,7 +22,7 @@ import Achievements from './pages/Achievements';
 import DoctorConsole from './pages/DoctorConsole';
 import Research from './pages/Research';
 
-// New Pages from Main
+// Academic Pages
 import Courses from './pages/Courses';
 import Facilities from './pages/Facilities';
 import Alumni from './pages/Alumni';
@@ -33,46 +33,67 @@ function App() {
     <Routes>
       <Route path="/" element={<PageWrapper />}>
         <Route index element={<Home />} />
+
         <Route path="video-gallery" element={<VideoGallery />} />
         <Route path="ai-checker" element={<AISymptomChecker />} />
         <Route path="patient-portal" element={<PatientPortal />} />
         <Route path="contact" element={<ContactUs />} />
         <Route path="book-appointment" element={<Appointments />} />
+
         <Route path="departments">
           <Route index element={<Departments />} />
           <Route path=":id" element={<DepartmentDetail />} />
         </Route>
+
         <Route path="events" element={<Events />} />
         <Route path="hostel-complaints" element={<HostelComplaints />} />
         <Route path="feedback" element={<Feedback />} />
         <Route path="about" element={<About />} />
         <Route path="student-portal" element={<StudentPortal />} />
         <Route path="admissions" element={<Admissions />} />
-        
-        {/* feature/doctor_dashboard routes */}
+
+        {/* Doctor Dashboard Routes */}
         <Route path="research" element={<Research />} />
         <Route path="achievements" element={<Achievements />} />
         <Route path="doctor-console" element={<DoctorConsole />} />
 
-        {/* New Academic Routes from main */}
+        {/* Academic Routes */}
         <Route path="courses" element={<Courses />} />
         <Route path="facilities" element={<Facilities />} />
         <Route path="alumni" element={<Alumni />} />
         <Route path="academics" element={<Academics />} />
-        
-        <Route path="check-status" element={<Navigate to="/student-portal" replace />} />
-        <Route path="syllabus" element={<Navigate to="/student-portal" replace />} />
-        
-        {/* Hidden Staff-Only Routes */}
-        <Route path="staff/doctor-dashboard" element={<DoctorDashboard />} />
-        <Route path="staff/reception-dashboard" element={<ReceptionDashboard />} />
 
-        {/* Fallback route */}
-        <Route path="*" element={<div className="p-20 text-center text-xl font-bold text-gray-500">🚧 Page Under Construction 🚧</div>} />
+        <Route
+          path="check-status"
+          element={<Navigate to="/student-portal" replace />}
+        />
+        <Route
+          path="syllabus"
+          element={<Navigate to="/student-portal" replace />}
+        />
+
+        {/* Hidden Staff Routes */}
+        <Route
+          path="staff/doctor-dashboard"
+          element={<DoctorDashboard />}
+        />
+        <Route
+          path="staff/reception-dashboard"
+          element={<ReceptionDashboard />}
+        />
+
+        {/* Fallback Route */}
+        <Route
+          path="*"
+          element={
+            <div className="p-20 text-center text-xl font-bold text-gray-500">
+              🚧 Page Under Construction 🚧
+            </div>
+          }
+        />
       </Route>
     </Routes>
   );
 }
 
 export default App;
-
