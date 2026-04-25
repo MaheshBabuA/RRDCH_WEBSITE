@@ -16,7 +16,8 @@ import AISymptomChecker from './pages/AISymptomChecker';
 import PatientPortal from './pages/PatientPortal';
 import VideoGallery from './pages/VideoGallery';
 import ContactUs from './pages/ContactUs';
-import DoctorDashboard from './pages/DoctorDashboard';
+import ReceptionDashboard from './pages/ReceptionDashboard';
+
 
 function App() {
   return (
@@ -44,7 +45,8 @@ function App() {
         <Route path="academics" element={<Navigate to="/admissions" replace />} />
         
         {/* Hidden Staff-Only Route — not linked in navigation */}
-        <Route path="staff/doctor-dashboard" element={<DoctorDashboard />} />
+        <Route path="staff/reception-dashboard" element={<ReceptionDashboard />} />
+
 
         {/* Fallback route for unimplemented pages */}
         <Route path="*" element={<div className="p-20 text-center scale-150">🚧 Page Under Construction 🚧</div>} />

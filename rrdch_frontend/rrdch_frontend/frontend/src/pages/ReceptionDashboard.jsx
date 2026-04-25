@@ -18,7 +18,7 @@ const STATUS_COLORS = {
   treatment: 'bg-purple-100 text-purple-700 border-purple-200',
 };
 
-const DoctorDashboard = () => {
+const ReceptionDashboard = () => {
   const [selectedDept, setSelectedDept] = useState('');
   const [appointments, setAppointments] = useState([]);
   const [socket, setSocket] = useState(null);
@@ -82,31 +82,30 @@ const DoctorDashboard = () => {
     } catch (err) { console.error(err); }
   };
 
-  // --- QR SCAN LOGIC ---
+  // --- UPDATED QR SCAN LOGIC ---
   const handleSimulateScan = async () => {
-    const jsonStr = prompt("Simulate QR Scan - Enter JSON String:", '{"patient_id": "P-1001", "current_appointment_id": "APT-44201"}');
-    if (!jsonStr) return;
+    const scanResult = prompt("Simulate QR Scan - Enter JSON String:", '{"patient_id": "P-1001", "current_appointment_id": "APT-44201"}');
+    if (!scanResult) return;
 
     try {
-      const { patient_id, current_appointment_id } = JSON.parse(jsonStr);
+      // Step 1: Parse JSON string
+      let data = JSON.parse(scanResult);
       setIsScanning(true);
       
-      const res = await fetch(`${API_URL}/scan-appointment`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ patient_id, appointment_id: current_appointment_id })
-      });
+      // Step 2: GET request to /api/reception/check-in
+      const res = await fetch(`${API_URL}/reception/check-in?patient_id=${data.patient_id}&apt_id=${data.current_appointment_id}`);
       
-      const data = await res.json();
-      if (data.success) {
-        setScannedData(data);
+      const responseData = await res.json();
+      if (responseData.success) {
+        setScannedData(responseData);
         setIsModalOpen(true);
         setActiveTab('current');
       } else {
-        alert(data.message || "Failed to retrieve scan data");
+        alert(responseData.message || "Failed to retrieve scan data");
       }
     } catch (err) {
-      alert("Invalid QR Data Format");
+      console.error(err);
+      alert("Invalid QR Data Format or Server Error");
     } finally {
       setIsScanning(false);
     }
@@ -132,8 +131,8 @@ const DoctorDashboard = () => {
                 {isConnected ? 'Live Connected' : 'Disconnected'}
               </span>
             </div>
-            <h1 className="text-4xl font-black tracking-tight">Doctor Dashboard</h1>
-            <p className="text-slate-400 font-medium mt-1">Real-time appointment management & patient flow control</p>
+            <h1 className="text-4xl font-black tracking-tight">Receptionist Dashboard</h1>
+            <p className="text-slate-400 font-medium mt-1">Real-time patient check-in & appointment management</p>
           </div>
           
           <div className="flex items-center gap-4">
@@ -146,14 +145,15 @@ const DoctorDashboard = () => {
               {isScanning ? 'Processing...' : 'Scan Patient QR'}
             </button>
             <div className="bg-white/5 border border-white/10 rounded-2xl px-6 py-3 backdrop-blur-md">
-              <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Staff Access Only</div>
+              <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Reception Access Only</div>
               <div className="text-lg font-black font-mono text-amber-400">RRDCH-STAFF</div>
             </div>
           </div>
         </div>
 
+        {/* ... (rest of the dashboard UI remains same as DoctorDashboard but with "Receptionist" branding) */}
         <div className="mb-10">
-          <label className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3 block">Select Your Department</label>
+          <label className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3 block">Select Department Queue</label>
           <div className="flex flex-wrap gap-3">
             {DEPARTMENTS.map(dept => (
               <button
@@ -237,7 +237,7 @@ const DoctorDashboard = () => {
                 <div className="text-center py-20">
                   <div className="text-5xl mb-4 opacity-30">🩺</div>
                   <h3 className="text-xl font-black text-slate-400">No appointments yet</h3>
-                  <p className="text-slate-500 font-medium mt-1">Patients will appear here in real-time when they book.</p>
+                  <p className="text-slate-500 font-medium mt-1">Patients will appear here in real-time.</p>
                 </div>
               )}
             </div>
@@ -246,7 +246,7 @@ const DoctorDashboard = () => {
           <div className="text-center py-32 bg-white/5 border border-dashed border-white/10 rounded-[40px]">
             <div className="text-6xl mb-6 opacity-30">🏥</div>
             <h3 className="text-2xl font-black text-slate-400">Select a Department</h3>
-            <p className="text-slate-500 font-medium mt-2">Choose your department above to view the live patient queue.</p>
+            <p className="text-slate-500 font-medium mt-2">Choose a department above to manage the live queue.</p>
           </div>
         )}
       </div>
@@ -262,7 +262,7 @@ const DoctorDashboard = () => {
               <div className="flex justify-between items-start">
                 <div>
                    <h2 className="text-3xl font-black tracking-tight">{scannedData.appointment?.patient_name}</h2>
-                   <p className="text-emerald-100 font-bold opacity-80 mt-1">Patient Record Verified • {scannedData.appointment?.appointment_id}</p>
+                   <p className="text-emerald-100 font-bold opacity-80 mt-1">Check-in Verified • {scannedData.appointment?.id}</p>
                 </div>
                 <button onClick={() => setIsModalOpen(false)} className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all">✕</button>
               </div>
@@ -274,13 +274,13 @@ const DoctorDashboard = () => {
                     onClick={() => setActiveTab('current')}
                     className={`flex-1 py-4 text-xs font-black uppercase tracking-widest rounded-2xl transition-all ${activeTab === 'current' ? 'bg-[#008080] text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
                 >
-                    [1] Current Appointment
+                    [1] Today's Visit
                 </button>
                 <button 
                     onClick={() => setActiveTab('history')}
                     className={`flex-1 py-4 text-xs font-black uppercase tracking-widest rounded-2xl transition-all ${activeTab === 'history' ? 'bg-[#008080] text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
                 >
-                    [2] Past Dental Records
+                    [2] Medical History
                 </button>
             </div>
 
@@ -291,36 +291,37 @@ const DoctorDashboard = () => {
                         <div className="grid grid-cols-2 gap-6">
                             <div className="bg-white/5 p-5 rounded-2xl border border-white/10">
                                 <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Doctor Assigned</div>
-                                <div className="text-lg font-black text-emerald-400">{scannedData.appointment?.doctor_name || 'Assigned on Arrival'}</div>
+                                <div className="text-lg font-black text-emerald-400">{scannedData.appointment?.doctor || 'Assigned on Arrival'}</div>
                             </div>
                             <div className="bg-white/5 p-5 rounded-2xl border border-white/10">
-                                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Date & Time</div>
-                                <div className="text-lg font-black">{scannedData.appointment?.appointment_date}</div>
+                                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Department</div>
+                                <div className="text-lg font-black">{scannedData.appointment?.department || 'General OPD'}</div>
+                            </div>
+                            <div className="bg-white/5 p-5 rounded-2xl border border-white/10">
+                                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Appointment Time</div>
+                                <div className="text-lg font-black">{scannedData.appointment?.time}</div>
+                            </div>
+                            <div className="bg-white/5 p-5 rounded-2xl border border-white/10">
+                                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Visit Date</div>
+                                <div className="text-lg font-black">{new Date(scannedData.appointment?.date).toLocaleDateString()}</div>
                             </div>
                         </div>
                         <div className="bg-white/5 p-6 rounded-2xl border border-white/10">
                             <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Reason for Visit</div>
-                            <p className="text-slate-300 font-medium leading-relaxed">{scannedData.appointment?.reason || 'Routine Dental Checkup and prophylaxis.'}</p>
-                        </div>
-                        <div className="bg-white/5 p-6 rounded-2xl border border-white/10">
-                            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Current Status</div>
-                            <div className="flex items-center gap-3">
-                                <span className={`w-3 h-3 rounded-full ${STATUS_FLOW.indexOf(scannedData.appointment?.status) >= 2 ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`}></span>
-                                <span className="font-bold text-lg uppercase">{STATUS_LABELS[scannedData.appointment?.status]}</span>
-                            </div>
+                            <p className="text-slate-300 font-medium leading-relaxed">{scannedData.appointment?.reason || 'No specific reason provided.'}</p>
                         </div>
                     </div>
                 ) : (
                     <div className="space-y-6 animate-fade-in">
                         <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">Last 3 Visits</h4>
-                        {scannedData.history?.length > 0 ? (
-                            scannedData.history.map((record, i) => (
+                        {scannedData.medical_history?.length > 0 ? (
+                            scannedData.medical_history.map((record, i) => (
                                 <div key={i} className="bg-white/5 p-6 rounded-3xl border border-white/10 relative overflow-hidden group">
                                     <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform"></div>
                                     <div className="flex justify-between items-start mb-4">
                                         <div>
                                             <div className="text-lg font-black text-emerald-400">{record.treatment_type || 'General Consultation'}</div>
-                                            <div className="text-xs font-bold text-slate-500">{record.visit_date}</div>
+                                            <div className="text-xs font-bold text-slate-500">{new Date(record.visit_date).toLocaleDateString()}</div>
                                         </div>
                                         <div className="text-[10px] font-black bg-white/10 px-3 py-1 rounded-full">{record.doctor_name}</div>
                                     </div>
@@ -357,9 +358,16 @@ const DoctorDashboard = () => {
           from { transform: scale(0.95); opacity: 0; }
           to { transform: scale(1); opacity: 1; }
         }
+        .animate-fade-in {
+          animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
       `}</style>
     </div>
   );
 };
 
-export default DoctorDashboard;
+export default ReceptionDashboard;
