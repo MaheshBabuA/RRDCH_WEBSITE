@@ -65,9 +65,9 @@ app.get('/api/get-patient-appointments', async (req, res) => {
         d.doctor_name, 
         a.appointment_date AS time_slot
       FROM appointments a
-      JOIN patients p ON a.patient_phone = p.patient_phone
-      JOIN doctors d ON a.doctor_id = d.doctor_id
-      WHERE p.patient_phone = ?
+      LEFT JOIN patients p ON a.patient_phone = p.patient_phone
+      LEFT JOIN doctors d ON a.doctor_id = d.doctor_id
+      WHERE a.patient_phone = ?
       ORDER BY a.appointment_date DESC
     `;
 
