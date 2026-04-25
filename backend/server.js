@@ -9,6 +9,8 @@ const departmentsRouter = require('./routes/departments');
 const eventsRouter = require('./routes/events');
 const feedbackRouter = require('./routes/feedback');
 const doctorsRouter = require('./routes/doctors');
+const receptionRouter = require('./routes/reception');
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -32,6 +34,8 @@ app.use('/api/departments', departmentsRouter);
 app.use('/api/events', eventsRouter);
 app.use('/api/feedback', feedbackRouter);
 app.use('/api/doctors', doctorsRouter);
+app.use('/api/reception', receptionRouter);
+
 
 // Base health check endpoint
 app.get('/api', (req, res) => {
