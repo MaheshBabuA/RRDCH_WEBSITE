@@ -94,7 +94,9 @@ const Appointments = () => {
     const selectedDept = DEPARTMENTS.find(d => d.id === formData.department);
     return {
       id,
+      appointmentId: id,
       confirmationNumber,
+      patientId: 'P-GUEST',
       name: formData.name,
       phone: formData.phone,
       email: formData.email,
@@ -118,7 +120,16 @@ const Appointments = () => {
     setServerError('');
 
     try {
-      const result = await apiService.appointments.create(formData);
+      const payload = {
+        patient_name: formData.name,
+        patient_phone: formData.phone,
+        patient_email: formData.email,
+        department_id: formData.department,
+        appointment_date: formData.date,
+        appointment_time: formData.time,
+        notes: formData.notes
+      };
+      const result = await apiService.appointments.create(payload);
       const appointmentData = result?.appointment || result;
       setModalState({ isOpen: true, data: appointmentData });
     } catch (err) {
