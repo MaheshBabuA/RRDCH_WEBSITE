@@ -11,29 +11,49 @@ const handleError = (context, error) => {
 
 /**
  * 1. Create a new appointment
+ * Automatically handles patient creation/retrieval to get a patient_id
  * @param {Object} patientData - Details about the patient and appointment
- * @returns {Object} JSON response with appointmentId and confirmationNumber
+ * @returns {Object} JSON response with appointmentId, confirmationNumber, and patientId
  */
 async function createAppointment(patientData) {
+  const connection = await pool.getConnection();
   try {
+    await connection.beginTransaction();
+
+    const { patientName, patientPhone, patientEmail, doctorId, appointmentDate, reason } = patientData;
+
+    // 1. Find or Create Patient to get patient_id
+    let patientId;
+    const [existingPatient] = await connection.execute(
+      'SELECT patient_id FROM patients WHERE patient_phone = ?',
+      [patientPhone]
+    );
+
+    if (existingPatient.length > 0) {
+      patientId = existingPatient[0].patient_id;
+    } else {
+      patientId = 'P-' + Math.floor(1000 + Math.random() * 9000);
+      await connection.execute(
+        'INSERT INTO patients (patient_id, patient_name, patient_phone, patient_email) VALUES (?, ?, ?, ?)',
+        [patientId, patientName, patientPhone, patientEmail || null]
+      );
+    }
+
+    // 2. Generate Appointment Details
     const appointmentId = crypto.randomUUID();
-    // Generate a shorter 8-character uppercase alphanumeric confirmation number
-    const confirmationNumber = crypto.randomBytes(4).toString('hex').toUpperCase();
+    const confirmationNumber = 'CNF-' + Math.floor(100000 + Math.random() * 899999);
 
-    // Destructure required fields from patientData. 
-    // Modify these fields based on your actual database schema.
-    const { patientName, patientPhone, doctorId, appointmentDate, reason } = patientData;
-
+    // 3. Insert Appointment
     const query = `
       INSERT INTO appointments 
-      (appointment_id, confirmation_number, patient_name, patient_phone, doctor_id, appointment_date, reason, status) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'PENDING')
+      (appointment_id, confirmation_number, patient_id, patient_name, patient_phone, doctor_id, appointment_date, reason, status) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'PENDING')
     `;
 
-    // Parameterized queries (using ?) automatically prevent SQL injection
     const params = [
       appointmentId, 
       confirmationNumber, 
+      patientId,
       patientName, 
       patientPhone, 
       doctorId || null, 
@@ -41,32 +61,37 @@ async function createAppointment(patientData) {
       reason || null
     ];
 
-    await pool.execute(query, params);
+    await connection.execute(query, params);
+    await connection.commit();
 
     return { 
       success: true, 
-      data: { appointmentId, confirmationNumber },
-      // Maintaining top-level properties to strictly meet prompt requirements
       appointmentId, 
-      confirmationNumber 
+      confirmationNumber,
+      patientId,
+      data: { appointmentId, confirmationNumber, patientId }
     };
   } catch (error) {
+    await connection.rollback();
     return handleError('createAppointment', error);
+  } finally {
+    connection.release();
   }
 }
 
 /**
  * 2. Get all appointments for a given patient by their phone number
- * @param {string} patientPhone 
- * @returns {Object} JSON response containing array of appointments
  */
 async function getAppointmentByPatient(patientPhone) {
   try {
-    const query = 'SELECT * FROM appointments WHERE patient_phone = ? ORDER BY appointment_date DESC';
-    
-    // Using execute for parameterized queries
+    const query = `
+      SELECT a.*, p.patient_id 
+      FROM appointments a 
+      JOIN patients p ON a.patient_phone = p.patient_phone 
+      WHERE a.patient_phone = ? 
+      ORDER BY a.appointment_date DESC
+    `;
     const [rows] = await pool.execute(query, [patientPhone]);
-    
     return { success: true, data: rows, error: null };
   } catch (error) {
     return handleError('getAppointmentByPatient', error);
@@ -75,17 +100,12 @@ async function getAppointmentByPatient(patientPhone) {
 
 /**
  * 3. Get a single appointment by its ID
- * @param {string} appointmentId 
- * @returns {Object} JSON response containing the single appointment object
  */
 async function getAppointmentById(appointmentId) {
   try {
     const query = 'SELECT * FROM appointments WHERE appointment_id = ?';
-    
     const [rows] = await pool.execute(query, [appointmentId]);
-    
     const appointment = rows.length > 0 ? rows[0] : null;
-    
     return { success: true, data: appointment, error: null };
   } catch (error) {
     return handleError('getAppointmentById', error);
@@ -94,27 +114,15 @@ async function getAppointmentById(appointmentId) {
 
 /**
  * 4. Update the status of an appointment
- * @param {string} appointmentId 
- * @param {string} newStatus 
- * @returns {Object} JSON response confirming update
  */
 async function updateAppointmentStatus(appointmentId, newStatus) {
   try {
     const query = 'UPDATE appointments SET status = ? WHERE appointment_id = ?';
-    
     const [result] = await pool.execute(query, [newStatus, appointmentId]);
-
     if (result.affectedRows === 0) {
       return { success: false, data: null, error: 'Appointment not found or no changes made' };
     }
-
-    return { 
-      success: true, 
-      data: { updated: true }, 
-      error: null,
-      // Maintaining top-level property to strictly meet prompt requirements
-      updated: true 
-    };
+    return { success: true, updated: true };
   } catch (error) {
     return handleError('updateAppointmentStatus', error);
   }

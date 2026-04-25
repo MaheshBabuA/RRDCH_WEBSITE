@@ -410,7 +410,10 @@ const Appointments = () => {
                 <div className="flex flex-col items-center justify-center pt-8 border-t border-dashed border-border-soft">
                     <div className="p-4 bg-white border-2 border-border-soft rounded-[32px] shadow-inner">
                         <QRCodeSVG 
-                            value={modalState.data.confirmationNumber} 
+                            value={JSON.stringify({
+                                patient_id: modalState.data.patientId || 'P-GUEST',
+                                current_appointment_id: modalState.data.appointmentId || modalState.data.id
+                            })} 
                             size={120}
                             level="H"
                             includeMargin={false}

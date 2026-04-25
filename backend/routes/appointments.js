@@ -82,6 +82,7 @@ router.post('/', validateCreateAppointment, async (req, res) => {
         success: true,
         appointmentId: result.appointmentId,
         confirmationNumber: result.confirmationNumber,
+        patientId: result.patientId,
         message: 'Appointment successfully created.'
       });
     } else {
