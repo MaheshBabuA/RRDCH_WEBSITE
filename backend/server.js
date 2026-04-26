@@ -12,6 +12,8 @@ const doctorsRouter = require('./routes/doctors');
 const receptionRouter = require('./routes/reception');
 const portalRouter = require('./routes/portal');
 const symptomCheckerRouter = require('./routes/symptomChecker');
+const authRouter = require('./routes/auth');
+const erpAppointmentsRouter = require('./routes/erp_appointments');
 
 const http = require('http');
 const { Server } = require('socket.io');
@@ -62,6 +64,8 @@ app.use('/api/reception', receptionRouter);
 app.use('/api/portal', portalRouter);
 app.use('/api/symptomChecker', symptomCheckerRouter);
 app.use('/api/doctor', doctorRoutes);
+app.use('/api/auth', authRouter);
+app.use('/api/erp/appointments', erpAppointmentsRouter);
 
 // Base health check endpoint
 app.get('/api/health', (req, res) => {
