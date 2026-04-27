@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../utils/i18n';
+import logo from '../assets/logo.jpg';
 
 const Header = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -42,8 +43,8 @@ const Header = () => {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
           {/* Left: RRDCH Logo */}
           <Link to="/" className="flex items-center space-x-4">
-            <div className="w-16 h-16 bg-primary-blue rounded-2xl flex items-center justify-center text-white font-black text-4xl shadow-xl">
-              R
+            <div className="w-16 h-16 bg-primary-blue rounded-2xl flex items-center justify-center shadow-xl">
+              <img src={logo} alt="RRDCH Logo" className="nav-logo" />
             </div>
             <div className="flex flex-col">
               <span className="text-2xl font-black text-secondary-blue leading-none tracking-tight">RRDCH</span>
