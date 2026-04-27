@@ -19,7 +19,7 @@ const io = new Server(server, {
     }
 });
 
-app.use(cors());
+app.use(cors({ origin: 'http://localhost:3000' }));
 app.use(express.json());
 
 // --- REST Endpoints ---
@@ -200,42 +200,21 @@ app.get('/api/portal/my-appointments', (req, res) => {
 
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
 
-    const query = `
-        SELECT a.*, mh.visit_date as history_date, mh.diagnosis as history_diagnosis, mh.treatment_plan as history_treatment
-        FROM appointments a
-        LEFT JOIN medical_history mh ON a.patient_phone = mh.patient_phone
-        WHERE a.patient_phone = ?
-        ORDER BY a.created_at DESC, mh.visit_date DESC
-    `;
+    const aptQuery = `SELECT * FROM appointments WHERE patient_phone = ? ORDER BY created_at DESC`;
+    const histQuery = `SELECT visit_date as date, diagnosis, treatment_plan as treatment FROM medical_history WHERE patient_phone = ? ORDER BY visit_date DESC`;
 
-    db.all(query, [phone], (err, rows) => {
+    db.all(aptQuery, [phone], (err, appointments) => {
         if (err) return res.status(500).json({ error: 'Database error' });
         
-        const appointments = [];
-        const history = [];
-        const seenApt = new Set();
-        const seenHistory = new Set();
+        db.all(histQuery, [phone], (err2, history) => {
+            if (err2) return res.status(500).json({ error: 'Database error' });
 
-        rows.forEach(row => {
-            if (row.id && !seenApt.has(row.id)) {
-                appointments.push(row);
-                seenApt.add(row.id);
-            }
-            if (row.history_date && !seenHistory.has(`${row.history_date}-${row.history_diagnosis}`)) {
-                history.push({
-                    date: row.history_date,
-                    diagnosis: row.history_diagnosis,
-                    treatment: row.history_treatment
-                });
-                seenHistory.add(`${row.history_date}-${row.history_diagnosis}`);
-            }
-        });
-
-        res.json({
-            success: true,
-            appointments,
-            history,
-            patient_name: appointments.length > 0 ? appointments[0].patient_name : (phone === '9972680044' ? 'Sample Patient' : 'Patient')
+            res.json({
+                success: true,
+                appointments: appointments || [],
+                history: history || [],
+                patient_name: appointments.length > 0 ? appointments[0].patient_name : (phone === '9972680044' ? 'Mahesh Babu (Sample)' : 'Patient')
+            });
         });
     });
 });

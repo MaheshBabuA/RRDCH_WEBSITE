@@ -14,7 +14,7 @@ const MainLayout = ({ children }) => {
 
       {/* Main Content Area */}
       <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 z-10 flex flex-col">
-        <div className="flex-grow bg-white/40 backdrop-blur-md border border-white/50 rounded-2xl shadow-premium p-8 sm:p-10">
+        <div className="flex-grow bg-white/70 backdrop-blur-[12px] border border-[rgba(0,121,191,0.3)] rounded-[40px] shadow-2xl p-8 sm:p-10">
           {children}
         </div>
       </main>

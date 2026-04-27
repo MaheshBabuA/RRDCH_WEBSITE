@@ -72,7 +72,8 @@ const AISymptomChecker = () => {
     setError(null);
 
     try {
-      const res = await axios.post('http://localhost:5000/api/symptomChecker', {
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const res = await axios.post(`${API_BASE}/symptomChecker`, {
         symptoms: symptomText,
         duration: duration,
         language: language === 'kn' ? 'Kannada' : 'English'
@@ -114,7 +115,7 @@ const AISymptomChecker = () => {
 
   return (
     <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-      <div className="bg-white/70 backdrop-blur-2xl border border-white rounded-[40px] shadow-2xl overflow-hidden">
+      <div className="bg-white/70 backdrop-blur-[12px] border border-[rgba(0,121,191,0.3)] rounded-[40px] shadow-2xl overflow-hidden">
         <div className="bg-secondary-blue p-10 text-white text-center">
           <h1 className="text-4xl font-black mb-4 tracking-tight">{t('aiChecker.title')}</h1>
           <p className="text-blue-100 text-lg max-w-xl mx-auto">
@@ -161,7 +162,7 @@ const AISymptomChecker = () => {
               </div>
             ) : report ? (
               <div className="space-y-6">
-                <div id="ai-report-card" className="bg-white/80 backdrop-blur-xl border border-primary-blue/20 p-6 rounded-2xl shadow-xl">
+                <div id="ai-report-card" className="bg-white/80 backdrop-blur-xl border border-[rgba(0,121,191,0.3)] p-6 rounded-2xl shadow-xl">
                   {error && (
                     <div className="mb-4 p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-sm font-medium">
                       ⚠️ {error}

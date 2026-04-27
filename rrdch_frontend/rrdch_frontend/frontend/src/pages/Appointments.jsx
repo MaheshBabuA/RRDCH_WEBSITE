@@ -6,7 +6,7 @@ import html2canvas from 'html2canvas';
 import { useLanguage } from '../utils/i18n';
 import { useVoiceGuidance } from '../hooks/useVoiceGuidance';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = 'http://localhost:5000/api';
 
 const DEPARTMENTS = [
   { id: 1, name: 'Oral Medicine \u0026 Radiology', icon: '📸', color: 'from-blue-400 to-blue-600' },
@@ -193,7 +193,7 @@ const Appointments = () => {
               <p className="text-slate-500 font-bold mt-2 uppercase text-xs tracking-widest">{t('booking.step2')}</p>
             </div>
             
-            <div className="bg-white rounded-[48px] p-10 shadow-2xl border border-slate-100 space-y-10">
+            <div className="bg-white/70 backdrop-blur-[12px] rounded-[48px] p-10 shadow-2xl border border-[rgba(0,121,191,0.3)] space-y-10">
               <div className="space-y-4">
                 <label className="text-xs font-black uppercase text-slate-400 tracking-widest ml-2">{t('booking.availableDates')}</label>
                 <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
@@ -262,7 +262,7 @@ const Appointments = () => {
               <p className="text-slate-500 font-bold mt-2 uppercase text-xs tracking-widest">{t('booking.step3')}</p>
             </div>
 
-            <div className="bg-white rounded-[48px] p-12 shadow-2xl border border-slate-100 space-y-12">
+            <div className="bg-white/70 backdrop-blur-[12px] rounded-[48px] p-12 shadow-2xl border border-[rgba(0,121,191,0.3)] space-y-12">
               <div className="relative group">
                 <label className="absolute -top-3 left-6 bg-white px-2 text-[10px] font-black text-primary-blue uppercase tracking-widest">{t('booking.fullName')}</label>
                 <input
@@ -307,7 +307,7 @@ const Appointments = () => {
             <button
               onClick={handleBooking}
               disabled={!formData.name || formData.phone.length < 10 || isSubmitting}
-              className="w-full py-6 md:py-8 bg-primary-blue text-white rounded-[32px] font-black text-xl md:text-2xl uppercase tracking-tighter shadow-2xl shadow-primary-blue/30 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-30"
+              className="w-full py-6 md:py-8 bg-primary-blue text-white rounded-[32px] font-black text-xl md:text-2xl uppercase tracking-tighter shadow-2xl shadow-primary-blue/30 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-30 animate-pulse-subtle"
             >
               {isSubmitting ? t('booking.processing') : t('booking.confirmAppointment')}
             </button>
@@ -458,6 +458,13 @@ const Appointments = () => {
         @keyframes scaleIn {
           from { opacity: 0; transform: scale(0.9); }
           to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes pulseSubtle {
+          0%, 100% { transform: scale(1); box-shadow: 0 10px 25px -5px rgba(56, 189, 248, 0.3); }
+          50% { transform: scale(1.01); box-shadow: 0 20px 35px -5px rgba(56, 189, 248, 0.4); }
+        }
+        .animate-pulse-subtle {
+          animation: pulseSubtle 2s ease-in-out infinite;
         }
         .no-scrollbar::-webkit-scrollbar {
           display: none;

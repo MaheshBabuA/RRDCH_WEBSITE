@@ -64,19 +64,43 @@ function App() {
 
   return (
     <div className="relative min-h-screen">
-      {/* NON-BLOCKING connection warning toast (bottom-right) */}
+      {/* PREMIUM GLASSMORPHIC CONNECTION TOAST */}
       {connectionError && (
-        <div className="fixed bottom-6 right-6 z-[9999] flex items-center gap-3 bg-amber-500 text-white px-5 py-3 rounded-2xl shadow-2xl text-sm font-bold animate-fade-in">
-          <span className="text-lg">📡</span>
-          <span>Backend offline — some features may be limited.</span>
-          <button
-            onClick={checkConnectivity}
-            disabled={isRetrying}
-            className="ml-2 px-3 py-1 bg-white/20 hover:bg-white/30 rounded-xl text-xs font-black uppercase tracking-wider disabled:opacity-50 transition-all"
-          >
-            {isRetrying ? '...' : 'Retry'}
-          </button>
-          <button onClick={() => setConnectionError(false)} className="text-white/70 hover:text-white ml-1">✕</button>
+        <div className="fixed bottom-10 right-10 z-[9999] animate-bounce-slow">
+          <div className="glass-panel p-6 rounded-[32px] border border-white/40 shadow-2xl backdrop-blur-2xl flex items-center gap-6 bg-white/20">
+            <div className="relative">
+              <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-2xl animate-pulse">
+                📡
+              </div>
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full border-2 border-white animate-ping"></div>
+            </div>
+            
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-[10px] font-black text-amber-600 uppercase tracking-[0.2em]">
+                System Alert
+              </div>
+              <h3 className="text-lg font-black text-slate-900 tracking-tight uppercase">Server Connecting...</h3>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                Re-establishing clinical handshake
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2 ml-4">
+              <button
+                onClick={checkConnectivity}
+                disabled={isRetrying}
+                className="px-6 py-2 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-teal-600 transition-all disabled:opacity-50"
+              >
+                {isRetrying ? 'Syncing...' : 'Retry'}
+              </button>
+              <button 
+                onClick={() => setConnectionError(false)} 
+                className="text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 text-center"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -136,6 +160,28 @@ function App() {
       </Routes>
     </div>
   );
+}
+
+const styles = `
+  @keyframes bounceSlow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  .animate-bounce-slow {
+    animation: bounceSlow 3s ease-in-out infinite;
+  }
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+`;
+
+if (typeof document !== 'undefined') {
+  const styleSheet = document.createElement("style");
+  styleSheet.innerText = styles;
+  document.head.appendChild(styleSheet);
 }
 
 export default App;

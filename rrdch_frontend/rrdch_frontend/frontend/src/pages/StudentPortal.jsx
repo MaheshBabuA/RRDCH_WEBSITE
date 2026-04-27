@@ -30,7 +30,7 @@ const StudentPortal = () => {
   const [chatLanguage, setChatLanguage] = useState(globalLanguage);
   const [isThinking, setIsThinking] = useState(false);
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: "Hello! I'm your Academic Assistant. I've indexed the complete BDS syllabus and current clinical schedules. How can I help you today?" }
+    { role: 'assistant', content: "Welcome to the RRDCH Academic Assistant. I am trained on the complete BDS syllabus and clinical posting schedules. How can I help you with your studies today?" }
   ]);
 
   const CHAT_LANGUAGES = [
@@ -103,6 +103,10 @@ const StudentPortal = () => {
     } catch (err) { console.error('Failed to update status:', err); }
   };
 
+  const handleClearChat = () => {
+    setMessages([{ role: 'assistant', content: "Welcome to the RRDCH Academic Assistant. I am trained on the complete BDS syllabus and clinical posting schedules. How can I help you with your studies today?" }]);
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'confirmed': return 'bg-success-green text-white';
@@ -138,7 +142,8 @@ const StudentPortal = () => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s Network Timeout
 
-      const response = await fetch('http://localhost:5000/api/academic-query', {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${API_URL}/academic-query`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         signal: controller.signal,
@@ -301,15 +306,18 @@ const StudentPortal = () => {
                        <div className="text-[9px] font-bold opacity-80">RAG Syllabus Assistant</div>
                      </div>
                    </div>
-                   <select 
-                     value={chatLanguage} 
-                     onChange={(e) => setChatLanguage(e.target.value)}
-                     className="bg-white/10 border border-white/20 rounded px-1 py-0.5 text-[9px] font-bold outline-none"
-                   >
-                     {CHAT_LANGUAGES.map(lang => (
-                       <option key={lang.code} value={lang.code} className="text-black">{lang.name}</option>
-                     ))}
-                   </select>
+                   <div className="flex items-center gap-2">
+                     <button onClick={handleClearChat} className="bg-white/10 hover:bg-white/20 p-1.5 rounded-lg transition-colors text-[10px] font-black uppercase tracking-tighter">Clear</button>
+                     <select 
+                       value={chatLanguage} 
+                       onChange={(e) => setChatLanguage(e.target.value)}
+                       className="bg-white/10 border border-white/20 rounded px-1 py-0.5 text-[9px] font-bold outline-none cursor-pointer"
+                     >
+                       {CHAT_LANGUAGES.map(lang => (
+                         <option key={lang.code} value={lang.code} className="text-black">{lang.name}</option>
+                       ))}
+                     </select>
+                   </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
