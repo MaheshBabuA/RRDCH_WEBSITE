@@ -3,10 +3,11 @@ import { QRCodeSVG } from 'qrcode.react';
 import { io } from 'socket.io-client';
 import { useLanguage } from '../utils/i18n';
 
-const socket = io('http://127.0.0.1:5000');
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+const socket = io(SOCKET_URL);
 
 // Points to the Node.js backend (server.js)
-const API_URL = 'http://127.0.0.1:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const DEPARTMENTS = [
   { id: 1, name: 'Oral Medicine \u0026 Radiology', icon: '📸' },

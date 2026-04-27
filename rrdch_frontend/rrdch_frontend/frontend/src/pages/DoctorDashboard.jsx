@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = 'http://127.0.0.1:5000'; // Points to Node backend
-const API_URL = 'http://127.0.0.1:5000/api';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000'; // Points to Node backend
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const DEPARTMENTS = [
   'Oral Medicine & Radiology', 

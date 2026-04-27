@@ -39,7 +39,8 @@ function App() {
   const checkConnectivity = async () => {
     setIsRetrying(true);
     try {
-      const res = await fetch('http://localhost:5000/api/health');
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const res = await fetch(`${apiUrl.replace('/api', '')}/api/health`);
       const data = await res.json();
       if (data.status === 'ok') {
         console.log('✅ Backend Connected Successfully');

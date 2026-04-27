@@ -172,6 +172,67 @@ app.get('/api/doctor/duty-schedule', (req, res) => {
     });
 });
 
+// --- Reception Endpoints (Added for Render Deployment) ---
+app.get('/api/erp/appointments/department/:dept', (req, res) => {
+    const { dept } = req.params;
+    const query = `SELECT * FROM appointments WHERE dept = ? ORDER BY date ASC, time_slot ASC`;
+    db.all(query, [dept], (err, rows) => {
+        if (err) return res.status(500).json({ success: false, error: 'Database error' });
+        res.json({ success: true, appointments: rows });
+    });
+});
+
+app.get('/api/reception/check-in', (req, res) => {
+    const { phone } = req.query;
+    if (!phone) return res.status(400).json({ success: false, error: 'Phone is required' });
+    
+    const query = `SELECT * FROM appointments WHERE patient_phone = ? AND status = 'Booked' LIMIT 1`;
+    db.get(query, [phone], (err, row) => {
+        if (err) return res.status(500).json({ success: false, error: 'Database error' });
+        if (row) {
+            res.json({ success: true, appointment: row, history: [] });
+        } else {
+            res.json({ success: false, message: 'No active appointment found' });
+        }
+    });
+});
+
+app.put('/api/appointments/:id', (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    db.run(`UPDATE appointments SET status = ? WHERE id = ?`, [status, id], function(err) {
+        if (err) return res.status(500).json({ success: false, error: 'Database error' });
+        res.json({ success: true, message: 'Appointment updated' });
+    });
+});
+
+// --- Auth Endpoint (Added for Render Deployment) ---
+app.post('/api/auth/login', (req, res) => {
+    const { user_id, password } = req.body;
+    
+    // Mock login for admin
+    if (user_id === 'mohan' && password === 'admin123') {
+        return res.json({
+            success: true,
+            token: 'mock-jwt-token-admin',
+            user: { id: 1, user_id: 'mohan', role: 'admin', name: 'Mohan (Admin)' },
+            redirectUrl: '/staff/reception-dashboard'
+        });
+    }
+    
+    // Mock login for doctor
+    if (user_id === 'doctor' && password === 'doctor123') {
+        return res.json({
+            success: true,
+            token: 'mock-jwt-token-doc',
+            user: { id: 2, user_id: 'doctor', role: 'doctor', name: 'Dr. Sarah' },
+            redirectUrl: '/staff/doctor-dashboard'
+        });
+    }
+
+    res.status(401).json({ success: false, message: 'Invalid credentials. Try mohan/admin123' });
+});
+
 // --- Test Endpoint ---
 app.get('/api/test-socket', (req, res) => {
     io.emit('test_event', { message: 'Hello from RRDCH Server', timestamp: new Date().toISOString() });

@@ -72,7 +72,8 @@ const AISymptomChecker = () => {
     setError(null);
 
     try {
-      const res = await axios.post('http://localhost:5000/api/symptomChecker', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const res = await axios.post(`${apiUrl}/symptomChecker`, {
         symptoms: symptomText,
         duration: duration,
         language: language === 'kn' ? 'Kannada' : 'English'

@@ -48,7 +48,8 @@ const StaffManagement = () => {
     setSuccess('');
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/auth/register-staff', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${apiUrl}/auth/register-staff`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
