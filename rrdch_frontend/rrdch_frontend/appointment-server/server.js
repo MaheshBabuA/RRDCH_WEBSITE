@@ -2,7 +2,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('crypto'); // Built-in Node.js — no external dependency
 const QRCode = require('qrcode');
 const db = require('./db');
 
@@ -33,7 +33,7 @@ app.post('/api/book-appointment', async (req, res) => {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const id = `APT-${uuidv4().substring(0, 8).toUpperCase()}`;
+    const id = `APT-${randomUUID().substring(0, 8).toUpperCase()}`;
     const status = 'Booked';
     const token_no = `T-${Math.floor(Math.random() * 900) + 100}`;
     
