@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 const Login = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ user_id: '', password: '' });
@@ -17,7 +19,7 @@ const Login = () => {
     setLoading(true);
     
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/auth/login', {
+      const response = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)

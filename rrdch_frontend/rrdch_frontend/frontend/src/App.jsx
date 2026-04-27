@@ -36,19 +36,20 @@ function App() {
   const [connectionError, setConnectionError] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
 
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
   const checkConnectivity = async () => {
     setIsRetrying(true);
     try {
-      const res = await fetch('http://localhost:5000/api/health');
+      const res = await fetch(`${API_BASE}/health`);
       const data = await res.json();
       if (data.status === 'ok') {
-        console.log('✅ Backend Connected Successfully');
         setConnectionError(false);
       } else {
         setConnectionError(true);
       }
     } catch (err) {
-      console.error('❌ Backend Connection Failed:', err);
+      console.warn('Backend not reachable:', err.message);
       setConnectionError(true);
     } finally {
       setIsRetrying(false);
@@ -63,39 +64,19 @@ function App() {
 
   return (
     <div className="relative min-h-screen">
-      {/* GLOBAL ERROR BOUNDARY MODAL (Glassmorphism) */}
+      {/* NON-BLOCKING connection warning toast (bottom-right) */}
       {connectionError && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md animate-fade-in">
-          <div className="glass-panel max-w-md w-full p-12 rounded-[56px] text-center space-y-8 border-white/40 shadow-2xl teal-bloom bg-white/70">
-            <div className="w-24 h-24 bg-amber-100 rounded-full flex items-center justify-center mx-auto animate-pulse">
-               <span className="text-5xl">📡</span>
-            </div>
-
-            <div className="space-y-2">
-              <h2 className="text-3xl font-black text-slate-900 tracking-tighter uppercase">Connection Lost</h2>
-              <p className="text-slate-500 font-bold text-sm leading-relaxed">
-                Connecting to Hospital Server... <br/>
-                Please ensure the clinical backend is active.
-              </p>
-            </div>
-
-            <button
-              onClick={checkConnectivity}
-              disabled={isRetrying}
-              className={`w-full py-5 rounded-[28px] font-black text-xs uppercase tracking-[0.2em] transition-all shadow-xl ${
-                isRetrying
-                ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                : 'bg-slate-900 text-white hover:bg-[#008080] hover:shadow-[#008080]/30'
-              }`}
-            >
-              {isRetrying ? 'Attempting Sync...' : 'Retry Connection'}
-            </button>
-
-            <div className="flex items-center justify-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-               <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-ping"></div>
-               RRDCH Digital Health Systems
-            </div>
-          </div>
+        <div className="fixed bottom-6 right-6 z-[9999] flex items-center gap-3 bg-amber-500 text-white px-5 py-3 rounded-2xl shadow-2xl text-sm font-bold animate-fade-in">
+          <span className="text-lg">📡</span>
+          <span>Backend offline — some features may be limited.</span>
+          <button
+            onClick={checkConnectivity}
+            disabled={isRetrying}
+            className="ml-2 px-3 py-1 bg-white/20 hover:bg-white/30 rounded-xl text-xs font-black uppercase tracking-wider disabled:opacity-50 transition-all"
+          >
+            {isRetrying ? '...' : 'Retry'}
+          </button>
+          <button onClick={() => setConnectionError(false)} className="text-white/70 hover:text-white ml-1">✕</button>
         </div>
       )}
 
