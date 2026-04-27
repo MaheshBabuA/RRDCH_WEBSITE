@@ -10,5 +10,8 @@
     "start": "node scripts/orchestrator.js",
     "build": "cd rrdch_frontend/rrdch_frontend/frontend && npm install && npm run build",
     "postinstall": "cd rrdch_frontend/rrdch_frontend/appointment-server && npm install && cd ../../../rrdch_frontend/rrdch_frontend/frontend && npm install"
+  },
+  "engines": {
+    "node": "20.x"
   }
 }
