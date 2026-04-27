@@ -4,129 +4,127 @@ const { pool } = require('../config/database');
 
 /**
  * Endpoint: GET /api/reception/check-in
- * Triggered when a QR code is scanned by the receptionist.
- * Retrieves current appointment details (Doctor, Department, Time) 
- * and the patient's last 3 dental records from medical_history.
+ * Fetches current appointment and historical records via phone number.
  */
 router.get('/check-in', async (req, res) => {
-  const { patient_id, apt_id } = req.query;
+  const { phone } = req.query;
 
-  if (!patient_id || !apt_id) {
-    return res.status(400).json({ 
-      success: false, 
-      message: 'patient_id and apt_id (appointment_id) are required as query parameters' 
-    });
+  if (!phone) {
+    return res.status(400).json({ success: false, message: 'Phone number is required' });
   }
 
   try {
-    // 1. Fetch Current Appointment Details (Doctor, Department, Time)
-    const appointmentQuery = `
+    // Lead: Fetch current active appointment (Scheduled/Confirmed)
+    const [appointmentRows] = await pool.execute(`
       SELECT 
-        a.appointment_id,
-        a.patient_id,
+        a.appointment_id as id,
         a.patient_name,
-        a.appointment_date,
-        a.appointment_time,
-        a.status,
-        a.reason,
-        a.doctor_name,
-        d.name as department_name
+        a.doctor_name as doctor,
+        a.department_name as department,
+        a.appointment_time as time,
+        a.appointment_date as date,
+        a.reason
       FROM appointments a
-      LEFT JOIN departments d ON a.department_id = d.id
-      WHERE a.appointment_id = ? AND a.patient_id = ?
-    `;
-    
-    const [appointmentRows] = await pool.execute(appointmentQuery, [apt_id, patient_id]);
+      WHERE a.patient_phone = ? AND a.status IN ('scheduled', 'confirmed', 'PENDING')
+      ORDER BY a.appointment_date ASC
+      LIMIT 1
+    `, [phone]);
+
     const appointment = appointmentRows[0] || null;
 
-    if (!appointment) {
-      return res.status(404).json({
-        success: false,
-        message: 'No matching appointment found for the provided IDs.'
-      });
-    }
-
-    // 2. Fetch Patient's Last 3 Medical History Records
-    const historyQuery = `
-      SELECT * FROM medical_history 
-      WHERE patient_id = ? 
-      ORDER BY visit_date DESC 
-      LIMIT 3
-    `;
-
-    
-    const [historyRows] = await pool.execute(historyQuery, [patient_id]);
+    // Lead: Fetch historical records using a LEFT JOIN between appointments and patient_records
+    const [historyRows] = await pool.execute(`
+      SELECT 
+        a.appointment_date as past_visit_date,
+        a.department_name as dept,
+        a.doctor_name as doctor_id,
+        pr.diagnosis,
+        pr.notes as history_notes
+      FROM appointments a
+      LEFT JOIN patient_records pr ON a.patient_id = pr.patient_id
+      WHERE a.patient_phone = ? AND a.status = 'completed'
+      ORDER BY a.appointment_date DESC
+      LIMIT 5
+    `, [phone]);
 
     res.status(200).json({
       success: true,
-      appointment: {
-        id: appointment.appointment_id,
-        patient_name: appointment.patient_name,
-        doctor: appointment.doctor_name,
-        department: appointment.department_name,
-        time: appointment.appointment_time,
-        date: appointment.appointment_date,
-        status: appointment.status,
-        reason: appointment.reason
-      },
-      medical_history: historyRows || []
+      appointment,
+      history: historyRows || []
     });
 
   } catch (error) {
-    console.error('Error in /api/reception/check-in:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to process check-in data.' 
-    });
+    console.error('Check-in Error:', error);
+    res.status(500).json({ success: false, message: 'Database error during check-in' });
   }
 });
 
+
 /**
  * Endpoint: GET /api/reception/patient-profile
- * Fetches current visit and past records for a specific patient ID.
  */
 router.get('/patient-profile', async (req, res) => {
   const { id } = req.query;
-
-  if (!id) {
-    return res.status(400).json({ success: false, message: 'Patient ID is required' });
-  }
+  if (!id) return res.status(400).json({ success: false, message: 'Patient ID is required' });
 
   try {
-    // 1. Fetch Current Appointment
-    const appointmentQuery = `
+    const profileQuery = `
       SELECT 
-        a.appointment_time as time,
-        a.doctor_name as doctor,
-        d.name as department
+        a.appointment_id,
+        a.appointment_time as current_time,
+        a.doctor_name as current_doctor,
+        a.department_name as current_dept,
+        pr.visit_date as past_visit_date,
+        pr.diagnosis,
+        pr.treatment,
+        pr.notes as past_notes
       FROM appointments a
-      LEFT JOIN departments d ON a.department_id = d.id
-      WHERE a.patient_id = ? AND a.status IN ('scheduled', 'confirmed', 'in_progress')
-      ORDER BY a.appointment_date ASC, a.appointment_time ASC
-      LIMIT 1
+      LEFT JOIN patient_records pr ON a.patient_id = pr.patient_id
+      WHERE a.patient_id = ? 
+      ORDER BY a.appointment_date DESC, pr.visit_date DESC
     `;
-    const [appointmentRows] = await pool.execute(appointmentQuery, [id]);
+    const [rows] = await pool.execute(profileQuery, [id]);
 
-    // 2. Fetch Medical History from patient_records table
-    const recordsQuery = `
-      SELECT * FROM patient_records 
-      WHERE patient_id = ? 
-      ORDER BY visit_date DESC 
-      LIMIT 5
-    `;
-    const [recordRows] = await pool.execute(recordsQuery, [id]);
+    if (rows.length === 0) {
+      return res.status(200).json({ success: true, message: 'New Patient Profile', data: [] });
+    }
 
-    res.status(200).json({
-      success: true,
-      current_appointment: appointmentRows[0] || null,
-      medical_history: recordRows || []
-    });
-
+    res.status(200).json({ success: true, data: rows });
   } catch (error) {
-    console.error('Error in /api/reception/patient-profile:', error);
+    console.error(error);
     res.status(500).json({ success: false, message: 'Server error retrieving profile' });
   }
 });
 
-module.exports = router;
+/**
+ * Endpoint: PATCH /api/reception/confirm-arrival/:id
+ */
+router.patch('/confirm-arrival/:id', async (req, res) => {
+  const { id } = req.params;
+  const status = 'in_progress'; // Yellow/Waiting on UI
 
+  try {
+    const [result] = await pool.execute(
+      'UPDATE appointments SET status = ? WHERE appointment_id = ?',
+      [status, id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Appointment not found' });
+    }
+
+    const [aptRows] = await pool.execute('SELECT patient_name FROM appointments WHERE appointment_id = ?', [id]);
+    const patient_name = aptRows[0]?.patient_name;
+
+    const io = req.app.get('io');
+    io.emit('PATIENT_ARRIVED', { id, patient_name, status });
+
+    res.json({ success: true, message: 'Arrival confirmed', appointment: { id, patient_name, status } });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+module.exports = router;

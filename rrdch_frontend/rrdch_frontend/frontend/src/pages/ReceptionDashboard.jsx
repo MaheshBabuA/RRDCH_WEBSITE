@@ -1,35 +1,44 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { io } from 'socket.io-client';
+import { useLanguage } from '../utils/i18n';
 
-const SOCKET_URL = 'http://localhost:5000'; // Points to Node backend
+const SOCKET_URL = 'http://localhost:5000';
 const API_URL = 'http://localhost:5000/api';
 
 const DEPARTMENTS = [
-  'Oral Surgery', 'Orthodontics', 'Periodontics', 'Prosthodontics',
-  'Conservative Dentistry', 'Pedodontics', 'Oral Medicine', 'Oral Pathology'
+  { id: 1, name: 'Oral Medicine \u0026 Radiology' },
+  { id: 2, name: 'Prosthetics \u0026 Crown \u0026 Bridge' },
+  { id: 3, name: 'Oral \u0026 Maxillofacial Surgery' },
+  { id: 4, name: 'Periodontology' },
+  { id: 5, name: 'Pedodontics \u0026 Preventive Dentistry' },
+  { id: 6, name: 'Conservative Dentistry \u0026 Endodontics' },
+  { id: 7, name: 'Orthodontics \u0026 Dentofacial Orthopedics' },
+  { id: 8, name: 'Public Health Dentistry' },
+  { id: 9, name: 'Oral \u0026 Maxillofacial Pathology' },
+  { id: 10, name: 'Implantology' },
+  { id: 11, name: 'Orofacial Pain' }
 ];
 
 const STATUS_FLOW = ['scheduled', 'confirmed', 'in_queue', 'treatment'];
-const STATUS_LABELS = { scheduled: 'Scheduled', confirmed: 'Confirmed', in_queue: 'In Queue', treatment: 'Treatment' };
 const STATUS_COLORS = {
-  scheduled: 'bg-blue-100 text-blue-700 border-blue-200',
-  confirmed: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-  in_queue: 'bg-amber-100 text-amber-700 border-amber-200',
-  treatment: 'bg-purple-100 text-purple-700 border-purple-200',
+  scheduled: 'text-blue-500 bg-blue-50 border-blue-100',
+  confirmed: 'text-emerald-500 bg-emerald-50 border-emerald-100',
+  in_queue: 'text-amber-500 bg-amber-50 border-amber-100',
+  treatment: 'text-purple-500 bg-purple-50 border-purple-100',
 };
 
 const ReceptionDashboard = () => {
+  const { t } = useLanguage();
   const [selectedDept, setSelectedDept] = useState('');
   const [appointments, setAppointments] = useState([]);
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [notification, setNotification] = useState(null);
-
-  // QR Scanning & History State
+  const [isScanning, setIsScanning] = useState(false);
+  const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
+  const [confirmedDoctor, setConfirmedDoctor] = useState('');
   const [scannedData, setScannedData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('current'); // 'current' or 'history'
-  const [isScanning, setIsScanning] = useState(false);
 
   useEffect(() => {
     const s = io(SOCKET_URL);
@@ -54,328 +63,212 @@ const ReceptionDashboard = () => {
     
     const handleNew = (apt) => {
       setAppointments(prev => [apt, ...prev]);
-      setNotification(`New appointment: ${apt.patient_name}`);
+      setNotification(`New arrival: ${apt.patient_name}`);
       setTimeout(() => setNotification(null), 4000);
     };
-    const handleStatusUpdate = ({ id, status }) => {
-      setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a));
-    };
-    socket.on('new_appointment', handleNew);
-    socket.on('status_update', handleStatusUpdate);
+    socket.on('PATIENT_ARRIVED', handleNew);
     return () => {
-      socket.off('new_appointment', handleNew);
-      socket.off('status_update', handleStatusUpdate);
+      socket.off('PATIENT_ARRIVED', handleNew);
     };
   }, [socket, selectedDept, fetchDeptAppointments]);
 
-  const advanceStatus = async (apt) => {
-    const currentIdx = STATUS_FLOW.indexOf(apt.status);
-    if (currentIdx >= STATUS_FLOW.length - 1) return;
-    const nextStatus = STATUS_FLOW[currentIdx + 1];
-    try {
-      await fetch(`${API_URL}/appointments/${apt.id}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: nextStatus }),
-      });
-      setAppointments(prev => prev.map(a => a.id === apt.id ? { ...a, status: nextStatus } : a));
-    } catch (err) { console.error(err); }
-  };
-
-  // --- REFACTORED QR SCAN SUCCESS HANDLER ---
   const handleSimulateScan = async () => {
-    const scanResult = prompt("Simulate QR Scan - Enter JSON String:", '{"patient_id": "P-1001", "current_appointment_id": "APT-44201"}');
+    const scanResult = prompt("Simulate QR Scan:", '{"phone": "9876543210", "aptId": "APT-XYZ"}');
     if (!scanResult) return;
-
     try {
-      // Step 1: Use JSON.parse() to extract IDs
-      const parsedData = JSON.parse(scanResult);
-      if (!parsedData.patient_id) throw new Error("Missing patient_id");
-
+      const data = JSON.parse(scanResult);
       setIsScanning(true);
-      
-      // Step 2: GET request to /api/reception/patient-profile
-      const res = await fetch(`${API_URL}/reception/patient-profile?id=${parsedData.patient_id}`);
-      
+      const res = await fetch(`${API_URL}/reception/check-in?phone=${data.phone}`);
       const responseData = await res.json();
-      if (responseData.success) {
-        // Map the new response structure to our state
-        setScannedData({
-          appointment: responseData.current_appointment,
-          medical_history: responseData.medical_history,
-          patient_name: parsedData.patient_name || "Patient" // Fallback if name not in profile
-        });
-        setIsModalOpen(true);
-        setActiveTab('current');
+      if (responseData.success && responseData.appointment) {
+          setScannedData({ ...responseData, id: data.aptId || responseData.appointment.id });
+          setIsModalOpen(true);
       } else {
-        alert(responseData.message || "Failed to retrieve scan data");
+        alert("No active appointment found.");
       }
     } catch (err) {
-      console.error(err);
-      alert("Invalid QR Data Format or Server Error");
-    } finally {
-      setIsScanning(false);
-    }
+      alert("Invalid QR Payload");
+    } finally { setIsScanning(false); }
   };
 
-
-  const countByStatus = (s) => appointments.filter(a => a.status === s).length;
+  const handleConfirmArrival = async () => {
+    try {
+        const res = await fetch(`${API_URL}/appointments/${scannedData.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'in_queue' })
+        });
+        if ((await res.json()).success) {
+            socket.emit('PATIENT_ARRIVED', { id: scannedData.id, patient_name: scannedData.appointment.patient_name, doctor: scannedData.appointment.doctor });
+            setConfirmedDoctor(scannedData.appointment.doctor);
+            setShowSuccessOverlay(true);
+            setIsModalOpen(false);
+            setTimeout(() => { setShowSuccessOverlay(false); setScannedData(null); }, 3000);
+        }
+    } catch (err) { alert("Check-in failed"); }
+  };
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-white">
-      {notification && (
-        <div className="fixed top-6 right-6 z-50 animate-fade-in bg-emerald-500 text-white px-6 py-4 rounded-2xl shadow-2xl font-bold flex items-center gap-3">
-          <span className="w-3 h-3 bg-white rounded-full animate-ping"></span>
-          {notification}
-        </div>
-      )}
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+    <div className="min-h-screen bg-[#f8fafc] p-4 md:p-12 text-slate-900 pb-24 md:pb-12">
+      <div className="max-w-[1440px] mx-auto">
+        <header className="mb-10 md:mb-16 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></div>
-              <span className="text-xs font-black uppercase tracking-[0.2em] text-emerald-400">
-                {isConnected ? 'Live Connected' : 'Disconnected'}
-              </span>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-3 h-3 bg-teal-500 rounded-full animate-pulse shadow-lg shadow-teal-500/50"></div>
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-teal-600">{t('reception.active')}</span>
             </div>
-            <h1 className="text-4xl font-black tracking-tight">Receptionist Dashboard</h1>
-            <p className="text-slate-400 font-medium mt-1">Real-time patient check-in & appointment management</p>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase">{t('reception.title')}</h1>
           </div>
-          
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={handleSimulateScan}
-              disabled={isScanning}
-              className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-black shadow-lg shadow-emerald-500/20 flex items-center gap-2 transition-all active:scale-95"
-            >
-              <span className="text-xl">📷</span>
-              {isScanning ? 'Processing...' : 'Scan Patient QR'}
-            </button>
-            <div className="bg-white/5 border border-white/10 rounded-2xl px-6 py-3 backdrop-blur-md">
-              <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Reception Access Only</div>
-              <div className="text-lg font-black font-mono text-amber-400">RRDCH-STAFF</div>
-            </div>
-          </div>
-        </div>
+          <button 
+            onClick={handleSimulateScan}
+            className="w-full md:w-auto px-10 py-5 bg-slate-900 text-white rounded-[24px] font-black uppercase text-xs tracking-widest shadow-2xl hover:bg-teal-600 transition-all active:scale-95"
+          >
+            {t('reception.scanPass')}
+          </button>
+        </header>
 
-        <div className="mb-10">
-          <label className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3 block">Select Department Queue</label>
-          <div className="flex flex-wrap gap-3">
+        <div className="mb-12">
+          <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-6 block">{t('reception.selectDeptQueue')}</label>
+          <div className="flex flex-wrap gap-4">
             {DEPARTMENTS.map(dept => (
               <button
-                key={dept}
-                onClick={() => setSelectedDept(dept)}
-                className={`px-6 py-3 rounded-2xl font-bold text-sm transition-all ${
-                  selectedDept === dept
-                    ? 'bg-[#008080] text-white shadow-lg shadow-[#008080]/30 scale-105'
-                    : 'bg-white/5 text-slate-300 border border-white/10 hover:bg-white/10'
+                key={dept.id}
+                onClick={() => setSelectedDept(dept.name)}
+                className={`px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${
+                  selectedDept === dept.name ? 'bg-teal-500 text-white shadow-xl shadow-teal-500/30 scale-105' : 'bg-white text-slate-400 border border-slate-100 hover:border-teal-200'
                 }`}
               >
-                {dept}
+                {t(`deptNames.${dept.id}`)}
               </button>
             ))}
           </div>
         </div>
 
-        {selectedDept ? (
-          <>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-              {STATUS_FLOW.map(s => (
-                <div key={s} className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-md">
-                  <div className="text-3xl font-black">{countByStatus(s)}</div>
-                  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">{STATUS_LABELS[s]}</div>
-                </div>
+        {selectedDept && (
+          <div className="glass-panel rounded-[48px] overflow-hidden border border-white/30 shadow-2xl bg-white/40 relative">
+            <div className="absolute inset-0 teal-bloom opacity-10 pointer-events-none"></div>
+            <div className="px-6 md:px-12 py-6 md:py-10 border-b border-white/20 bg-white/20 backdrop-blur-md">
+               <h2 className="text-2xl md:text-3xl font-black tracking-tighter uppercase">
+                 {DEPARTMENTS.find(d => d.name === selectedDept) ? t(`deptNames.${DEPARTMENTS.find(d => d.name === selectedDept).id}`) : selectedDept} {t('reception.queue')}
+               </h2>
+            </div>
+            
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 bg-white/50">
+                    <th className="px-12 py-6">{t('reception.patient')}</th>
+                    <th className="px-12 py-6">{t('reception.reporting')}</th>
+                    <th className="px-12 py-6">{t('reception.status')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100/50">
+                  {appointments.map((apt, i) => (
+                    <tr key={apt.id} className={`tactile-row ${i % 2 === 0 ? 'bg-white/30' : 'bg-transparent'}`}>
+                      <td className="px-12 py-8 font-black text-slate-900">{apt.patient_name}</td>
+                      <td className="px-12 py-8 text-sm font-bold text-slate-400">{apt.time_slot}</td>
+                      <td className="px-12 py-8">
+                        <span className={`px-4 py-2 rounded-full text-[9px] font-black uppercase border ${STATUS_COLORS[apt.status] || ''}`}>
+                          {t(`reception.${apt.status}`) !== `reception.${apt.status}` ? t(`reception.${apt.status}`) : apt.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards View */}
+            <div className="md:hidden flex flex-col gap-4 p-4">
+              {appointments.map((apt, idx) => (
+                 <div key={apt.id} className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col gap-4 relative">
+                    <div className="flex justify-between items-start">
+                       <div>
+                          <div className="font-black text-xl text-slate-900 uppercase tracking-tight">{apt.patient_name}</div>
+                          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">ID: {apt.id}</div>
+                       </div>
+                       <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase border ${STATUS_COLORS[apt.status] || ''}`}>
+                          {t(`reception.${apt.status}`) !== `reception.${apt.status}` ? t(`reception.${apt.status}`) : apt.status}
+                       </span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between mt-2">
+                       <div className="px-4 py-2 bg-slate-50 rounded-xl font-black text-slate-600 text-xs">
+                         {apt.time_slot}
+                       </div>
+                    </div>
+                 </div>
               ))}
             </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden backdrop-blur-md">
-              <div className="px-8 py-5 border-b border-white/10 flex justify-between items-center">
-                <h2 className="text-lg font-black">{selectedDept} — Today's Queue</h2>
-                <span className="text-xs font-bold text-slate-400">{appointments.length} patients</span>
-              </div>
-
-              {appointments.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="border-b border-white/10 text-xs font-black uppercase tracking-widest text-slate-500">
-                        <th className="px-8 py-4">Token</th>
-                        <th className="px-8 py-4">Patient</th>
-                        <th className="px-8 py-4">Date</th>
-                        <th className="px-8 py-4">Time</th>
-                        <th className="px-8 py-4">Status</th>
-                        <th className="px-8 py-4 text-right">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                      {appointments.map(apt => (
-                        <tr key={apt.id} className="hover:bg-white/5 transition-colors">
-                          <td className="px-8 py-5 font-black text-[#008080] text-lg">{apt.token_no}</td>
-                          <td className="px-8 py-5">
-                            <div className="font-bold">{apt.patient_name}</div>
-                            <div className="text-xs text-slate-500">{apt.id}</div>
-                          </td>
-                          <td className="px-8 py-5 font-medium text-slate-300">{apt.date}</td>
-                          <td className="px-8 py-5 font-medium text-slate-300">{apt.time_slot}</td>
-                          <td className="px-8 py-5">
-                            <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase border ${STATUS_COLORS[apt.status]}`}>
-                              {STATUS_LABELS[apt.status]}
-                            </span>
-                          </td>
-                          <td className="px-8 py-5 text-right">
-                            {STATUS_FLOW.indexOf(apt.status) < STATUS_FLOW.length - 1 ? (
-                              <button
-                                onClick={() => advanceStatus(apt)}
-                                className="px-5 py-2.5 bg-[#008080] text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-[#006666] transition-all shadow-lg shadow-[#008080]/20"
-                              >
-                                → {STATUS_LABELS[STATUS_FLOW[STATUS_FLOW.indexOf(apt.status) + 1]]}
-                              </button>
-                            ) : (
-                              <span className="text-xs font-bold text-emerald-400">✓ Complete</span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="text-center py-20">
-                  <div className="text-5xl mb-4 opacity-30">🩺</div>
-                  <h3 className="text-xl font-black text-slate-400">No appointments yet</h3>
-                  <p className="text-slate-500 font-medium mt-1">Patients will appear here in real-time.</p>
-                </div>
-              )}
-            </div>
-          </>
-        ) : (
-          <div className="text-center py-32 bg-white/5 border border-dashed border-white/10 rounded-[40px]">
-            <div className="text-6xl mb-6 opacity-30">🏥</div>
-            <h3 className="text-2xl font-black text-slate-400">Select a Department</h3>
-            <p className="text-slate-500 font-medium mt-2">Choose a department above to manage the live queue.</p>
           </div>
         )}
       </div>
 
-      {/* --- PATIENT RECORDS MODAL (2 TABS) --- */}
       {isModalOpen && scannedData && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl" onClick={() => setIsModalOpen(false)}></div>
-          <div className="relative bg-slate-900 border border-white/10 w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden animate-scale-up">
-            
-            {/* Modal Header */}
-            <div className="bg-gradient-to-r from-[#008080] to-emerald-600 p-8">
-              <div className="flex justify-between items-start">
+        <div className="fixed inset-0 z-[500] flex items-center justify-center p-6">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-2xl" onClick={() => setIsModalOpen(false)}></div>
+          <div className="relative glass-panel bg-white/70 border border-white/50 w-full max-w-2xl rounded-[56px] shadow-2xl overflow-hidden animate-scale-up">
+             <div className="p-12 bg-slate-900 text-white flex justify-between items-center">
                 <div>
-                   <h2 className="text-3xl font-black tracking-tight">{scannedData.appointment?.patient_name}</h2>
-                   <p className="text-emerald-100 font-bold opacity-80 mt-1">Check-in Verified • {scannedData.appointment?.id}</p>
+                   <h2 className="text-4xl font-black tracking-tighter uppercase">{scannedData.appointment.patient_name}</h2>
+                   <p className="text-teal-400 font-bold uppercase text-[10px] tracking-widest mt-1">{t('reception.verificationHash')} {scannedData.appointment.hash || 'Verified'}</p>
                 </div>
-                <button onClick={() => setIsModalOpen(false)} className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all">✕</button>
-              </div>
-            </div>
+                <button onClick={() => setIsModalOpen(false)} className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center font-black">✕</button>
+             </div>
+             
+             <div className="p-12 space-y-10">
+                <div className="grid grid-cols-2 gap-8">
+                   <div className="bg-slate-50 p-8 rounded-[32px] border border-slate-100">
+                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{t('reception.clinicalArea')}</div>
+                      <div className="text-xl font-black text-teal-600 uppercase">
+                        {DEPARTMENTS.find(d => d.name === scannedData.appointment.department) ? t(`deptNames.${DEPARTMENTS.find(d => d.name === scannedData.appointment.department).id}`) : scannedData.appointment.department}
+                      </div>
+                   </div>
+                   <div className="bg-slate-50 p-8 rounded-[32px] border border-slate-100">
+                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{t('reception.assignedDoctor')}</div>
+                      <div className="text-xl font-black text-slate-900 uppercase">{scannedData.appointment.doctor}</div>
+                   </div>
+                </div>
 
-            {/* Tab Navigation */}
-            <div className="flex bg-slate-800/50 p-2 border-b border-white/5">
-                <button 
-                    onClick={() => setActiveTab('current')}
-                    className={`flex-1 py-4 text-xs font-black uppercase tracking-widest rounded-2xl transition-all ${activeTab === 'current' ? 'bg-[#008080] text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-                >
-                    Current Visit
-
-
-                </button>
-                <button 
-                    onClick={() => setActiveTab('history')}
-                    className={`flex-1 py-4 text-xs font-black uppercase tracking-widest rounded-2xl transition-all ${activeTab === 'history' ? 'bg-[#008080] text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-                >
-                    Past Records
-
-
-                </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-8 max-h-[60vh] overflow-y-auto">
-                {activeTab === 'current' ? (
-                    <div className="space-y-6 animate-fade-in">
-                        <div className="grid grid-cols-2 gap-6">
-                            <div className="bg-white/5 p-5 rounded-2xl border border-white/10">
-                                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Doctor Assigned</div>
-                                <div className="text-lg font-black text-emerald-400">{scannedData.appointment?.doctor || 'Assigned on Arrival'}</div>
-                            </div>
-                            <div className="bg-white/5 p-5 rounded-2xl border border-white/10">
-                                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Department</div>
-                                <div className="text-lg font-black">{scannedData.appointment?.department || 'General OPD'}</div>
-                            </div>
-                            <div className="bg-white/5 p-5 rounded-2xl border border-white/10">
-                                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Appointment Time</div>
-                                <div className="text-lg font-black">{scannedData.appointment?.time}</div>
-                            </div>
-                            <div className="bg-white/5 p-5 rounded-2xl border border-white/10">
-                                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Visit Date</div>
-                                <div className="text-lg font-black">{new Date(scannedData.appointment?.date).toLocaleDateString()}</div>
-                            </div>
+                <div className="space-y-6">
+                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('reception.historyHandshake')}</h4>
+                   <div className="space-y-3">
+                      {scannedData.history.map((h, i) => (
+                        <div key={i} className="flex justify-between items-center p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                           <span className="font-black text-slate-900 text-sm">{h.diagnosis || 'General Checkup'}</span>
+                           <span className="text-[10px] font-bold text-slate-400 uppercase">{h.past_visit_date}</span>
                         </div>
-                        <div className="bg-white/5 p-6 rounded-2xl border border-white/10">
-                            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Reason for Visit</div>
-                            <p className="text-slate-300 font-medium leading-relaxed">{scannedData.appointment?.reason || 'No specific reason provided.'}</p>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="space-y-6 animate-fade-in">
-                        <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">Last 3 Visits</h4>
-                        {scannedData.medical_history?.length > 0 ? (
-                            scannedData.medical_history.map((record, i) => (
-                                <div key={i} className="bg-white/5 p-6 rounded-3xl border border-white/10 relative overflow-hidden group">
-                                    <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform"></div>
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div>
-                                            <div className="text-lg font-black text-emerald-400">{record.treatment_type || 'General Consultation'}</div>
-                                            <div className="text-xs font-bold text-slate-500">{new Date(record.visit_date).toLocaleDateString()}</div>
-                                        </div>
-                                        <div className="text-[10px] font-black bg-white/10 px-3 py-1 rounded-full">{record.doctor_name}</div>
-                                    </div>
-                                    <p className="text-sm text-slate-300 font-medium italic">"{record.notes || 'No specific notes recorded for this visit.'}"</p>
-                                </div>
-                            ))
-                        ) : (
-                            <div className="text-center py-10 bg-white/5 rounded-3xl border border-dashed border-white/10">
-                                <p className="text-slate-500 font-bold">No past dental records found.</p>
-                            </div>
-                        )}
-                    </div>
-                )}
-            </div>
+                      ))}
+                      {scannedData.history.length === 0 && <div className="text-center py-10 font-black text-slate-300 uppercase tracking-widest">{t('reception.firstVisit')}</div>}
+                   </div>
+                </div>
 
-            {/* Modal Footer */}
-            <div className="p-8 border-t border-white/5 bg-slate-800/30">
                 <button 
-                    onClick={() => setIsModalOpen(false)}
-                    className="w-full py-4 bg-white text-slate-900 font-black rounded-2xl hover:bg-slate-200 transition-all shadow-xl"
+                  onClick={handleConfirmArrival}
+                  className="w-full py-8 bg-teal-500 text-white rounded-[32px] font-black text-2xl uppercase tracking-tighter shadow-2xl shadow-teal-500/40 hover:scale-105 active:scale-95 transition-all"
                 >
-                    Close Record
+                  {t('reception.confirmArrival')}
                 </button>
-            </div>
+             </div>
           </div>
         </div>
       )}
 
+      {showSuccessOverlay && (
+        <div className="fixed inset-0 z-[1000] bg-teal-500 flex flex-col items-center justify-center text-white animate-fade-in p-10 text-center">
+           <div className="text-[150px] animate-bounce">✅</div>
+           <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-4">{t('reception.checkInSuccess')}</h1>
+           <p className="text-2xl font-bold opacity-80 uppercase tracking-widest">{t('reception.proceedToCabin')} {confirmedDoctor}</p>
+        </div>
+      )}
+
       <style>{`
-        .animate-scale-up {
-          animation: scaleUp 0.3s ease-out;
-        }
-        @keyframes scaleUp {
-          from { transform: scale(0.95); opacity: 0; }
-          to { transform: scale(1); opacity: 1; }
-        }
-        .animate-fade-in {
-          animation: fadeIn 0.3s ease-out;
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
+        .glass-panel { backdrop-filter: blur(25px); }
+        .teal-bloom { background: radial-gradient(circle at center, rgba(0, 128, 128, 0.1), transparent 70%); }
+        .tactile-row:hover { transform: translateX(10px); background: rgba(0, 128, 128, 0.05) !important; box-shadow: -5px 0 0 #008080; }
+        .animate-scale-up { animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
       `}</style>
     </div>
   );

@@ -1,6 +1,30 @@
 const express = require('express');
 const router = express.Router();
 const appointmentModel = require('../models/appointmentModel');
+const { pool } = require('../config/database');
+
+/**
+ * 0. GET /api/appointments/queue
+ * Get live queue for doctors
+ */
+router.get('/queue', async (req, res) => {
+  try {
+    const { doctor_id } = req.query;
+    // Filter for 'PENDING' or 'confirmed' status as a base
+    const query = `
+      SELECT * FROM appointments 
+      WHERE status IN ('PENDING', 'confirmed', 'With Doctor') 
+      ${doctor_id ? 'AND doctor_id = ?' : ''} 
+      ORDER BY appointment_date ASC
+    `;
+    const params = doctor_id ? [doctor_id] : [];
+    const [rows] = await pool.execute(query, params);
+    res.status(200).json({ success: true, queue: rows });
+  } catch (error) {
+    console.error('Queue Fetch Error:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch queue' });
+  }
+});
 
 /**
  * Middleware: Log all requests and add CORS headers
@@ -78,6 +102,14 @@ router.post('/', validateCreateAppointment, async (req, res) => {
     const result = await appointmentModel.createAppointment(patientData);
 
     if (result.success) {
+      // Lead: Emit 'appointment_update' for reactive frontend updates
+      const io = req.app.get('io');
+      io.emit('appointment_update', { 
+        type: 'NEW_BOOKING', 
+        appointmentId: result.appointmentId,
+        patientName: req.body.patient_name
+      });
+
       return res.status(201).json({
         success: true,
         appointmentId: result.appointmentId,
@@ -86,6 +118,7 @@ router.post('/', validateCreateAppointment, async (req, res) => {
         message: 'Appointment successfully created.'
       });
     } else {
+
       return res.status(500).json({ success: false, message: result.error });
     }
   } catch (error) {
@@ -168,12 +201,21 @@ router.put('/:appointmentId', async (req, res) => {
     const result = await appointmentModel.updateAppointmentStatus(appointmentId, status);
 
     if (result.success) {
+      // Lead: Emit 'appointment_update' for status changes (e.g., Doctor Console -> Patient Portal)
+      const io = req.app.get('io');
+      io.emit('appointment_update', { 
+        type: 'STATUS_CHANGE', 
+        appointmentId, 
+        status 
+      });
+
       return res.status(200).json({ success: true, updated: true });
     } else {
       // Could be 404 if not found or 500 for db errors
       const isNotFound = result.error.includes('found');
       return res.status(isNotFound ? 404 : 500).json({ success: false, message: result.error });
     }
+
   } catch (error) {
     console.error('Unhandled PUT Error:', error);
     return res.status(500).json({ success: false, message: 'Internal Server Error' });

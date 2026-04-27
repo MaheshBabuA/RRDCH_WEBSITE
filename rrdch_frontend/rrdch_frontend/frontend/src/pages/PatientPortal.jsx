@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { io } from 'socket.io-client';
+import { useLanguage } from '../utils/i18n';
 
 const socket = io('http://localhost:5000');
 
@@ -8,19 +9,18 @@ const socket = io('http://localhost:5000');
 const API_URL = 'http://localhost:5000/api';
 
 const DEPARTMENTS = [
-  { name: 'Oral Medicine & Radiology', icon: '📸' },
-  { name: 'Prosthodontics', icon: '😁' },
-  { name: 'Oral & Maxillofacial Surgery', icon: '🏥' },
-  { name: 'Periodontology', icon: '🦷' },
-  { name: 'Pedodontics', icon: '👶' },
-  { name: 'Conservative Dentistry', icon: '🩹' },
-  { name: 'Orthodontics', icon: '😬' },
-  { name: 'Public Health Dentistry', icon: '🌍' },
-  { name: 'Oral & Maxillofacial Pathology', icon: '🔬' },
-  { name: 'Implantology', icon: '🔩' },
-  { name: 'Orofacial Pain', icon: '⚡' }
+  { id: 1, name: 'Oral Medicine \u0026 Radiology', icon: '📸' },
+  { id: 2, name: 'Prosthetics \u0026 Crown \u0026 Bridge', icon: '😁' },
+  { id: 3, name: 'Oral \u0026 Maxillofacial Surgery', icon: '🏥' },
+  { id: 4, name: 'Periodontology', icon: '🛡️' },
+  { id: 5, name: 'Pedodontics \u0026 Preventive Dentistry', icon: '👶' },
+  { id: 6, name: 'Conservative Dentistry \u0026 Endodontics', icon: '🩹' },
+  { id: 7, name: 'Orthodontics \u0026 Dentofacial Orthopedics', icon: '😬' },
+  { id: 8, name: 'Public Health Dentistry', icon: '🌍' },
+  { id: 9, name: 'Oral \u0026 Maxillofacial Pathology', icon: '🔬' },
+  { id: 10, name: 'Implantology', icon: '🔩' },
+  { id: 11, name: 'Orofacial Pain', icon: '⚡' }
 ];
-
 
 const TIME_SLOTS = [
   "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
@@ -30,62 +30,71 @@ const TIME_SLOTS = [
 // Refined Status Colors
 const STATUS_COLORS = { 
   Pending: 'bg-amber-400 text-white shadow-amber-400/20', // In-Queue
-  Confirmed: 'bg-emerald-500 text-white shadow-emerald-500/20', // Doctor is ready
-  Completed: 'bg-slate-400 text-white shadow-slate-400/20' // Completed
-};
-
-const STATUS_LABELS = {
-  Pending: 'In-Queue',
-  Confirmed: 'Doctor is Ready',
-  Completed: 'Completed'
+  Confirmed: 'bg-blue-500 text-white shadow-blue-400/20', // Scheduled
+  in_progress: 'bg-emerald-500 text-white shadow-emerald-500/20', // Your Turn
+  Completed: 'bg-slate-400 text-white shadow-slate-400/20' 
 };
 
 const PatientPortal = () => {
+  const { t } = useLanguage();
   const [liveTicker, setLiveTicker] = useState(null);
-
-  useEffect(() => {
-    socket.on('live-ticker-update', (data) => {
-      setLiveTicker(data);
-      // Auto-hide ticker after 10 seconds
-      setTimeout(() => setLiveTicker(null), 10000);
-    });
-    return () => socket.off('live-ticker-update');
-  }, []);
+  const [showCallAlert, setShowCallAlert] = useState(false);
+  const [calledAptData, setCalledAptData] = useState(null);
   const [view, setView] = useState('home'); // home, booking, tracking
   const [bookingStep, setBookingStep] = useState(1);
   const [phone, setPhone] = useState(localStorage.getItem('current_user_phone') || '');
-
   const [isSearching, setIsSearching] = useState(false);
   const [appointments, setAppointments] = useState([]);
+  const [medicalHistory, setMedicalHistory] = useState([]);
+  const [patientName, setPatientName] = useState('');
   const [selectedApt, setSelectedApt] = useState(null);
   const [bookingForm, setBookingForm] = useState({ patient_name: '', dept: '', date: '', time_slot: '' });
   const [isBooking, setIsBooking] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(null);
 
-  // Sound Feedback Helpers
+  useEffect(() => {
+    socket.on('live-ticker-update', (data) => {
+      setLiveTicker(data);
+      setTimeout(() => setLiveTicker(null), 10000);
+    });
+
+    socket.on('update', (data) => {
+      console.log('Live appointment update received:', data);
+      fetchAppointments();
+    });
+
+    socket.on('CALL_PATIENT', (data) => {
+      const myAptId = localStorage.getItem('last_booked_apt_id');
+      if (data.appointment_id === myAptId || appointments.some(a => a.id === data.appointment_id)) {
+          setCalledAptData(data);
+          setShowCallAlert(true);
+          playSound('success');
+          const msg = new SpeechSynthesisUtterance("It is your turn. Please enter cabin number 4.");
+          msg.lang = 'en-IN';
+          window.speechSynthesis.speak(msg);
+      }
+      fetchAppointments();
+    });
+
+    return () => {
+      socket.off('live-ticker-update');
+      socket.off('update');
+      socket.off('CALL_PATIENT');
+    };
+  }, [phone, view]);
+
   const playSound = (type) => {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const oscillator = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
-
     oscillator.connect(gainNode);
     gainNode.connect(audioCtx.destination);
-
     if (type === 'success') {
       oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
-      oscillator.frequency.exponentialRampToValueAtTime(1320, audioCtx.currentTime + 0.1); // E6
+      oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
       gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
       oscillator.start();
       oscillator.stop(audioCtx.currentTime + 0.3);
-    } else {
-      oscillator.type = 'square';
-      oscillator.frequency.setValueAtTime(220, audioCtx.currentTime); // A3
-      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-      oscillator.start();
-      oscillator.stop(audioCtx.currentTime + 0.2);
     }
   };
 
@@ -103,6 +112,8 @@ const PatientPortal = () => {
       const data = await res.json();
       if (data.success) {
         setAppointments(data.appointments);
+        setMedicalHistory(data.history || []);
+        setPatientName(data.patient_name || '');
         if (data.appointments.length > 0) setSelectedApt(data.appointments[0]);
       }
     } catch (err) {
@@ -113,442 +124,252 @@ const PatientPortal = () => {
   const handleBook = async () => {
     setIsBooking(true);
     try {
-      const res = await fetch(`${API_URL}/appointments`, {
+      const res = await fetch(`${API_URL}/book-appointment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
             patient_name: bookingForm.patient_name,
             patient_phone: phone,
-            department_id: bookingForm.dept,
-            appointment_date: bookingForm.date,
-            appointment_time: bookingForm.time_slot.split(' ')[0]
+            dept: bookingForm.dept,
+            date: bookingForm.date,
+            time_slot: bookingForm.time_slot
         }),
       });
       const data = await res.json();
-      if (data.success) {
+      if (res.status === 201) {
           playSound('success');
           localStorage.setItem('current_user_phone', phone);
-
+          localStorage.setItem('last_booked_apt_id', data.appointment_id);
           setBookingSuccess(data);
           setView('tracking');
           fetchAppointments();
-      } else {
-          playSound('error');
-          alert("Booking failed. Please try again.");
       }
-    } catch (err) { 
-        playSound('error');
-        console.error(err); 
-    }
+    } catch (err) { console.error(err); }
     finally { setIsBooking(false); }
   };
 
-  // --- VOICE INTEGRATION (WEB SPEECH API) ---
-  const [isListening, setIsListening] = useState(false);
-  const [activeVoiceField, setActiveVoiceField] = useState(null); // 'phone' or 'name'
+  const StatusCircle = ({ status }) => {
+    let fillLevel = '33%';
+    let waveColor = '#87CEEB';
+    let label = t('patientPortal.statusBooked');
+    let subLabel = t('patientPortal.statusVisitScheduled');
+    let isCalled = false;
 
-  const startListening = (field, lang = 'kn-IN') => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Voice recognition not supported in this browser.");
-      return;
+    if (status === 'With Doctor') {
+      fillLevel = '66%';
+      waveColor = '#001F3F';
+      label = t('patientPortal.statusInQueue');
+      subLabel = t('patientPortal.statusWaiting');
+    } else if (status === 'in_progress') {
+      fillLevel = '100%';
+      waveColor = '#008080';
+      label = t('patientPortal.statusCalled');
+      subLabel = t('patientPortal.statusEnterCabin');
+      isCalled = true;
     }
 
-    const recognition = new SpeechRecognition();
-    recognition.lang = lang;
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    recognition.onstart = () => {
-      setIsListening(true);
-      setActiveVoiceField(field);
-    };
-
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      if (field === 'phone') setPhone(transcript.replace(/\D/g, ''));
-      if (field === 'name') setBookingForm(p => ({...p, patient_name: transcript}));
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-      setActiveVoiceField(null);
-    };
-
-    recognition.onerror = () => {
-      setIsListening(false);
-      setActiveVoiceField(null);
-    };
-
-    recognition.start();
-  };
-
-  const VoiceButton = ({ field }) => (
-    <div className="flex flex-col items-center gap-2 mt-6">
-      <button 
-        onClick={() => startListening(field, 'en-IN')}
-        className={`w-20 h-20 rounded-full flex items-center justify-center transition-all border-4 ${
-          isListening && activeVoiceField === field 
-          ? 'bg-red-500 border-red-200 animate-pulse scale-110 shadow-xl shadow-red-500/50' 
-          : 'bg-white border-gray-100 text-slate-400 hover:border-[#008080] hover:text-[#008080]'
-        }`}
-      >
-        <span className="text-3xl">🎤</span>
-      </button>
-      <div className="flex gap-2">
-        <button onClick={() => startListening(field, 'kn-IN')} className="text-[10px] font-black bg-gray-100 px-2 py-1 rounded">ಕನ್ನಡ</button>
-        <button onClick={() => startListening(field, 'en-IN')} className="text-[10px] font-black bg-gray-100 px-2 py-1 rounded">ENG</button>
-      </div>
-    </div>
-  );
-
-  // --- UI COMPONENTS ---
-
-  const StatusCircle = ({ status }) => {
-    // Red: Check-in Needed (Scheduled)
-    // Yellow: Waiting (Pending/In-Queue)
-    // Green: Your Turn (Confirmed/Ready)
-    const color = status === 'Confirmed' ? 'bg-emerald-500' : (status === 'Pending' ? 'bg-amber-400' : 'bg-red-500');
-    const label = status === 'Confirmed' ? 'YOUR TURN' : (status === 'Pending' ? 'WAITING' : 'CHECK-IN NEEDED');
-    
     return (
-      <div className="flex flex-col items-center gap-6 py-10">
-        <div className={`w-48 h-48 rounded-full ${color} shadow-2xl flex items-center justify-center animate-pulse border-[12px] border-white/30`}>
-          <div className="w-full h-full rounded-full border-[8px] border-black/5 flex items-center justify-center">
-             <span className="text-white text-6xl">🏥</span>
-          </div>
+      <div className="flex flex-col items-center gap-10 py-10">
+        <div className={`wave-container shadow-2xl relative ${isCalled ? 'animate-pulse ring-[12px] ring-teal-400/20' : ''}`}>
+           <div className="wave" style={{ bottom: fillLevel, backgroundColor: waveColor }}></div>
+           <div className="absolute inset-0 flex flex-col items-center justify-center z-10 text-center">
+              <span className={`text-4xl font-black ${isCalled ? 'text-white' : 'text-slate-900'} tracking-tighter`}>
+                {isCalled ? t('patientPortal.cabin') : label}
+              </span>
+           </div>
         </div>
-        <div className={`text-4xl font-black ${color.replace('bg-', 'text-')} tracking-tighter`}>{label}</div>
+        <div className="text-center space-y-1">
+           <div className="text-2xl font-black text-slate-900">{t('patientPortal.currentStatus')} {label}</div>
+           <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('patientPortal.passId')} {selectedApt?.id}</div>
+        </div>
       </div>
     );
   };
 
   const GiantButton = ({ onClick, children, className = "", icon = "" }) => (
-    <button 
-      onClick={onClick}
-      className={`w-full h-24 md:h-32 flex flex-col items-center justify-center gap-2 rounded-[32px] font-black text-lg md:text-xl transition-all active:scale-95 shadow-xl ${className}`}
-    >
-      {icon && <span className="text-4xl md:text-5xl">{icon}</span>}
+    <button onClick={onClick} className={`w-full h-32 flex flex-col items-center justify-center gap-2 rounded-[32px] font-black text-xl transition-all active:scale-95 shadow-xl ${className}`}>
+      {icon && <span className="text-5xl">{icon}</span>}
       {children}
     </button>
   );
 
-  const StepWrapper = ({ title, children, onNext, nextDisabled, onBack }) => (
-    <div className="max-w-2xl mx-auto space-y-10 animate-fade-in py-10">
-      <div className="space-y-2 text-center">
-        <h2 className="text-3xl md:text-4xl font-black text-secondary-blue tracking-tight">{title}</h2>
-        <div className="flex justify-center gap-1">
-          {[1,2,3,4,5].map(i => (
-            <div key={i} className={`h-1.5 w-8 rounded-full ${i <= bookingStep ? 'bg-[#008080]' : 'bg-gray-200'}`}></div>
-          ))}
-        </div>
-      </div>
-      
-      <div className="bg-white rounded-[48px] p-10 shadow-2xl border border-gray-100 min-h-[300px] flex flex-col justify-center">
-        {children}
-      </div>
-
-      <div className="flex gap-4">
-        {onBack && (
-          <button onClick={onBack} className="flex-1 h-20 bg-gray-100 text-slate-600 rounded-[28px] font-black text-lg hover:bg-gray-200 transition-all">
-            ← BACK
-          </button>
-        )}
-        {onNext && (
-          <button 
-            disabled={nextDisabled} 
-            onClick={onNext} 
-            className="flex-[2] h-20 bg-[#008080] text-white rounded-[28px] font-black text-lg shadow-xl shadow-[#008080]/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-30"
-          >
-            NEXT →
-          </button>
-        )}
-      </div>
-    </div>
-  );
-
   return (
-    <div className="min-h-screen bg-soft-bg relative overflow-hidden font-sans pb-20">
-      {/* LIVE TICKER BANNER */}
-      {liveTicker && (
-        <div className="fixed top-0 left-0 w-full bg-[#008080] text-white py-4 px-6 z-[100] shadow-2xl animate-slide-down flex items-center justify-between">
-           <div className="flex items-center gap-4">
-             <div className="w-3 h-3 bg-white rounded-full animate-ping"></div>
-             <span className="text-[10px] font-black uppercase tracking-widest">Live Update</span>
-             <span className="text-sm font-bold">Now Serving: <span className="text-white font-black uppercase">{liveTicker.patient_name}</span> with {liveTicker.doctor_name}</span>
-           </div>
-           <button onClick={() => setLiveTicker(null)} className="text-white/50 hover:text-white font-black">✕</button>
+    <div className="min-h-screen bg-[#f8fafc] p-6 pb-20">
+      {showCallAlert && (
+        <div className="fixed inset-0 z-[500] bg-emerald-500 flex flex-col items-center justify-center p-8 animate-fade-in text-white text-center">
+           <div className="text-[120px] mb-8 animate-bounce">🔔</div>
+           <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-4">{t('patientPortal.yourTurn')}</h1>
+           <p className="text-2xl font-bold mb-12">{t('patientPortal.enterCabin')}</p>
+           <button onClick={() => setShowCallAlert(false)} className="px-12 py-6 bg-white text-emerald-600 rounded-[32px] font-black text-xl">{t('patientPortal.iAmGoing')}</button>
         </div>
       )}
+
+      {liveTicker && (
+        <div className="fixed top-0 left-0 w-full bg-[#008080] text-white py-4 px-6 z-[100] shadow-2xl animate-slide-down flex items-center justify-between">
+           <span className="text-sm font-bold">{t('patientPortal.nowServing')} <span className="text-white font-black uppercase">{liveTicker.patient_name}</span></span>
+           <button onClick={() => setLiveTicker(null)} className="text-white/50">✕</button>
+        </div>
+      )}
+
       <div className="max-w-5xl mx-auto">
-        
-        {/* --- HOME VIEW --- */}
         {view === 'home' && (
-          <div className="space-y-12 animate-fade-in">
+          <div className="space-y-12 py-10 px-4 md:px-0">
             <div className="text-center space-y-4">
-              <h1 className="text-5xl md:text-6xl font-black text-secondary-blue tracking-tight">RRDCH Portal</h1>
-              <p className="text-xl text-text-muted font-bold italic">Select an action to continue</p>
+              <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">{t('patientPortal.title')}</h1>
+              <p className="text-lg md:text-xl text-slate-500 font-bold">{t('patientPortal.subtitle')}</p>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-              <GiantButton 
-                onClick={() => setView('booking')}
-                icon="🏥"
-                className="bg-white text-secondary-blue border-4 border-transparent hover:border-[#008080]"
-              >
-                Book Appointment
-              </GiantButton>
-              <GiantButton 
-                onClick={() => {
-                   if (phone) setView('tracking');
-                   else {
-                     const p = prompt("Enter your registered phone number:");
-                     if (p) {
-                       setPhone(p);
-                       localStorage.setItem('current_user_phone', p);
-
-                       setView('tracking');
-                     }
-                   }
-                }}
-                icon="📱"
-                className="bg-[#008080] text-white"
-              >
-                Track Status
-              </GiantButton>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 max-w-4xl mx-auto">
+              <GiantButton onClick={() => setView('booking')} icon="🏥" className="bg-white text-slate-900 border-4 border-transparent hover:border-[#008080]">{t('patientPortal.bookAppointment')}</GiantButton>
+              <GiantButton onClick={() => {
+                   const p = prompt(t('patientPortal.enterPhone'), phone);
+                   if (p) { setPhone(p); localStorage.setItem('current_user_phone', p); setView('tracking'); fetchAppointments(); }
+              }} icon="📱" className="bg-[#008080] text-white">{t('patientPortal.trackStatus')}</GiantButton>
             </div>
-
-            {/* Quick Status Preview */}
-            {phone && appointments.length > 0 && (
-              <div className="bg-white rounded-[40px] p-8 shadow-xl border border-gray-100 max-w-2xl mx-auto">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="font-black text-secondary-blue uppercase tracking-widest text-sm">Active Appointment</h3>
-                  <button onClick={() => setView('tracking')} className="text-[#008080] font-black text-xs hover:underline">VIEW FULL PASS →</button>
-                </div>
-                <div className="flex items-center gap-6">
-                   <div className={`w-4 h-4 rounded-full ${STATUS_COLORS[appointments[0].status] || 'bg-gray-400'}`}></div>
-                   <div>
-                     <div className="font-black text-xl">{appointments[0].dept}</div>
-                     <div className="text-sm text-text-muted font-bold">{appointments[0].time_slot} • {appointments[0].date}</div>
-                   </div>
-                </div>
-              </div>
-            )}
           </div>
         )}
 
-        {/* --- BOOKING VIEW (Multi-Step) --- */}
-        {view === 'booking' && (
-          <>
-            {bookingStep === 1 && (
-              <StepWrapper 
-                title="Phone Number?" 
-                onNext={() => setBookingStep(2)} 
-                nextDisabled={!phone || phone.length < 10}
-                onBack={() => setView('home')}
-              >
-                <input 
-                  type="tel" 
-                  value={phone} 
-                  onChange={e => setPhone(e.target.value)} 
-                  className="w-full text-center text-4xl md:text-5xl font-black text-secondary-blue bg-transparent border-none outline-none placeholder-gray-100"
-                  placeholder="9876543210"
-                  autoFocus
-                />
-                <VoiceButton field="phone" />
-
-              </StepWrapper>
-            )}
-
-            {bookingStep === 2 && (
-              <StepWrapper 
-                title="What is your name?" 
-                onNext={() => setBookingStep(3)} 
-                nextDisabled={!bookingForm.patient_name}
-                onBack={() => setBookingStep(1)}
-              >
-                <input 
-                  type="text" 
-                  value={bookingForm.patient_name} 
-                  onChange={e => setBookingForm(p => ({...p, patient_name: e.target.value}))} 
-                  className="w-full text-center text-3xl md:text-4xl font-black text-secondary-blue bg-transparent border-none outline-none"
-                  placeholder="Full Name"
-                  autoFocus
-                />
-                <VoiceButton field="name" />
-
-              </StepWrapper>
-            )}
-
-            {bookingStep === 3 && (
-              <StepWrapper title="Select Department" onBack={() => setBookingStep(2)}>
-                <div className="grid grid-cols-2 gap-4">
-                  {DEPARTMENTS.map(d => (
-                    <button 
-                      key={d.name}
-                      onClick={() => {
-                        setBookingForm(p => ({...p, dept: d.name}));
-                        setBookingStep(4);
-                      }}
-                      className={`p-8 rounded-[40px] border-4 transition-all flex flex-col items-center gap-4 ${
-                        bookingForm.dept === d.name ? 'border-[#008080] bg-[#008080]/5' : 'border-gray-50 bg-gray-50 hover:bg-gray-100'
-                      }`}
-                    >
-                      <span className="text-6xl">{d.icon}</span>
-                      <span className="text-[10px] font-black uppercase text-center leading-tight">{d.name}</span>
-                    </button>
-
-                  ))}
-                </div>
-              </StepWrapper>
-            )}
-
-            {bookingStep === 4 && (
-              <StepWrapper 
-                title="Choose a Date" 
-                onNext={() => setBookingStep(5)} 
-                nextDisabled={!bookingForm.date}
-                onBack={() => setBookingStep(3)}
-              >
-                <input 
-                  type="date" 
-                  value={bookingForm.date} 
-                  onChange={e => setBookingForm(p => ({...p, date: e.target.value}))} 
-                  className="w-full text-center text-3xl font-black text-secondary-blue bg-transparent outline-none"
-                />
-              </StepWrapper>
-            )}
-
-            {bookingStep === 5 && (
-              <StepWrapper title="Pick a Time" onBack={() => setBookingStep(4)}>
-                <div className="grid grid-cols-3 gap-3">
-                  {TIME_SLOTS.map(t => (
-                    <button 
-                      key={t}
-                      onClick={() => {
-                        setBookingForm(p => ({...p, time_slot: t}));
-                        // We use a small delay for the "Complete" action
-                        setTimeout(handleBook, 100);
-                      }}
-                      className={`py-4 rounded-2xl border-2 font-bold text-sm transition-all ${
-                        bookingForm.time_slot === t ? 'border-[#008080] bg-[#008080] text-white' : 'border-gray-100 bg-gray-50 hover:bg-gray-100'
-                      }`}
-                    >
-                      {t}
-                    </button>
-                  ))}
-                </div>
-                {isBooking && <div className="mt-8 text-center font-black animate-pulse text-[#008080]">CONFIRMING...</div>}
-              </StepWrapper>
-            )}
-          </>
-        )}
-
-        {/* --- TRACKING VIEW --- */}
         {view === 'tracking' && (
           <div className="space-y-8 animate-fade-in">
-             <div className="flex justify-between items-center bg-white p-6 rounded-[32px] shadow-lg border border-gray-100">
-               <button onClick={() => setView('home')} className="p-3 bg-gray-100 rounded-2xl hover:bg-gray-200 transition-all font-black text-xl">←</button>
-               <h2 className="text-xl font-black text-secondary-blue">Patient Status</h2>
+             <div className="flex justify-between items-center bg-white p-6 rounded-[32px] shadow-lg">
+               <button onClick={() => setView('home')} className="p-3 bg-gray-100 rounded-2xl font-black">←</button>
+               <h2 className="text-xl font-black text-slate-900">{t('patientPortal.patientStatus')}</h2>
                <div className="w-12"></div>
              </div>
 
              {selectedApt ? (
-               <div className="bg-white rounded-[48px] shadow-2xl overflow-hidden border border-gray-100">
-                  <div className={`p-10 text-white flex justify-between items-center ${STATUS_COLORS[selectedApt.status] || 'bg-slate-400'}`}>
+               <div className="space-y-8">
+                 <div className="glass-panel p-6 md:p-8 rounded-[40px] flex items-center gap-6 teal-bloom animate-fade-in mx-4 md:mx-0">
+                    <div className="w-16 h-16 md:w-20 md:h-20 shrink-0 bg-[#008080] rounded-full flex items-center justify-center text-3xl md:text-4xl text-white shadow-xl">
+                       {patientName.charAt(0)}
+                    </div>
                     <div>
-                      <div className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-1">Appointment Pass</div>
-                      <h2 className="text-3xl font-black">{selectedApt.id}</h2>
+                       <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">{t('patientPortal.welcomeBack')} {patientName}!</h2>
+                       <p className="text-[10px] md:text-sm font-bold text-[#008080] uppercase tracking-widest">{t('patientPortal.verifiedProfile')}</p>
                     </div>
-                    <div className="px-6 py-3 bg-white/20 backdrop-blur-md rounded-2xl font-black uppercase text-xs">
-                      {STATUS_LABELS[selectedApt.status]}
+                 </div>
+
+                 <div className="bg-white rounded-[48px] shadow-2xl overflow-hidden border border-gray-100 mx-4 md:mx-0">
+                    <div className="p-10 bg-slate-900 text-white flex justify-between items-center">
+                      <div>
+                        <div className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-1">{t('patientPortal.appointmentPass')}</div>
+                        <h2 className="text-3xl font-black">{selectedApt.id}</h2>
+                      </div>
+                      <div className="px-6 py-3 bg-white/20 rounded-2xl font-black uppercase text-xs">
+                         {selectedApt.status === 'in_progress' ? t('patientPortal.statusCalled') : 
+                          selectedApt.status === 'With Doctor' ? t('patientPortal.statusInQueue') : 
+                          t('patientPortal.statusBooked')}
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="p-10 space-y-10">
-                    {/* Illiterate-Friendly Status Circle */}
-                    <StatusCircle status={selectedApt.status} />
-                    
-                    <div className="flex flex-col items-center gap-4 py-6">
-
-                       <div className="bg-white p-6 rounded-[40px] shadow-2xl border border-gray-100">
-                         <QRCodeSVG 
-                           value={JSON.stringify({
-                             patient_id: selectedApt.patient_id || selectedApt.patientId, 
-                             current_appointment_id: selectedApt.id
-                           })} 
-                           size={200} 
-                         />
-                       </div>
-                       <p className="text-sm font-bold text-text-muted">Scan at OPD for Quick Entry</p>
+                    <div className="p-6 md:p-10 space-y-10">
+                      <StatusCircle status={selectedApt.status} />
+                      <div className="flex flex-col items-center gap-4 py-6">
+                         <div className="bg-white p-4 md:p-6 rounded-[40px] shadow-2xl border border-gray-100 w-full max-w-[200px]">
+                           <QRCodeSVG value={JSON.stringify({ patient_phone: phone, id: selectedApt.id })} size="100%" className="w-full h-auto" />
+                         </div>
+                         <p className="text-sm font-bold text-slate-400">{t('patientPortal.scanAtReception')}</p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                         <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100">
+                           <div className="text-[10px] font-black text-slate-400 uppercase mb-1">{t('patientPortal.department')}</div>
+                           <div className="text-lg font-black">
+                             {/* Attempt to translate if matches dept id, else show original */}
+                             {DEPARTMENTS.find(d => d.name === selectedApt.dept) ? t(`deptNames.${DEPARTMENTS.find(d => d.name === selectedApt.dept).id}`) : selectedApt.dept}
+                           </div>
+                         </div>
+                         <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100">
+                           <div className="text-[10px] font-black text-slate-400 uppercase mb-1">{t('patientPortal.timeSlot')}</div>
+                           <div className="text-lg font-black">{selectedApt.time_slot}</div>
+                         </div>
+                      </div>
                     </div>
+                 </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                       <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100">
-                         <div className="text-[10px] font-black text-text-muted uppercase mb-1">Department</div>
-                         <div className="text-lg font-black">{selectedApt.dept}</div>
-                       </div>
-                       <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100">
-                         <div className="text-[10px] font-black text-text-muted uppercase mb-1">Time Slot</div>
-                         <div className="text-lg font-black">{selectedApt.time_slot}</div>
-                       </div>
-                    </div>
-
-                    <button 
-                      onClick={() => window.print()}
-                      className="w-full py-5 bg-secondary-blue text-white rounded-3xl font-black text-lg shadow-xl"
-                    >
-                      Download Pass
-                    </button>
-                  </div>
+                 {medicalHistory.length > 0 && (
+                   <div className="bg-white rounded-[40px] shadow-xl border border-gray-100 overflow-hidden">
+                      <div className="p-8 bg-slate-50 border-b border-gray-100 flex justify-between items-center">
+                         <h3 className="font-black text-slate-900 uppercase tracking-widest text-sm">{t('patientPortal.medicalHistory')}</h3>
+                         <div className="text-[10px] font-black text-slate-400 bg-white px-3 py-1 rounded-full border border-gray-200">{medicalHistory.length} {t('patientPortal.recordsFound')}</div>
+                      </div>
+                      <div className="hidden md:block overflow-x-auto">
+                         <table className="w-full text-left">
+                            <thead>
+                               <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-gray-50">
+                                  <th className="px-8 py-4">{t('patientPortal.dateCol')}</th>
+                                  <th className="px-8 py-4">{t('patientPortal.diagnosis')}</th>
+                                  <th className="px-8 py-4">{t('patientPortal.treatment')}</th>
+                                  <th className="px-8 py-4 text-right">{t('patientPortal.reports')}</th>
+                               </tr>
+                            </thead>
+                            <tbody>
+                               {medicalHistory.map((record, idx) => (
+                                  <tr key={idx} className="tactile-row border-b border-gray-50 last:border-0 hover:bg-slate-50/50">
+                                     <td className="px-8 py-6 font-bold text-sm text-slate-600">{record.visit_date || record.date}</td>
+                                     <td className="px-8 py-6"><div className="font-black text-slate-900">{record.diagnosis}</div></td>
+                                     <td className="px-8 py-6"><div className="text-xs font-bold text-slate-500">{record.treatment_plan || record.treatment}</div></td>
+                                     <td className="px-8 py-6 text-right"><button className="w-10 h-10 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center hover:bg-sky-600 hover:text-white transition-all shadow-sm inline-flex">📄</button></td>
+                                  </tr>
+                               ))}
+                            </tbody>
+                         </table>
+                      </div>
+                      
+                      {/* Mobile Cards for History */}
+                      <div className="md:hidden flex flex-col gap-4 p-4">
+                        {medicalHistory.map((record, idx) => (
+                           <div key={idx} className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col gap-4">
+                              <div className="flex justify-between items-center">
+                                 <span className="font-bold text-xs text-slate-400 uppercase tracking-widest">{record.visit_date || record.date}</span>
+                                 <button className="w-10 h-10 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center shadow-sm">📄</button>
+                              </div>
+                              <div>
+                                 <div className="font-black text-lg text-slate-900">{record.diagnosis}</div>
+                                 <div className="text-sm font-bold text-slate-500 mt-1">{record.treatment_plan || record.treatment}</div>
+                              </div>
+                           </div>
+                        ))}
+                      </div>
+                   </div>
+                 )}
                </div>
              ) : (
                <div className="text-center py-32 bg-white rounded-[48px] border-4 border-dashed border-gray-100">
-                  <div className="text-6xl mb-6">🔍</div>
-                  <h3 className="text-2xl font-black text-secondary-blue">No Appointments</h3>
-                  <p className="text-text-muted font-bold mt-2">Book your first visit today!</p>
+                  <h3 className="text-2xl font-black text-slate-400">{t('patientPortal.noAppointments')}</h3>
                </div>
-             )}
-
-             {appointments.length > 1 && (
-                <div className="space-y-4">
-                  <h3 className="font-black text-secondary-blue uppercase tracking-widest text-xs px-6">Other Appointments</h3>
-                  <div className="flex gap-4 overflow-x-auto pb-4 px-2 no-scrollbar">
-                    {appointments.map(apt => (
-                      <button 
-                        key={apt.id} 
-                        onClick={() => setSelectedApt(apt)}
-                        className={`min-w-[200px] p-6 rounded-[32px] border-2 transition-all text-left ${
-                          selectedApt?.id === apt.id ? 'border-[#008080] bg-[#008080]/5' : 'border-white bg-white shadow-lg'
-                        }`}
-                      >
-                        <div className="font-black text-lg">{apt.dept}</div>
-                        <div className="text-xs font-bold text-text-muted">{apt.date}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
              )}
           </div>
         )}
 
+        {view === 'booking' && (
+          <div className="max-w-2xl mx-auto py-10 space-y-8">
+            <h2 className="text-3xl font-black text-center">{t('patientPortal.quickBooking')}</h2>
+            <div className="bg-white p-10 rounded-[48px] shadow-2xl space-y-6">
+               <input type="text" placeholder={t('patientPortal.patientName')} value={bookingForm.patient_name} onChange={e => setBookingForm({...bookingForm, patient_name: e.target.value})} className="w-full h-16 px-6 rounded-2xl bg-gray-50 border-none outline-none font-bold" />
+               <select value={bookingForm.dept} onChange={e => setBookingForm({...bookingForm, dept: e.target.value})} className="w-full h-16 px-6 rounded-2xl bg-gray-50 border-none outline-none font-bold">
+                  <option value="">{t('patientPortal.selectDept')}</option>
+                  {DEPARTMENTS.map(d => <option key={d.name} value={d.name}>{t(`deptNames.${d.id}`)}</option>)}
+               </select>
+               <input type="date" value={bookingForm.date} onChange={e => setBookingForm({...bookingForm, date: e.target.value})} className="w-full h-16 px-6 rounded-2xl bg-gray-50 border-none outline-none font-bold" />
+               <select value={bookingForm.time_slot} onChange={e => setBookingForm({...bookingForm, time_slot: e.target.value})} className="w-full h-16 px-6 rounded-2xl bg-gray-50 border-none outline-none font-bold">
+                  <option value="">{t('patientPortal.selectTime')}</option>
+                  {TIME_SLOTS.map(t_slot => <option key={t_slot} value={t_slot}>{t_slot}</option>)}
+               </select>
+               <button onClick={handleBook} disabled={isBooking} className="w-full h-20 bg-[#008080] text-white rounded-[32px] font-black text-xl shadow-xl">{isBooking ? t('patientPortal.booking') : t('patientPortal.confirmAppointment')}</button>
+            </div>
+            <button onClick={() => setView('home')} className="w-full text-slate-400 font-bold">{t('patientPortal.back')}</button>
+          </div>
+        )}
       </div>
       
       <style>{`
-        .animate-fade-in {
-          animation: fadeIn 0.4s ease-out;
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .no-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .glass-panel { background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        @media (max-width: 768px) { .glass-panel { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); } }
+        .teal-bloom { position: relative; }
+        .teal-bloom::after { content: ''; position: absolute; inset: 0; z-index: -1; background: radial-gradient(circle at 50% 50%, rgba(0, 128, 128, 0.2), transparent 70%); filter: blur(20px); opacity: 0.5; }
+        .wave-container { position: relative; width: 80vw; height: 80vw; max-width: 250px; max-height: 250px; background: #ffffff; border-radius: 50%; overflow: hidden; border: 8px solid #f0f4f8; }
+        .wave { position: absolute; bottom: 0; left: 0; width: 200%; height: 100%; opacity: 0.6; border-radius: 40%; animation: waveRotate 8s infinite linear; }
+        @keyframes waveRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       `}</style>
     </div>
   );

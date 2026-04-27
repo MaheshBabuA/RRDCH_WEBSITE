@@ -7,7 +7,7 @@ export const siteContent = {
     "dailyPatients": "450-500",
     "dentalUnits": 250,
     "phone": ["+91-80-2843 7150", "+91-80-2843 7468", "+91 9901559955"],
-    "recognitions": ["DCI Recognized", "NAAC Accredited", "MFDS (Royal College of Physicians & Surgeons, Glasgow, UK)"]
+    "recognitions": ["DCI Recognized", "NAAC Accredited", "NABH Accredited", "ISO 9001:2015 Certified", "RCPS Glasgow (MFDS) Recognized", "NIRF Ranked", "IAO Accredited"]
   },
 
   "courses": [

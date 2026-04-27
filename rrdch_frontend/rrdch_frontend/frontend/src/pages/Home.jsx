@@ -106,6 +106,57 @@ const Home = () => {
         </div>
       </section>
 
+      {/* 2.5. Glassmorphic Achievements Ticker — Scraped from rrdch.org */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 w-full mt-8">
+        <div className="bg-gradient-to-r from-blue-900/80 via-indigo-900/80 to-blue-900/80 backdrop-blur-xl rounded-2xl border border-white/10 p-6 shadow-2xl overflow-hidden relative">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(56,189,248,0.08),transparent_60%)] pointer-events-none"></div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-cyan-300">Institutional Achievements</span>
+          </div>
+          <div className="achievements-ticker flex gap-8 animate-ticker whitespace-nowrap">
+            {[
+              { icon: '🏆', label: 'NAAC Accredited Institution', badge: 'NAAC' },
+              { icon: '🏥', label: 'NABH Accredited Hospital', badge: 'NABH' },
+              { icon: '📜', label: 'ISO 9001:2015 Certified', badge: 'ISO' },
+              { icon: '🇬🇧', label: 'RCPS Glasgow — MFDS Part 1 & 2 Exam Center', badge: 'RCPS' },
+              { icon: '📊', label: 'NIRF Ranked Dental Institution', badge: 'NIRF' },
+              { icon: '🌐', label: 'IAO (International Accreditation Organization)', badge: 'IAO' },
+              { icon: '🦷', label: 'DCI Recognized — Govt. of India', badge: 'DCI' },
+              { icon: '📚', label: 'AISHE Registered Institution', badge: 'AISHE' },
+              { icon: '🎓', label: 'Affiliated to RGUHS, Karnataka', badge: 'RGUHS' },
+              { icon: '🏆', label: 'Est. 1992 — 30+ Years of Excellence', badge: 'LEGACY' },
+            ].concat([
+              { icon: '🏆', label: 'NAAC Accredited Institution', badge: 'NAAC' },
+              { icon: '🏥', label: 'NABH Accredited Hospital', badge: 'NABH' },
+              { icon: '📜', label: 'ISO 9001:2015 Certified', badge: 'ISO' },
+              { icon: '🇬🇧', label: 'RCPS Glasgow — MFDS Part 1 & 2 Exam Center', badge: 'RCPS' },
+              { icon: '📊', label: 'NIRF Ranked Dental Institution', badge: 'NIRF' },
+            ]).map((item, idx) => (
+              <div key={idx} className="flex items-center gap-3 shrink-0 bg-white/5 border border-white/10 rounded-xl px-5 py-3 hover:bg-white/10 transition-all cursor-default group">
+                <span className="text-xl group-hover:scale-110 transition-transform">{item.icon}</span>
+                <div>
+                  <span className="text-[9px] font-black text-cyan-400 uppercase tracking-widest block">{item.badge}</span>
+                  <span className="text-sm font-bold text-white/90">{item.label}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <style>{`
+          @keyframes ticker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          .animate-ticker {
+            animation: ticker 40s linear infinite;
+          }
+          .animate-ticker:hover {
+            animation-play-state: paused;
+          }
+        `}</style>
+      </section>
+
       {/* 3. Departments Grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full mt-12">
         <div className="flex flex-col md:flex-row justify-between items-end mb-12">

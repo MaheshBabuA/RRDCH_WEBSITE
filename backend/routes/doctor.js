@@ -3,8 +3,7 @@ const router = express.Router();
 const { pool } = require('../config/database');
 
 /**
- * GET /api/doctor/appointments?doctor_id=...
- * Fetches today's live appointments for a specific doctor.
+ * GET /api/doctor/appointments
  */
 router.get('/appointments', async (req, res) => {
   const { doctor_id } = req.query;
@@ -31,10 +30,8 @@ router.get('/appointments', async (req, res) => {
 
 /**
  * GET /api/doctor/duty-schedule
- * Returns mock duty schedule for PG doctors.
  */
 router.get('/duty-schedule', async (req, res) => {
-  // Normally this would be a DB query
   const schedule = [
     { id: 1, doctor: 'Dr. Rahul (PG)', dept: 'Orthodontics', status: 'Available' },
     { id: 2, doctor: 'Dr. Sneha (PG)', dept: 'Periodontics', status: 'In-Surgery' },
@@ -42,6 +39,34 @@ router.get('/duty-schedule', async (req, res) => {
     { id: 4, doctor: 'Dr. Kavita (PG)', dept: 'Oral Surgery', status: 'On-Call' }
   ];
   res.json({ success: true, schedule });
+});
+
+/**
+ * PATCH /api/doctor/call-next/:id
+ */
+router.patch('/call-next/:id', async (req, res) => {
+  const { id } = req.params;
+  const status = 'confirmed'; // Green/Ready on UI
+
+  try {
+    const [result] = await pool.execute(
+      'UPDATE appointments SET status = ? WHERE appointment_id = ?',
+      [status, id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Appointment not found' });
+    }
+
+    const io = req.app.get('io');
+    io.emit('CALL_PATIENT', { appointment_id: id, status: 'In-Consultation' });
+
+    res.json({ success: true, message: 'Patient called', status });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
 });
 
 module.exports = router;

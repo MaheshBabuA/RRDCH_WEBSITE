@@ -4,11 +4,12 @@ const FALLBACK_ERROR_MESSAGE = 'Something went wrong. Please try again later.';
 
 // Create axios instance
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: 'http://localhost:5000/api', // Explicitly aligned to backend port
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
 
 // Request Interceptor: Logging
 api.interceptors.request.use(
@@ -37,10 +38,11 @@ api.interceptors.response.use(
     
     // Log errors
     if (response) {
-      console.error(`[API Response Error] ${response.status} ${error.config.url}`, response.data);
+      console.error(`[API Response Error] STATUS: ${response.status} | URL: ${error.config.url}`, response.data);
     } else {
-      console.error('[API Network Error]', error.message);
+      console.error('[API Network Error] Check if backend is running on port 5000', error.message);
     }
+
 
     // Return consistent error format with fallback message
     return Promise.reject({
@@ -59,7 +61,10 @@ const apiService = {
   appointments: {
     getAll: () => api.get('/appointments'),
     create: (data) => api.post('/appointments', data),
-    getByPhone: (phone) => api.get(`/appointments/phone/${phone}`),
+    unifiedBook: (data) => api.post('/appointments', data),
+    getByPhone: (phone) => api.get(`/appointments/${phone}`),
+    getQueue: (doctorId) => api.get(`/appointments/queue?doctor_id=${doctorId}`),
+
     updateStatus: (id, status) => api.put(`/appointments/${id}`, { status }),
   },
 

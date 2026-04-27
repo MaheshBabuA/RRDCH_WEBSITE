@@ -1,459 +1,472 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { useLanguage } from '../utils/i18n';
-import apiService from '../services/api';
-import FormInput from '../components/FormInput';
-import FormTextarea from '../components/FormTextarea';
-import Button from '../components/Button';
-import SuccessModal from '../components/SuccessModal';
+import { io } from 'socket.io-client';
 import { QRCodeSVG } from 'qrcode.react';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
-import logo from '../assets/logo.jpg';
+import { useLanguage } from '../utils/i18n';
+import { useVoiceGuidance } from '../hooks/useVoiceGuidance';
+
+const API_URL = 'http://localhost:5000/api';
+
+const DEPARTMENTS = [
+  { id: 1, name: 'Oral Medicine \u0026 Radiology', icon: '📸', color: 'from-blue-400 to-blue-600' },
+  { id: 2, name: 'Prosthetics \u0026 Crown \u0026 Bridge', icon: '😁', color: 'from-emerald-400 to-emerald-600' },
+  { id: 3, name: 'Oral \u0026 Maxillofacial Surgery', icon: '🏥', color: 'from-red-400 to-red-600' },
+  { id: 4, name: 'Periodontology', icon: '🛡️', color: 'from-teal-400 to-teal-600' },
+  { id: 5, name: 'Pedodontics \u0026 Preventive Dentistry', icon: '👶', color: 'from-pink-400 to-pink-600' },
+  { id: 6, name: 'Conservative Dentistry \u0026 Endodontics', icon: '🩹', color: 'from-indigo-400 to-indigo-600' },
+  { id: 7, name: 'Orthodontics \u0026 Dentofacial Orthopedics', icon: '😬', color: 'from-purple-400 to-purple-600' },
+  { id: 8, name: 'Public Health Dentistry', icon: '🌍', color: 'from-green-400 to-green-600' },
+  { id: 9, name: 'Oral \u0026 Maxillofacial Pathology', icon: '🔬', color: 'from-amber-400 to-amber-600' },
+  { id: 10, name: 'Implantology', icon: '🔩', color: 'from-slate-400 to-slate-600' },
+  { id: 11, name: 'Orofacial Pain', icon: '⚡', color: 'from-orange-400 to-orange-600' }
+];
+
+const TIME_SLOTS = [
+  "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
+  "12:00 PM", "12:30 PM", "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM"
+];
 
 const Appointments = () => {
   const { t } = useLanguage();
-
-  // --- Form State ---
+  const { speak, isMuted, toggleMute } = useVoiceGuidance();
+  const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    department: '',
+    dept: '',
     date: '',
     time: '',
-    notes: ''
+    name: '',
+    phone: ''
   });
-
-  const [errors, setErrors] = useState({});
+  const [isListening, setIsListening] = useState(false);
+  const [activeVoiceField, setActiveVoiceField] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [serverError, setServerError] = useState('');
-  
-  // Modal State
-  const [modalState, setModalState] = useState({ isOpen: false, data: null });
-  const ticketRef = useRef(null);
+  const [successData, setSuccessData] = useState(null);
+  const receiptRef = useRef(null);
 
-  // Departments List
-  const DEPARTMENTS = [
-    { id: 'oral-medicine', name: 'Oral Medicine & Radiology', icon: '🦷', color: 'bg-blue-500' },
-    { id: 'prosthodontics', name: 'Prosthodontics', icon: '👄', color: 'bg-indigo-500' },
-    { id: 'orthodontics', name: 'Orthodontics', icon: '📏', color: 'bg-purple-500' },
-    { id: 'oral-surgery', name: 'Oral & Maxillofacial Surgery', icon: '🏥', color: 'bg-red-500' },
-    { id: 'periodontics', name: 'Periodontics', icon: '🧼', color: 'bg-teal-500' },
-    { id: 'conservative-dentistry', name: 'Conservative Dentistry', icon: '🦷', color: 'bg-cyan-500' },
-    { id: 'pedodontics', name: 'Pedodontics', icon: '🧒', color: 'bg-pink-500' },
-    { id: 'public-health', name: 'Public Health Dentistry', icon: '🌍', color: 'bg-green-500' },
-    { id: 'oral-pathology', name: 'Oral Pathology', icon: '🔬', color: 'bg-orange-500' },
-    { id: 'forensic-odontology', name: 'Forensic Odontology', icon: '🔍', color: 'bg-slate-600' },
-    { id: 'aesthetic-dentistry', name: 'Aesthetic Dentistry', icon: '✨', color: 'bg-yellow-500' },
-  ];
+  useEffect(() => {
+    if (step === 1) speak(t('voice.step1'));
+    else if (step === 2) speak(t('voice.step2'));
+    else if (step === 4) speak(t('voice.success'));
+  }, [step, speak, t]);
 
-  // --- Date Handlers ---
-  const getTodayString = () => new Date().toISOString().split('T')[0];
-  
-  const getMaxDateString = () => {
-    const d = new Date();
-    d.setDate(d.getDate() + 30);
-    return d.toISOString().split('T')[0];
-  };
-
-  // --- Event Handlers ---
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setErrors(prev => ({ ...prev, [name]: '' }));
-    setServerError('');
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleDeptSelect = (deptId) => {
-    setErrors(prev => ({ ...prev, department: '' }));
-    setFormData(prev => ({ ...prev, department: deptId }));
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = t('appointments.errors.nameReq');
-    if (!formData.phone.trim()) {
-      newErrors.phone = t('appointments.errors.phoneReq');
-    } else if (!/^\d{10}$/.test(formData.phone)) {
-      newErrors.phone = t('appointments.errors.phoneInvalid');
-    }
-    if (!formData.department) newErrors.department = t('appointments.errors.deptReq');
-    if (!formData.date) {
-      newErrors.date = t('appointments.errors.dateReq');
-    }
-    if (!formData.time) newErrors.time = t('appointments.errors.timeReq');
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const generateLocalConfirmation = () => {
-    const id = 'APT-' + Math.floor(10000 + Math.random() * 90000);
-    const confirmationNumber = 'CNF-' + Math.floor(100000 + Math.random() * 900000);
-    const selectedDept = DEPARTMENTS.find(d => d.id === formData.department);
-    return {
-      id,
-      appointmentId: id,
-      confirmationNumber,
-      patientId: 'P-GUEST',
-      name: formData.name,
-      phone: formData.phone,
-      email: formData.email,
-      department: selectedDept?.name || formData.department,
-      date: formData.date,
-      time: formData.time,
-      notes: formData.notes,
-      status: 'pending',
-    };
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) {
-      const firstError = document.querySelector('.text-error-red');
-      if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  // --- Voice Recognition Logic ---
+  const startListening = (field) => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Voice recognition not supported in this browser.");
       return;
     }
 
-    setIsSubmitting(true);
-    setServerError('');
-
-    try {
-      const payload = {
-        patient_name: formData.name,
-        patient_phone: formData.phone,
-        patient_email: formData.email,
-        department_id: formData.department,
-        appointment_date: formData.date,
-        appointment_time: formData.time,
-        notes: formData.notes
-      };
-      const result = await apiService.appointments.create(payload);
-      const appointmentData = result?.appointment || result;
-      setModalState({ isOpen: true, data: appointmentData });
-    } catch (err) {
-      console.error('API unavailable, using local fallback:', err);
-      const localAppointment = generateLocalConfirmation();
-      setModalState({ isOpen: true, data: localAppointment });
-    } finally {
-      setIsSubmitting(false);
-    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-IN';
+    recognition.onstart = () => {
+      setIsListening(true);
+      setActiveVoiceField(field);
+    };
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setFormData(prev => ({
+        ...prev,
+        [field]: field === 'phone' ? transcript.replace(/\D/g, '') : transcript
+      }));
+    };
+    recognition.onend = () => {
+      setIsListening(false);
+      setActiveVoiceField(null);
+    };
+    recognition.start();
   };
 
-  const downloadTicketPDF = async () => {
-    if (!ticketRef.current) return;
+  const [syncError, setSyncError] = useState(false);
+
+  const handleBooking = async () => {
+    const optimisticId = `OPT-${Math.floor(Math.random() * 10000)}`;
+    const optimisticConfirm = `RRDCH-${Math.random().toString(36).substring(7).toUpperCase()}`;
     
+    const localSuccessData = {
+      success: true,
+      appointmentId: optimisticId,
+      confirmationNumber: optimisticConfirm,
+      verificationHash: 'OPTIMISTIC_PENDING',
+      isOptimistic: true
+    };
+
+    setSuccessData(localSuccessData);
+    setStep(4);
+    setIsSubmitting(false);
+
     try {
-      const canvas = await html2canvas(ticketRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff'
+      const res = await fetch(`${API_URL}/book-appointment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patient_name: formData.name,
+          patient_phone: formData.phone,
+          dept: formData.dept,
+          date: formData.date,
+          time_slot: formData.time
+        })
       });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
       
-      pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight);
-      pdf.save(`RRDCH-Appointment-${modalState.data.confirmationNumber}.pdf`);
+      const data = await res.json();
+      
+      if (data.appointment_id) {
+        setSuccessData({
+          success: true,
+          appointmentId: data.appointment_id,
+          confirmationNumber: data.appointment_id,
+          verificationHash: data.token_no,
+          isOptimistic: false
+        });
+        setSyncError(false);
+        console.log('✅ Appointment synced with server:', data.appointment_id);
+      } else if (data.error) {
+        console.error('❌ Booking error:', data.error);
+        setSyncError(true);
+      }
     } catch (err) {
-      console.error('Failed to generate PDF:', err);
+      console.error('Background Sync Failed:', err);
+      setSyncError(true);
     }
   };
 
-  const closeModalAndReset = () => {
-    setModalState({ isOpen: false, data: null });
-    setFormData({
-      name: '', phone: '', email: '', department: '', date: '', time: '', notes: ''
-    });
+
+  const downloadReceipt = async () => {
+    if (!receiptRef.current) return;
+    const canvas = await html2canvas(receiptRef.current);
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF();
+    pdf.addImage(imgData, 'PNG', 10, 10, 190, 0);
+    pdf.save(`RRDCH-Receipt-${successData.confirmationNumber}.pdf`);
+  };
+
+  const renderStep = () => {
+    switch (step) {
+      case 1:
+        return (
+          <div className="animate-fade-in space-y-8 pb-20 md:pb-0">
+            <div className="text-center">
+              <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">{t('booking.selectDept')}</h2>
+              <p className="text-slate-500 font-bold mt-2 uppercase text-xs tracking-widest">{t('booking.step1')}</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {DEPARTMENTS.map(dept => (
+                <button
+                  key={dept.id}
+                  onClick={() => {
+                    setFormData({ ...formData, dept: dept.name });
+                    setStep(2);
+                  }}
+                  className="neumorphic-card group relative h-56 flex flex-col items-center justify-center gap-6 overflow-hidden border-2 border-transparent hover:border-sky-200"
+                >
+                  <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-sky-200 group-hover:bg-teal-400 animate-pulse"></div>
+                  
+                  <div className="text-7xl group-hover:scale-110 transition-transform duration-500 flex items-center justify-center">
+                    <span className="drop-shadow-sm group-hover:drop-shadow-xl transition-all grayscale group-hover:grayscale-0 opacity-40 group-hover:opacity-100">
+                      {dept.icon}
+                    </span>
+                  </div>
+
+                  <div className="px-6 text-center space-y-1">
+                    <span className="block text-[11px] font-black uppercase text-slate-400 tracking-[0.15em] group-hover:text-teal-600 transition-colors">
+                      {t(`deptNames.${dept.id}`).split(' & ')[0]}
+                    </span>
+                    <span className="block text-[9px] font-bold text-slate-300 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+                      {t('booking.clinicalExcellence')}
+                    </span>
+                  </div>
+
+                  <div className={`absolute bottom-0 left-0 w-full h-1.5 bg-gradient-to-r from-sky-400 to-teal-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left`}></div>
+                </button>
+              ))}
+            </div>
+
+          </div>
+        );
+
+      case 2:
+        return (
+          <div className="animate-fade-in space-y-10 max-w-4xl mx-auto pb-20 md:pb-0">
+            <div className="text-center">
+              <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">{t('booking.pickSlot')}</h2>
+              <p className="text-slate-500 font-bold mt-2 uppercase text-xs tracking-widest">{t('booking.step2')}</p>
+            </div>
+            
+            <div className="bg-white rounded-[48px] p-10 shadow-2xl border border-slate-100 space-y-10">
+              <div className="space-y-4">
+                <label className="text-xs font-black uppercase text-slate-400 tracking-widest ml-2">{t('booking.availableDates')}</label>
+                <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+                  {[...Array(7)].map((_, i) => {
+                    const date = new Date();
+                    date.setDate(date.getDate() + i);
+                    const dateStr = date.toISOString().split('T')[0];
+                    const isSelected = formData.date === dateStr;
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => setFormData({ ...formData, date: dateStr })}
+                        className={`min-w-[120px] p-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-1 ${
+                          isSelected ? 'border-primary-blue bg-primary-blue text-white shadow-lg' : 'border-slate-50 bg-slate-50 hover:bg-slate-100'
+                        }`}
+                      >
+                        <span className="text-[10px] font-black uppercase opacity-60">
+                          {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                        </span>
+                        <span className="text-2xl font-black">{date.getDate()}</span>
+                        <span className="text-[10px] font-bold opacity-60">
+                          {date.toLocaleDateString('en-US', { month: 'short' })}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <label className="text-xs font-black uppercase text-slate-400 tracking-widest ml-2">{t('booking.timeSlots')}</label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {TIME_SLOTS.map(ts => (
+                    <button
+                      key={ts}
+                      onClick={() => setFormData({ ...formData, time: ts })}
+                      className={`py-4 rounded-2xl border-2 font-black text-xs transition-all ${
+                        formData.time === ts ? 'border-primary-blue bg-primary-blue text-white shadow-lg' : 'border-slate-50 bg-slate-50 hover:bg-slate-100'
+                      }`}
+                    >
+                      {ts}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center px-4">
+              <button onClick={() => setStep(1)} className="text-slate-400 font-black uppercase text-xs hover:text-slate-900 transition-colors">{t('booking.backToDepts')}</button>
+              <button 
+                disabled={!formData.date || !formData.time}
+                onClick={() => setStep(3)}
+                className="bg-slate-900 text-white px-10 py-5 rounded-[24px] font-black text-sm uppercase tracking-widest shadow-xl disabled:opacity-30 disabled:cursor-not-allowed hover:scale-105 transition-all"
+              >
+                {t('booking.continue')}
+              </button>
+            </div>
+          </div>
+        );
+
+      case 3:
+        return (
+          <div className="animate-fade-in space-y-10 max-w-2xl mx-auto pb-20 md:pb-0">
+            <div className="text-center">
+              <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">{t('booking.yourIdentity')}</h2>
+              <p className="text-slate-500 font-bold mt-2 uppercase text-xs tracking-widest">{t('booking.step3')}</p>
+            </div>
+
+            <div className="bg-white rounded-[48px] p-12 shadow-2xl border border-slate-100 space-y-12">
+              <div className="relative group">
+                <label className="absolute -top-3 left-6 bg-white px-2 text-[10px] font-black text-primary-blue uppercase tracking-widest">{t('booking.fullName')}</label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onFocus={() => speak(t('voice.step3Name'))}
+                  placeholder={t('booking.enterName')}
+                  className="w-full h-20 px-8 rounded-3xl bg-slate-50 border-2 border-transparent focus:border-primary-blue outline-none font-bold text-xl text-slate-800 transition-all"
+                />
+                <button 
+                  onClick={() => startListening('name')}
+                  className={`absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
+                    isListening && activeVoiceField === 'name' ? 'bg-red-500 text-white animate-pulse' : 'bg-white text-slate-400 hover:text-primary-blue shadow-md'
+                  }`}
+                >
+                  🎤
+                </button>
+              </div>
+
+              <div className="relative group">
+                <label className="absolute -top-3 left-6 bg-white px-2 text-[10px] font-black text-primary-blue uppercase tracking-widest">{t('booking.phoneNumber')}</label>
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onFocus={() => speak(t('voice.step3Phone'))}
+                  placeholder={t('booking.phonePlaceholder')}
+                  className="w-full h-20 px-8 rounded-3xl bg-slate-50 border-2 border-transparent focus:border-primary-blue outline-none font-bold text-xl text-slate-800 transition-all"
+                />
+                <button 
+                  onClick={() => startListening('phone')}
+                  className={`absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
+                    isListening && activeVoiceField === 'phone' ? 'bg-red-500 text-white animate-pulse' : 'bg-white text-slate-400 hover:text-primary-blue shadow-md'
+                  }`}
+                >
+                  🎤
+                </button>
+              </div>
+            </div>
+
+            <button
+              onClick={handleBooking}
+              disabled={!formData.name || formData.phone.length < 10 || isSubmitting}
+              className="w-full py-6 md:py-8 bg-primary-blue text-white rounded-[32px] font-black text-xl md:text-2xl uppercase tracking-tighter shadow-2xl shadow-primary-blue/30 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-30"
+            >
+              {isSubmitting ? t('booking.processing') : t('booking.confirmAppointment')}
+            </button>
+            <button onClick={() => setStep(2)} className="w-full text-slate-400 font-black uppercase text-xs hover:text-slate-900 transition-colors">{t('booking.backToSchedule')}</button>
+          </div>
+        );
+
+      case 4:
+        return (
+          <div className="animate-scale-in max-w-2xl mx-auto py-10 pb-24 md:pb-10 px-4 md:px-0">
+            <div className="text-center mb-10 space-y-2">
+              <div className="text-6xl mb-4">✅</div>
+              <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">{t('booking.confirmed')}</h2>
+              <p className="text-slate-500 font-bold uppercase text-xs tracking-widest">{t('booking.savePass')}</p>
+            </div>
+
+            {syncError && (
+              <div className="mb-6 flex items-center justify-between glass-panel p-4 rounded-2xl border-amber-200 bg-amber-50/50 animate-pulse">
+                 <div className="flex items-center gap-3">
+                    <span className="text-xl">🔄</span>
+                    <span className="text-[10px] font-black text-amber-700 uppercase tracking-[0.2em]">{t('booking.syncing')}</span>
+                 </div>
+                 <button onClick={handleBooking} className="text-[10px] font-black text-amber-900 underline">{t('booking.retryNow')}</button>
+              </div>
+            )}
+
+            <div ref={receiptRef} className="bg-white rounded-[48px] shadow-2xl border border-slate-100 overflow-hidden mb-10">
+              <div className="bg-slate-900 p-10 text-white flex justify-between items-center">
+                <div>
+                   <h3 className="text-2xl font-black tracking-tight">{successData.confirmationNumber}</h3>
+                   <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">{t('booking.transactionId')}</p>
+                </div>
+                <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-4xl">🦷</div>
+              </div>
+              
+              <div className="p-12 space-y-10">
+                <div className="flex flex-col items-center gap-6 bg-slate-50 p-6 md:p-10 rounded-[40px] border border-slate-100 shadow-inner">
+                  <div className="relative p-4 bg-white rounded-3xl shadow-lg border border-slate-100 w-full max-w-[250px] mx-auto">
+                    <QRCodeSVG 
+                      value={JSON.stringify({ 
+                        aptId: successData.appointmentId, 
+                        phone: formData.phone, 
+                        ts: Date.now(),
+                        hash: successData.verificationHash
+                      })} 
+                      size="100%"
+                      level="H"
+                      className="w-full h-auto"
+                    />
+                  </div>
+                  
+                  <div className="w-full bg-slate-900/5 py-4 px-6 rounded-2xl flex items-center gap-4 animate-pulse">
+                     <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></div>
+                     <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">
+                       {t('booking.liveStatus')}
+                     </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-8">
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('booking.patient')}</div>
+                    <div className="text-lg font-black text-slate-900 uppercase">{formData.name}</div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('booking.department')}</div>
+                    <div className="text-lg font-black text-primary-blue uppercase">{formData.dept}</div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('booking.date')}</div>
+                    <div className="text-lg font-black text-slate-900 uppercase">{formData.date}</div>
+                  </div>
+                  <div className="space-y-1 text-right">
+                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('booking.reportingTime')}</div>
+                    <div className="text-lg font-black text-primary-blue uppercase">{formData.time}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <button 
+                onClick={downloadReceipt}
+                className="flex-1 py-6 bg-slate-900 text-white rounded-[24px] font-black uppercase text-sm tracking-widest shadow-xl hover:scale-105 transition-all"
+              >
+                {t('booking.downloadReceipt')}
+              </button>
+              <button 
+                onClick={() => window.location.reload()}
+                className="flex-1 py-6 bg-white border-2 border-slate-900 text-slate-900 rounded-[24px] font-black uppercase text-sm tracking-widest shadow-xl hover:scale-105 transition-all"
+              >
+                {t('booking.newBooking')}
+              </button>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
   };
 
   return (
-    <div className="max-w-7xl mx-auto py-10 px-4">
-      
-      <div className="mb-12 text-center lg:text-left space-y-4">
-         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-blue/10 text-primary-blue text-[10px] font-black uppercase tracking-widest border border-primary-blue/20">
-           <span className="w-1.5 h-1.5 rounded-full bg-primary-blue animate-pulse"></span>
-           Instant Confirmation
-         </div>
-         <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-secondary-blue tracking-tighter leading-tight">
-           Book Your <span className="text-primary-blue">Appointment</span>
-         </h1>
+    <div className="min-h-screen bg-[#f8fafc] p-4 md:p-8">
+      <div className="max-w-[1440px] mx-auto">
+        <header className="mb-12 flex items-center justify-between">
+           <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-primary-blue rounded-2xl flex items-center justify-center text-white text-2xl font-black">R</div>
+              <div>
+                <h1 className="text-xl font-black text-slate-900 uppercase tracking-tighter">{t('booking.clinicalPortal')}</h1>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('booking.appointmentGateway')}</p>
+              </div>
+           </div>
+           {step < 4 && (
+             <div className="flex items-center gap-6">
+               <button 
+                 onClick={toggleMute}
+                 className={`w-12 h-12 rounded-full flex items-center justify-center text-xl transition-all ${isMuted ? 'bg-slate-100 text-slate-400' : 'bg-primary-blue text-white shadow-lg shadow-primary-blue/30'}`}
+                 title={isMuted ? "Unmute Voice Guidance" : "Mute Voice Guidance"}
+               >
+                 {isMuted ? '🔇' : '🔊'}
+               </button>
+               <div className="flex gap-2">
+                 {[1,2,3].map(i => (
+                   <div key={i} className={`h-1.5 w-8 rounded-full transition-all ${i === step ? 'bg-primary-blue w-12' : 'bg-slate-200'}`}></div>
+                 ))}
+               </div>
+             </div>
+           )}
+        </header>
+
+        <main>
+          {renderStep()}
+        </main>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-12">
-        {/* --- Patient Information --- */}
-        <div className="bg-white rounded-[40px] shadow-premium border border-border-soft p-8 md:p-12 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary-blue/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-            
-            <h3 className="text-2xl font-black text-secondary-blue mb-8 flex items-center gap-3">
-               <span className="w-8 h-8 bg-primary-blue/10 text-primary-blue rounded-lg flex items-center justify-center text-sm">01</span>
-               Patient Information
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <FormInput 
-                    name="name"
-                    label={t('appointments.name')}
-                    placeholder="Enter full name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    error={errors.name}
-                    required
-                />
-                <FormInput 
-                    name="phone"
-                    type="tel"
-                    label={t('appointments.phone')}
-                    placeholder="10-digit mobile number"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    error={errors.phone}
-                    required
-                />
-                <FormInput 
-                    name="email"
-                    type="email"
-                    label={t('appointments.email')}
-                    placeholder="Email address (optional)"
-                    value={formData.email}
-                    onChange={handleChange}
-                    error={errors.email}
-                />
-            </div>
-        </div>
-
-        {/* --- Department Selection - Visual Grid --- */}
-        <div className="bg-white rounded-[40px] shadow-premium border border-border-soft p-8 md:p-12 relative overflow-hidden">
-            <h3 className="text-2xl font-black text-secondary-blue mb-2 flex items-center gap-3">
-               <span className="w-8 h-8 bg-primary-blue/10 text-primary-blue rounded-lg flex items-center justify-center text-sm">02</span>
-               Select Department
-            </h3>
-            <p className="text-neutral-gray font-medium mb-8 ml-11">Choose the clinical department for your consultation.</p>
-
-            {errors.department && <p className="mb-6 text-error-red font-black text-sm uppercase tracking-widest flex items-center gap-2 animate-bounce"><span className="text-xl">⚠️</span> {errors.department}</p>}
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                {DEPARTMENTS.map((dept) => (
-                    <button
-                        key={dept.id}
-                        type="button"
-                        onClick={() => handleDeptSelect(dept.id)}
-                        className={`group relative flex flex-col items-center p-6 rounded-[32px] transition-all duration-500 border-2 text-center
-                            ${formData.department === dept.id 
-                                ? 'bg-primary-blue border-primary-blue shadow-xl shadow-primary-blue/20 -translate-y-2' 
-                                : 'bg-soft-bg border-transparent hover:border-primary-blue/30 hover:bg-white hover:shadow-lg'
-                            }
-                        `}
-                    >
-                        <div className={`w-16 h-16 mb-4 rounded-2xl flex items-center justify-center text-3xl shadow-inner transition-transform duration-500 group-hover:scale-110
-                            ${formData.department === dept.id ? 'bg-white/20' : 'bg-white'}
-                        `}>
-                            {dept.icon}
-                        </div>
-                        <span className={`text-[10px] md:text-xs font-black uppercase tracking-widest leading-tight
-                            ${formData.department === dept.id ? 'text-white' : 'text-secondary-blue'}
-                        `}>
-                            {dept.name}
-                        </span>
-                        
-                        {formData.department === dept.id && (
-                            <div className="absolute -top-2 -right-2 w-8 h-8 bg-white text-primary-blue rounded-full flex items-center justify-center shadow-lg animate-scale-in">
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                </svg>
-                            </div>
-                        )}
-                    </button>
-                ))}
-            </div>
-        </div>
-
-        {/* --- Schedule & Notes --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 bg-white rounded-[40px] shadow-premium border border-border-soft p-8 md:p-12 relative overflow-hidden">
-                <h3 className="text-2xl font-black text-secondary-blue mb-8 flex items-center gap-3">
-                   <span className="w-8 h-8 bg-primary-blue/10 text-primary-blue rounded-lg flex items-center justify-center text-sm">03</span>
-                   Preferred Schedule
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                    <div className="space-y-2">
-                        <label className="text-sm font-black text-secondary-blue uppercase tracking-widest ml-1">Appointment Date</label>
-                        <input
-                            type="date"
-                            name="date"
-                            value={formData.date}
-                            onChange={handleChange}
-                            min={getTodayString()}
-                            max={getMaxDateString()}
-                            className={`w-full px-6 py-4 bg-soft-bg border-2 rounded-2xl outline-none transition-all duration-300 font-bold
-                                ${errors.date ? 'border-error-red/50 bg-error-red/[0.02]' : 'border-transparent focus:border-primary-blue focus:bg-white'}
-                            `}
-                        />
-                        {errors.date && <p className="text-xs text-error-red font-bold mt-1 ml-1">{errors.date}</p>}
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-black text-secondary-blue uppercase tracking-widest ml-1">Preferred Time</label>
-                        <input
-                            type="time"
-                            name="time"
-                            value={formData.time}
-                            onChange={handleChange}
-                            className={`w-full px-6 py-4 bg-soft-bg border-2 rounded-2xl outline-none transition-all duration-300 font-bold
-                                ${errors.time ? 'border-error-red/50 bg-error-red/[0.02]' : 'border-transparent focus:border-primary-blue focus:bg-white'}
-                            `}
-                        />
-                        {errors.time && <p className="text-xs text-error-red font-bold mt-1 ml-1">{errors.time}</p>}
-                    </div>
-                </div>
-
-                <div className="space-y-2">
-                    <label className="text-sm font-black text-secondary-blue uppercase tracking-widest ml-1">Special Instructions</label>
-                    <FormTextarea 
-                        name="notes"
-                        placeholder="Mention any specific dental concerns or medical history..."
-                        value={formData.notes}
-                        onChange={(e) => {
-                            if (e.target.value.length <= 500) handleChange(e);
-                        }}
-                        rows={3}
-                    />
-                </div>
-            </div>
-
-            <div className="flex flex-col gap-6">
-                <div className="flex-grow bg-secondary-blue rounded-[40px] p-8 text-white relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
-                    <h4 className="text-xl font-black mb-6 flex items-center gap-3">
-                        <span className="text-2xl">📋</span>
-                        Review Details
-                    </h4>
-                    <ul className="space-y-4">
-                        <li className="flex justify-between items-center border-b border-white/10 pb-2">
-                            <span className="text-white/60 text-xs font-bold uppercase">Patient</span>
-                            <span className="text-sm font-black truncate max-w-[150px]">{formData.name || 'Not provided'}</span>
-                        </li>
-                        <li className="flex justify-between items-center border-b border-white/10 pb-2">
-                            <span className="text-white/60 text-xs font-bold uppercase">Dept</span>
-                            <span className="text-sm font-black">{DEPARTMENTS.find(d => d.id === formData.department)?.name || 'Not selected'}</span>
-                        </li>
-                        <li className="flex justify-between items-center">
-                            <span className="text-white/60 text-xs font-bold uppercase">Time</span>
-                            <span className="text-sm font-black">{formData.date || 'TBD'} | {formData.time || 'TBD'}</span>
-                        </li>
-                    </ul>
-
-                    <div className="mt-10">
-                        <Button 
-                            type="primary" 
-                            buttonType="submit" 
-                            text="Confirm Appointment" 
-                            loading={isSubmitting} 
-                            className="w-full py-5 text-lg font-black bg-white text-secondary-blue hover:bg-primary-blue hover:text-white border-none shadow-xl"
-                        />
-                    </div>
-                </div>
-
-                <div className="bg-success-green/5 border-2 border-success-green/20 rounded-[40px] p-8 text-center">
-                    <div className="text-3xl mb-2">🔒</div>
-                    <p className="text-xs font-black text-secondary-blue/60 uppercase tracking-widest">Secure HIPAA-Compliant Booking</p>
-                </div>
-            </div>
-        </div>
-      </form>
-
-      {/* --- Success Modal --- */}
-      <SuccessModal 
-        isOpen={modalState.isOpen} 
-        onClose={closeModalAndReset}
-        title="Booking Successful!"
-        subtitle="Your clinical appointment has been confirmed. Please save your verification slip below."
-      >
-        {modalState.data && (
-          <div className="space-y-8">
-            {/* Ticket to Download */}
-            <div 
-              ref={ticketRef}
-              className="bg-white border-2 border-primary-blue/10 rounded-[48px] overflow-hidden shadow-2xl max-w-sm mx-auto"
-            >
-              <div className="bg-secondary-blue p-8 text-white text-center relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary-blue/20 rounded-full blur-2xl -mr-10 -mt-10"></div>
-                <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-4 mx-auto shadow-xl">
-                   <img src={logo} alt="Logo" className="w-12 h-12 object-contain" />
-                </div>
-                <h2 className="text-lg font-black tracking-tight leading-tight uppercase">RRDCH Appointment</h2>
-              </div>
-
-              <div className="p-10 text-left space-y-6 relative">
-                <div className="absolute top-0 left-0 w-6 h-12 bg-soft-bg rounded-r-full -mt-6 -ml-3 border border-border-soft border-l-0"></div>
-                <div className="absolute top-0 right-0 w-6 h-12 bg-soft-bg rounded-l-full -mt-6 -mr-3 border border-border-soft border-r-0"></div>
-
-                <div className="grid grid-cols-2 gap-6">
-                    <div className="col-span-2">
-                        <label className="text-[10px] text-neutral-gray uppercase font-black tracking-widest block mb-1">Patient Name</label>
-                        <div className="text-lg font-black text-secondary-blue">{modalState.data.name}</div>
-                    </div>
-                    <div>
-                        <label className="text-[10px] text-neutral-gray uppercase font-black tracking-widest block mb-1">Reg ID</label>
-                        <div className="font-mono text-sm font-black text-primary-blue">#{modalState.data.confirmationNumber.split('-')[1]}</div>
-                    </div>
-                    <div className="text-right">
-                        <label className="text-[10px] text-neutral-gray uppercase font-black tracking-widest block mb-1">Status</label>
-                        <div className="text-[10px] font-black text-success-green uppercase bg-success-green/10 px-2 py-0.5 rounded-full inline-block">Confirmed</div>
-                    </div>
-                    <div className="col-span-2 pt-4 border-t border-dashed border-border-soft">
-                        <label className="text-[10px] text-neutral-gray uppercase font-black tracking-widest block mb-1">Clinical Department</label>
-                        <div className="text-sm font-black text-secondary-blue uppercase leading-tight">
-                            {DEPARTMENTS.find(d => d.id === modalState.data.department || d.name === modalState.data.department)?.name || modalState.data.department}
-                        </div>
-                    </div>
-                    <div className="col-span-2 pt-4 border-t border-dashed border-border-soft">
-                        <label className="text-[10px] text-neutral-gray uppercase font-black tracking-widest block mb-1">Schedule</label>
-                        <div className="text-sm font-black text-secondary-blue uppercase">
-                            {modalState.data.date} @ <span className="text-primary-blue">{modalState.data.time}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="flex flex-col items-center justify-center pt-8 border-t border-dashed border-border-soft">
-                    <div className="p-4 bg-white border-2 border-border-soft rounded-[32px] shadow-inner">
-                        <QRCodeSVG 
-                            value={JSON.stringify({
-                                patient_id: modalState.data.patientId || 'P-GUEST',
-                                current_appointment_id: modalState.data.appointmentId || modalState.data.id
-                            })} 
-                            size={120}
-                            level="H"
-                            includeMargin={false}
-                            fgColor="#0f172a"
-                        />
-                    </div>
-                    <p className="text-[9px] text-neutral-gray mt-5 font-black uppercase tracking-[0.2em]">Fast-Track Hospital QR Code</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
-               <button 
-                 onClick={downloadTicketPDF}
-                 className="flex-1 px-8 py-4 bg-primary-blue text-white font-black rounded-2xl shadow-xl hover:shadow-primary-blue/30 transition-all flex items-center justify-center gap-2 group"
-               >
-                 <span className="text-xl group-hover:translate-y-1 transition-transform">📥</span>
-                 Download PDF
-               </button>
-               <Link to="/" onClick={closeModalAndReset} className="flex-1">
-                 <button className="w-full px-8 py-4 bg-secondary-blue text-white font-black rounded-2xl shadow-xl hover:shadow-secondary-blue/30 transition-all">
-                   Back to Home
-                 </button>
-               </Link>
-            </div>
-          </div>
-        )}
-      </SuccessModal>
-
+      <style>{`
+        .animate-fade-in {
+          animation: fadeIn 0.4s ease-out;
+        }
+        .animate-scale-in {
+          animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scaleIn {
+          from { opacity: 0; transform: scale(0.9); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 };
