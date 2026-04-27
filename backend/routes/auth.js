@@ -2,7 +2,45 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { JWT_SECRET } = require('../middleware/auth');
+const { verifyToken, checkRole, JWT_SECRET } = require('../middleware/auth');
+
+// Register Staff Endpoint (Admin Only)
+router.post('/register-staff', verifyToken, checkRole(['admin', 'super_admin']), async (req, res) => {
+  const { user_id, password, role, department_id, name } = req.body;
+
+  if (!user_id || !password || !role) {
+    return res.status(400).json({ success: false, message: 'User ID, password, and role are required.' });
+  }
+
+  try {
+    const { pool } = require('../config/database');
+
+    // Check if user already exists
+    const [existing] = await pool.execute('SELECT id FROM users WHERE user_id = ?', [user_id]);
+    if (existing.length > 0) {
+      return res.status(400).json({ success: false, message: 'User ID already exists.' });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // Generate a placeholder phone number if not provided, ensuring it fits in VARCHAR(15)
+    const placeholderPhone = 'STAFF-' + Math.floor(Math.random() * 10000);
+
+    await pool.execute(
+      `INSERT INTO users (user_id, password_hash, role, department_id, name, phone, force_password_change)
+       VALUES (?, ?, ?, ?, ?, ?, TRUE)`,
+      [user_id, passwordHash, role, department_id || null, name || user_id, placeholderPhone, true]
+    );
+
+    res.status(201).json({ success: true, message: 'Staff member registered successfully.' });
+  } catch (err) {
+    console.error('Registration Error:', err);
+    if (err.code === 'ER_DUP_ENTRY') {
+      return res.status(400).json({ success: false, message: 'User ID or Phone already exists.' });
+    }
+    res.status(500).json({ success: false, message: 'Internal Server Error: ' + err.message });
+  }
+});
 
 // Unified Login Endpoint
 router.post('/login', async (req, res) => {

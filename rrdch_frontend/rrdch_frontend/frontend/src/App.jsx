@@ -30,6 +30,7 @@ import Facilities from './pages/Facilities';
 import Alumni from './pages/Alumni';
 import Academics from './pages/Academics';
 import Login from './pages/Login';
+import StaffManagement from './pages/StaffManagement';
 
 function App() {
   const [connectionError, setConnectionError] = useState(false);
@@ -56,7 +57,6 @@ function App() {
 
   useEffect(() => {
     checkConnectivity();
-    // Re-check every 30 seconds
     const interval = setInterval(checkConnectivity, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -79,12 +79,12 @@ function App() {
               </p>
             </div>
 
-            <button 
+            <button
               onClick={checkConnectivity}
               disabled={isRetrying}
               className={`w-full py-5 rounded-[28px] font-black text-xs uppercase tracking-[0.2em] transition-all shadow-xl ${
-                isRetrying 
-                ? 'bg-slate-200 text-slate-400 cursor-not-allowed' 
+                isRetrying
+                ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
                 : 'bg-slate-900 text-white hover:bg-[#008080] hover:shadow-[#008080]/30'
               }`}
             >
@@ -120,7 +120,7 @@ function App() {
           <Route path="about" element={<About />} />
           <Route path="student-portal" element={<StudentPortal />} />
           <Route path="admissions" element={<Admissions />} />
-          
+
           {/* Clinical & Research Routes */}
           <Route path="research" element={<Research />} />
           <Route path="achievements" element={<Achievements />} />
@@ -140,6 +140,7 @@ function App() {
           <Route path="login" element={<Login />} />
           <Route path="staff/doctor-dashboard" element={<DoctorDashboard />} />
           <Route path="staff/reception-dashboard" element={<ReceptionDashboard />} />
+          <Route path="staff/management" element={<StaffManagement />} />
 
           {/* Fallback Route */}
           <Route

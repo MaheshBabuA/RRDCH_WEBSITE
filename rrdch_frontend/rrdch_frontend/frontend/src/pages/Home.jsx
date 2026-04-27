@@ -185,7 +185,7 @@ const Home = () => {
                 </span>
               </div>
               <h3 className="text-lg font-bold text-gray-900 mb-2 leading-tight">{dept.name}</h3>
-              <p className="text-sm text-gray-500 line-clamp-2 mb-4">{dept.description}</p>
+              <p className="text-sm text-gray-500 line-clamp-2 mb-4">{dept.shortDesc}</p>
               <Link to={`/departments/${dept.id}`} className="text-sm font-semibold text-blue-600 flex items-center gap-1">
                 Learn more <ChevronRight className="w-4 h-4" />
               </Link>

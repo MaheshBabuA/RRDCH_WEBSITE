@@ -42,6 +42,35 @@ router.get('/queue', verifyToken, checkRole(['doctor', 'hod', 'admin', 'super_ad
 });
 
 /**
+ * GET /api/erp/appointments/department/:deptName
+ * Returns active appointments for a specific department (used by Receptionist)
+ * Access: Admin, Super Admin, Receptionist
+ */
+router.get('/department/:deptName', verifyToken, checkRole(['admin', 'super_admin', 'receptionist', 'doctor', 'hod']), async (req, res) => {
+  try {
+    const { pool } = require('../config/database');
+    const { deptName } = req.params;
+
+    let query = `
+      SELECT a.*, d.name as department_name, doc.name as doctor_name 
+      FROM appointments a
+      LEFT JOIN departments d ON a.department_id = d.id
+      LEFT JOIN doctors doc ON a.doctor_id = doc.id
+      WHERE a.status IN ('scheduled', 'confirmed', 'in_progress', 'PENDING')
+      AND d.name = ?
+      ORDER BY a.appointment_date ASC, a.appointment_time ASC
+    `;
+    
+    const [appointments] = await pool.execute(query, [deptName]);
+    res.status(200).json({ success: true, count: appointments.length, appointments });
+  } catch (error) {
+    console.error('ERP Dept Queue Error:', error);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+});
+
+
+/**
  * PUT /api/erp/appointments/:id/complete
  * Marks an appointment as completed
  * Access: Doctor, HOD

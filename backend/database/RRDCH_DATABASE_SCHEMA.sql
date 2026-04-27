@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS departments (
 -- ====================================================================
 CREATE TABLE IF NOT EXISTS appointments (
   id INT PRIMARY KEY AUTO_INCREMENT,
-  appointment_id VARCHAR(20) UNIQUE,
+  appointment_id VARCHAR(40) UNIQUE,
   patient_id INT,
   patient_name VARCHAR(100) NOT NULL,
   patient_phone VARCHAR(15) NOT NULL,
@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS appointments (
   department_id INT NOT NULL,
   department_name VARCHAR(100),
   doctor_name VARCHAR(100),
+  doctor_id INT,
   appointment_date DATE NOT NULL,
   appointment_time TIME NOT NULL,
   status ENUM('scheduled', 'confirmed', 'in_progress', 'completed', 'cancelled') DEFAULT 'scheduled',

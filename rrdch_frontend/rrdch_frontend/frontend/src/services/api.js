@@ -4,7 +4,7 @@ const FALLBACK_ERROR_MESSAGE = 'Something went wrong. Please try again later.';
 
 // Create axios instance
 export const api = axios.create({
-  baseURL: 'http://localhost:5000/api', // Explicitly aligned to backend port
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
   headers: {
     'Content-Type': 'application/json',
   },

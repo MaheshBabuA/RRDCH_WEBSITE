@@ -1,12 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = 'http://localhost:5000'; // Points to Node backend
-const API_URL = 'http://localhost:5000/api';
+const SOCKET_URL = 'http://127.0.0.1:5000'; // Points to Node backend
+const API_URL = 'http://127.0.0.1:5000/api';
 
 const DEPARTMENTS = [
-  'Oral Surgery', 'Orthodontics', 'Periodontics', 'Prosthodontics',
-  'Conservative Dentistry', 'Pedodontics', 'Oral Medicine', 'Oral Pathology'
+  'Oral Medicine & Radiology', 
+  'Prosthetics & Crown & Bridge', 
+  'Oral & Maxillofacial Surgery', 
+  'Periodontology',
+  'Conservative Dentistry & Endodontics', 
+  'Pedodontics & Preventive Dentistry', 
+  'Orthodontics & Dentofacial Orthopedics', 
+  'Public Health Dentistry',
+  'Oral & Maxillofacial Pathology',
+  'Implantology',
+  'Orofacial Pain'
 ];
 
 const STATUS_FLOW = ['scheduled', 'confirmed', 'in_progress', 'PENDING'];
@@ -39,14 +48,17 @@ const DoctorDashboard = () => {
     return () => s.disconnect();
   }, []);
 
-  const fetchDeptAppointments = useCallback(async () => {
+  const fetchDeptAppointments = useCallback(async (dept) => {
+    if (!dept) return;
     try {
-      const res = await fetch(`${API_URL}/erp/appointments/queue`, {
+      const res = await fetch(`${API_URL}/erp/appointments/department/${encodeURIComponent(dept)}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       const data = await res.json();
-      if (data.success) {
+      if (data.success && Array.isArray(data.appointments)) {
         setAppointments(data.appointments);
+      } else {
+        setAppointments([]);
       }
     } catch (err) { console.error(err); }
   }, []);
