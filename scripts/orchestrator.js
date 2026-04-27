@@ -48,6 +48,7 @@ const pollHttp = (url, interval = 1000, timeout = 30000) => {
     });
 };
 
+
 const start = async () => {
     try {
         console.log('================================================================');
@@ -66,8 +67,8 @@ const start = async () => {
         backendProcess.stderr.on('data', data => log('BACKEND-ERR', data));
 
         // Wait for Backend to be ready
-        await pollHttp('http://localhost:5000/api/appointments/status/0', 2000, 30000);
-        console.log('[ORCHESTRATOR] Appointment Backend is ready.');
+        await pollHttp('http://localhost:5000/api', 1000, 30000);
+        console.log('[ORCHESTRATOR] Backend API is ready.');
 
         // 2. Start Python RAG Service (Optional/Background)
         console.log('[ORCHESTRATOR] Starting Python RAG Service (Port 8000)...');

@@ -92,7 +92,7 @@ const DepartmentDetail = () => {
               </h1>
             </div>
 
-            <div className="bg-white/90 backdrop-blur-xl border border-white/50 rounded-[40px] shadow-2xl p-8 md:p-12 prose prose-blue prose-lg max-w-none text-neutral-gray leading-relaxed font-medium">
+            <div className="bg-white/90 backdrop-blur-xl border border-white/50 rounded-[40px] shadow-2xl p-8 md:p-12 prose prose-blue prose-lg max-w-none text-text-muted leading-relaxed font-medium">
               <p>
                 {department.fullDesc}
               </p>
@@ -110,7 +110,7 @@ const DepartmentDetail = () => {
               </h3>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {department.facilities.map((fac, idx) => (
-                  <li key={idx} className="flex items-start text-neutral-gray font-medium text-lg leading-snug group">
+                  <li key={idx} className="flex items-start text-text-muted font-medium text-lg leading-snug group">
                     <span className="w-6 h-6 rounded-full bg-primary-blue/10 flex items-center justify-center mr-3 shrink-0 group-hover:scale-110 transition-transform">
                        <span className="w-2 h-2 rounded-full bg-primary-blue"></span>
                     </span>
@@ -146,7 +146,7 @@ const DepartmentDetail = () => {
               </div>
               <div className="pt-16 pb-8 px-8 text-center border-b border-border-light">
                 <h3 className="text-2xl font-black text-secondary-blue mb-1">{department.headName}</h3>
-                <p className="text-sm font-bold text-neutral-gray uppercase tracking-wider">{t('departmentsPage.headOfDept')}</p>
+                <p className="text-sm font-bold text-text-muted uppercase tracking-wider">{t('departmentsPage.headOfDept')}</p>
               </div>
               
               <div className="p-8 space-y-5 bg-soft-bg/50">
@@ -157,7 +157,7 @@ const DepartmentDetail = () => {
                      </svg>
                    </div>
                    <div>
-                     <div className="text-[10px] font-black text-neutral-gray uppercase tracking-widest mb-1">Direct Line</div>
+                     <div className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Direct Line</div>
                      <div className="font-black text-secondary-blue group-hover:text-primary-blue transition-colors">{department.phone}</div>
                    </div>
                 </a>
@@ -169,7 +169,7 @@ const DepartmentDetail = () => {
                      </svg>
                    </div>
                    <div className="overflow-hidden">
-                     <div className="text-[10px] font-black text-neutral-gray uppercase tracking-widest mb-1">Email Contact</div>
+                     <div className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Email Contact</div>
                      <div className="font-black text-secondary-blue group-hover:text-primary-blue transition-colors truncate">{department.email}</div>
                    </div>
                 </a>
@@ -180,13 +180,13 @@ const DepartmentDetail = () => {
             <div className="bg-white rounded-[40px] p-8 border border-border-light shadow-premium">
                <h4 className="font-black text-secondary-blue mb-4 flex items-center gap-3">
                  <div className="w-10 h-10 bg-soft-bg rounded-full flex items-center justify-center">
-                   <svg className="w-5 h-5 text-neutral-gray" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                   <svg className="w-5 h-5 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                    </svg>
                  </div>
                  {t('departmentsPage.schedule')}
                </h4>
-               <p className="text-neutral-gray font-bold leading-relaxed bg-soft-bg p-5 rounded-2xl">
+               <p className="text-text-muted font-bold leading-relaxed bg-soft-bg p-5 rounded-2xl">
                  {department.schedule}
                </p>
             </div>
@@ -214,7 +214,7 @@ const DepartmentDetail = () => {
                      {rel.icon}
                    </div>
                    <h4 className="text-xl font-black text-secondary-blue mb-3 group-hover:text-primary-blue transition-colors line-clamp-1">{rel.name}</h4>
-                   <p className="text-sm font-medium text-neutral-gray line-clamp-2 leading-relaxed flex-grow">{rel.shortDesc}</p>
+                   <p className="text-sm font-medium text-text-muted line-clamp-2 leading-relaxed flex-grow">{rel.shortDesc}</p>
                  </div>
                </Link>
              ))}

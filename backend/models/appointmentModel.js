@@ -20,23 +20,24 @@ async function createAppointment(patientData) {
   try {
     await connection.beginTransaction();
 
-    const { patientName, patientPhone, patientEmail, doctorId, appointmentDate, reason } = patientData;
+    const { patientName, patientPhone, patientEmail, departmentId, appointmentDate, appointmentTime, reason } = patientData;
 
     // 1. Find or Create Patient to get patient_id
     let patientId;
     const [existingPatient] = await connection.execute(
-      'SELECT patient_id FROM patients WHERE patient_phone = ?',
+      'SELECT id FROM users WHERE phone = ?',
       [patientPhone]
     );
 
     if (existingPatient.length > 0) {
-      patientId = existingPatient[0].patient_id;
+      patientId = existingPatient[0].id;
     } else {
-      patientId = 'P-' + Math.floor(1000 + Math.random() * 9000);
-      await connection.execute(
-        'INSERT INTO patients (patient_id, patient_name, patient_phone, patient_email) VALUES (?, ?, ?, ?)',
-        [patientId, patientName, patientPhone, patientEmail || null]
+      // Insert into users table
+      const [result] = await connection.execute(
+        'INSERT INTO users (role, name, phone, email) VALUES (?, ?, ?, ?)',
+        ['patient', patientName, patientPhone, patientEmail || null]
       );
+      patientId = result.insertId;
     }
 
     // 3. Generate Verification Hash
@@ -48,8 +49,8 @@ async function createAppointment(patientData) {
     // 4. Insert Appointment
     const query = `
       INSERT INTO appointments 
-      (appointment_id, confirmation_number, patient_id, patient_name, patient_phone, doctor_id, appointment_date, reason, status) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'PENDING')
+      (appointment_id, confirmation_number, patient_id, patient_name, patient_phone, department_id, appointment_date, appointment_time, notes, status) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'scheduled')
     `;
 
     const params = [
@@ -58,8 +59,9 @@ async function createAppointment(patientData) {
       patientId,
       patientName, 
       patientPhone, 
-      doctorId || null, 
+      departmentId, 
       appointmentDate, 
+      appointmentTime,
       reason || null
     ];
 
@@ -89,9 +91,9 @@ async function createAppointment(patientData) {
 async function getAppointmentByPatient(patientPhone) {
   try {
     const query = `
-      SELECT a.*, p.patient_id 
+      SELECT a.*, u.id as patient_id 
       FROM appointments a 
-      JOIN patients p ON a.patient_phone = p.patient_phone 
+      JOIN users u ON a.patient_phone = u.phone 
       WHERE a.patient_phone = ? 
       ORDER BY a.appointment_date DESC
     `;

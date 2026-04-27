@@ -21,6 +21,7 @@ import ContactUs from './pages/ContactUs';
 import ReceptionDashboard from './pages/ReceptionDashboard';
 import Achievements from './pages/Achievements';
 import DoctorConsole from './pages/DoctorConsole';
+import DoctorDashboard from './pages/DoctorDashboard';
 import Research from './pages/Research';
 
 // Integrated Pages
@@ -28,6 +29,8 @@ import Courses from './pages/Courses';
 import Facilities from './pages/Facilities';
 import Alumni from './pages/Alumni';
 import Academics from './pages/Academics';
+import Login from './pages/Login';
+import StaffManagement from './pages/StaffManagement';
 
 function App() {
   const [connectionError, setConnectionError] = useState(false);
@@ -54,7 +57,6 @@ function App() {
 
   useEffect(() => {
     checkConnectivity();
-    // Re-check every 30 seconds
     const interval = setInterval(checkConnectivity, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -68,7 +70,7 @@ function App() {
             <div className="w-24 h-24 bg-amber-100 rounded-full flex items-center justify-center mx-auto animate-pulse">
                <span className="text-5xl">📡</span>
             </div>
-            
+
             <div className="space-y-2">
               <h2 className="text-3xl font-black text-slate-900 tracking-tighter uppercase">Connection Lost</h2>
               <p className="text-slate-500 font-bold text-sm leading-relaxed">
@@ -77,12 +79,12 @@ function App() {
               </p>
             </div>
 
-            <button 
+            <button
               onClick={checkConnectivity}
               disabled={isRetrying}
               className={`w-full py-5 rounded-[28px] font-black text-xs uppercase tracking-[0.2em] transition-all shadow-xl ${
-                isRetrying 
-                ? 'bg-slate-200 text-slate-400 cursor-not-allowed' 
+                isRetrying
+                ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
                 : 'bg-slate-900 text-white hover:bg-[#008080] hover:shadow-[#008080]/30'
               }`}
             >
@@ -118,7 +120,7 @@ function App() {
           <Route path="about" element={<About />} />
           <Route path="student-portal" element={<StudentPortal />} />
           <Route path="admissions" element={<Admissions />} />
-          
+
           {/* Clinical & Research Routes */}
           <Route path="research" element={<Research />} />
           <Route path="achievements" element={<Achievements />} />
@@ -135,8 +137,10 @@ function App() {
           <Route path="syllabus" element={<Navigate to="/student-portal" replace />} />
 
           {/* Hidden Staff-Only Routes */}
-          <Route path="staff/doctor-dashboard" element={<DoctorConsole />} />
+          <Route path="login" element={<Login />} />
+          <Route path="staff/doctor-dashboard" element={<DoctorDashboard />} />
           <Route path="staff/reception-dashboard" element={<ReceptionDashboard />} />
+          <Route path="staff/management" element={<StaffManagement />} />
 
           {/* Fallback Route */}
           <Route

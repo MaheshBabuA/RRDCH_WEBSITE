@@ -1,21 +1,30 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = 'http://localhost:5000'; // Points to Node backend
-const API_URL = 'http://localhost:5000/api';
+const SOCKET_URL = 'http://127.0.0.1:5000'; // Points to Node backend
+const API_URL = 'http://127.0.0.1:5000/api';
 
 const DEPARTMENTS = [
-  'Oral Surgery', 'Orthodontics', 'Periodontics', 'Prosthodontics',
-  'Conservative Dentistry', 'Pedodontics', 'Oral Medicine', 'Oral Pathology'
+  'Oral Medicine & Radiology', 
+  'Prosthetics & Crown & Bridge', 
+  'Oral & Maxillofacial Surgery', 
+  'Periodontology',
+  'Conservative Dentistry & Endodontics', 
+  'Pedodontics & Preventive Dentistry', 
+  'Orthodontics & Dentofacial Orthopedics', 
+  'Public Health Dentistry',
+  'Oral & Maxillofacial Pathology',
+  'Implantology',
+  'Orofacial Pain'
 ];
 
-const STATUS_FLOW = ['scheduled', 'confirmed', 'in_queue', 'treatment'];
-const STATUS_LABELS = { scheduled: 'Scheduled', confirmed: 'Confirmed', in_queue: 'In Queue', treatment: 'Treatment' };
+const STATUS_FLOW = ['scheduled', 'confirmed', 'in_progress', 'PENDING'];
+const STATUS_LABELS = { scheduled: 'Scheduled', confirmed: 'Confirmed', in_progress: 'In Progress', PENDING: 'Pending' };
 const STATUS_COLORS = {
   scheduled: 'bg-blue-100 text-blue-700 border-blue-200',
   confirmed: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-  in_queue: 'bg-amber-100 text-amber-700 border-amber-200',
-  treatment: 'bg-purple-100 text-purple-700 border-purple-200',
+  in_progress: 'bg-amber-100 text-amber-700 border-amber-200',
+  PENDING: 'bg-purple-100 text-purple-700 border-purple-200',
 };
 
 const DoctorDashboard = () => {
@@ -40,10 +49,17 @@ const DoctorDashboard = () => {
   }, []);
 
   const fetchDeptAppointments = useCallback(async (dept) => {
+    if (!dept) return;
     try {
-      const res = await fetch(`${API_URL}/appointments/department/${encodeURIComponent(dept)}`);
+      const res = await fetch(`${API_URL}/erp/appointments/department/${encodeURIComponent(dept)}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
       const data = await res.json();
-      setAppointments(data);
+      if (data.success && Array.isArray(data.appointments)) {
+        setAppointments(data.appointments);
+      } else {
+        setAppointments([]);
+      }
     } catch (err) { console.error(err); }
   }, []);
 
@@ -68,17 +84,21 @@ const DoctorDashboard = () => {
     };
   }, [socket, selectedDept, fetchDeptAppointments]);
 
-  const advanceStatus = async (apt) => {
-    const currentIdx = STATUS_FLOW.indexOf(apt.status);
-    if (currentIdx >= STATUS_FLOW.length - 1) return;
-    const nextStatus = STATUS_FLOW[currentIdx + 1];
+  const markCompleted = async (apt) => {
     try {
-      await fetch(`${API_URL}/appointments/${apt.id}/status`, {
+      const res = await fetch(`${API_URL}/erp/appointments/${apt.id}/complete`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: nextStatus }),
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
       });
-      setAppointments(prev => prev.map(a => a.id === apt.id ? { ...a, status: nextStatus } : a));
+      const data = await res.json();
+      if (data.success) {
+        setAppointments(prev => prev.filter(a => a.id !== apt.id));
+      } else {
+        alert(data.message);
+      }
     } catch (err) { console.error(err); }
   };
 
@@ -217,16 +237,12 @@ const DoctorDashboard = () => {
                             </span>
                           </td>
                           <td className="px-8 py-5 text-right">
-                            {STATUS_FLOW.indexOf(apt.status) < STATUS_FLOW.length - 1 ? (
-                              <button
-                                onClick={() => advanceStatus(apt)}
-                                className="px-5 py-2.5 bg-[#008080] text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-[#006666] transition-all shadow-lg shadow-[#008080]/20"
-                              >
-                                → {STATUS_LABELS[STATUS_FLOW[STATUS_FLOW.indexOf(apt.status) + 1]]}
-                              </button>
-                            ) : (
-                              <span className="text-xs font-bold text-emerald-400">✓ Complete</span>
-                            )}
+                            <button
+                              onClick={() => markCompleted(apt)}
+                              className="px-5 py-2.5 bg-[#008080] text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-[#006666] transition-all shadow-lg shadow-[#008080]/20"
+                            >
+                              [ Completed ]
+                            </button>
                           </td>
                         </tr>
                       ))}

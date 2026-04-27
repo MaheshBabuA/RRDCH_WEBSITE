@@ -93,10 +93,11 @@ router.post('/', validateCreateAppointment, async (req, res) => {
     const patientData = {
       patientName: req.body.patient_name,
       patientPhone: req.body.patient_phone,
-      patientEmail: req.body.patient_email || null, // Optional
-      doctorId: req.body.department_id, // Map department_id here based on earlier schema or needs adjustment depending on how models map it
-      appointmentDate: `${req.body.appointment_date} ${req.body.appointment_time}:00`,
-      reason: req.body.notes || 'Routine Checkup' // Map notes to reason
+      patientEmail: req.body.patient_email || null,
+      departmentId: req.body.department_id,
+      appointmentDate: req.body.appointment_date,
+      appointmentTime: req.body.appointment_time + ':00',
+      reason: req.body.notes || 'Routine Checkup'
     };
 
     const result = await appointmentModel.createAppointment(patientData);

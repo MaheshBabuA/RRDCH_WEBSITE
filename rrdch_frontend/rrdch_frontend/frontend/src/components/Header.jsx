@@ -29,7 +29,7 @@ const Header = () => {
 
           {/* Right: Utility Links */}
           <div className="flex items-center space-x-6 mt-2 md:mt-0 uppercase">
-            <a href="#" className="hover:text-primary-blue transition-colors">ERP Login</a>
+            <Link to="/login" className="hover:text-primary-blue transition-colors">ERP Login</Link>
             <a href="#" className="hover:text-primary-blue transition-colors">ESI Portal</a>
             <Link to="/patient-portal" className="bg-primary-blue/20 text-primary-blue px-3 py-1 rounded-md hover:bg-primary-blue hover:text-white transition-all font-bold">Patient Portal</Link>
             <Link to="/ai-checker" className="text-success-green hover:underline">AI Checker</Link>

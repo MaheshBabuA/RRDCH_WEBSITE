@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { useLanguage } from '../utils/i18n';
 
@@ -6,15 +7,15 @@ const SOCKET_URL = 'http://localhost:5000';
 const API_URL = 'http://localhost:5000/api';
 
 const DEPARTMENTS = [
-  { id: 1, name: 'Oral Medicine \u0026 Radiology' },
-  { id: 2, name: 'Prosthetics \u0026 Crown \u0026 Bridge' },
-  { id: 3, name: 'Oral \u0026 Maxillofacial Surgery' },
+  { id: 1, name: 'Oral Medicine & Radiology' },
+  { id: 2, name: 'Prosthetics & Crown & Bridge' },
+  { id: 3, name: 'Oral & Maxillofacial Surgery' },
   { id: 4, name: 'Periodontology' },
-  { id: 5, name: 'Pedodontics \u0026 Preventive Dentistry' },
-  { id: 6, name: 'Conservative Dentistry \u0026 Endodontics' },
-  { id: 7, name: 'Orthodontics \u0026 Dentofacial Orthopedics' },
+  { id: 5, name: 'Pedodontics & Preventive Dentistry' },
+  { id: 6, name: 'Conservative Dentistry & Endodontics' },
+  { id: 7, name: 'Orthodontics & Dentofacial Orthopedics' },
   { id: 8, name: 'Public Health Dentistry' },
-  { id: 9, name: 'Oral \u0026 Maxillofacial Pathology' },
+  { id: 9, name: 'Oral & Maxillofacial Pathology' },
   { id: 10, name: 'Implantology' },
   { id: 11, name: 'Orofacial Pain' }
 ];
@@ -29,6 +30,7 @@ const STATUS_COLORS = {
 
 const ReceptionDashboard = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [selectedDept, setSelectedDept] = useState('');
   const [appointments, setAppointments] = useState([]);
   const [socket, setSocket] = useState(null);
@@ -39,6 +41,15 @@ const ReceptionDashboard = () => {
   const [confirmedDoctor, setConfirmedDoctor] = useState('');
   const [scannedData, setScannedData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('current');
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      setUser(JSON.parse(userData));
+    }
+  }, []);
 
   useEffect(() => {
     const s = io(SOCKET_URL);
@@ -50,9 +61,15 @@ const ReceptionDashboard = () => {
 
   const fetchDeptAppointments = useCallback(async (dept) => {
     try {
-      const res = await fetch(`${API_URL}/appointments/department/${encodeURIComponent(dept)}`);
+      const res = await fetch(`${API_URL}/erp/appointments/department/${encodeURIComponent(dept)}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
       const data = await res.json();
-      setAppointments(data);
+      if (data.success && Array.isArray(data.appointments)) {
+        setAppointments(data.appointments);
+      } else {
+        setAppointments([]);
+      }
     } catch (err) { console.error(err); }
   }, []);
 
@@ -60,7 +77,7 @@ const ReceptionDashboard = () => {
     if (!socket || !selectedDept) return;
     socket.emit('join_department', selectedDept);
     fetchDeptAppointments(selectedDept);
-    
+
     const handleNew = (apt) => {
       setAppointments(prev => [apt, ...prev]);
       setNotification(`New arrival: ${apt.patient_name}`);
@@ -119,13 +136,36 @@ const ReceptionDashboard = () => {
             </div>
             <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase">{t('reception.title')}</h1>
           </div>
-          <button 
-            onClick={handleSimulateScan}
-            className="w-full md:w-auto px-10 py-5 bg-slate-900 text-white rounded-[24px] font-black uppercase text-xs tracking-widest shadow-2xl hover:bg-teal-600 transition-all active:scale-95"
-          >
-            {t('reception.scanPass')}
-          </button>
+
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleSimulateScan}
+              disabled={isScanning}
+              className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-black shadow-lg shadow-emerald-500/20 flex items-center gap-2 transition-all active:scale-95"
+            >
+              <span className="text-xl">📷</span>
+              {isScanning ? 'Processing...' : 'Scan Patient QR'}
+            </button>
+            {(user?.role === 'admin' || user?.role === 'super_admin') && (
+              <button
+                onClick={() => navigate('/staff/management')}
+                className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-2xl font-black shadow-lg shadow-blue-500/20 flex items-center gap-2 transition-all active:scale-95"
+              >
+                Manage Staff
+              </button>
+            )}
+            <div className="bg-white/5 border border-white/10 rounded-2xl px-6 py-3 backdrop-blur-md">
+              <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Reception Access Only</div>
+              <div className="text-lg font-black font-mono text-amber-400">RRDCH-STAFF</div>
+            </div>
+          </div>
         </header>
+
+        {notification && (
+          <div className="mb-6 px-6 py-4 bg-teal-50 border border-teal-200 rounded-2xl text-teal-700 font-black text-sm animate-pulse">
+            🔔 {notification}
+          </div>
+        )}
 
         <div className="mb-12">
           <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-6 block">{t('reception.selectDeptQueue')}</label>
@@ -152,7 +192,7 @@ const ReceptionDashboard = () => {
                  {DEPARTMENTS.find(d => d.name === selectedDept) ? t(`deptNames.${DEPARTMENTS.find(d => d.name === selectedDept).id}`) : selectedDept} {t('reception.queue')}
                </h2>
             </div>
-            
+
             {/* Desktop Table View */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left">
@@ -181,7 +221,7 @@ const ReceptionDashboard = () => {
 
             {/* Mobile Cards View */}
             <div className="md:hidden flex flex-col gap-4 p-4">
-              {appointments.map((apt, idx) => (
+              {appointments.map((apt) => (
                  <div key={apt.id} className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col gap-4 relative">
                     <div className="flex justify-between items-start">
                        <div>
@@ -192,7 +232,6 @@ const ReceptionDashboard = () => {
                           {t(`reception.${apt.status}`) !== `reception.${apt.status}` ? t(`reception.${apt.status}`) : apt.status}
                        </span>
                     </div>
-                    
                     <div className="flex items-center justify-between mt-2">
                        <div className="px-4 py-2 bg-slate-50 rounded-xl font-black text-slate-600 text-xs">
                          {apt.time_slot}
@@ -201,6 +240,13 @@ const ReceptionDashboard = () => {
                  </div>
               ))}
             </div>
+
+            {appointments.length === 0 && (
+              <div className="py-24 text-center">
+                <div className="text-6xl mb-4 opacity-20">🏥</div>
+                <p className="font-black text-slate-300 uppercase tracking-widest">Queue is empty</p>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -216,7 +262,7 @@ const ReceptionDashboard = () => {
                 </div>
                 <button onClick={() => setIsModalOpen(false)} className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center font-black">✕</button>
              </div>
-             
+
              <div className="p-12 space-y-10">
                 <div className="grid grid-cols-2 gap-8">
                    <div className="bg-slate-50 p-8 rounded-[32px] border border-slate-100">
@@ -244,7 +290,7 @@ const ReceptionDashboard = () => {
                    </div>
                 </div>
 
-                <button 
+                <button
                   onClick={handleConfirmArrival}
                   className="w-full py-8 bg-teal-500 text-white rounded-[32px] font-black text-2xl uppercase tracking-tighter shadow-2xl shadow-teal-500/40 hover:scale-105 active:scale-95 transition-all"
                 >
@@ -268,7 +314,7 @@ const ReceptionDashboard = () => {
         .teal-bloom { background: radial-gradient(circle at center, rgba(0, 128, 128, 0.1), transparent 70%); }
         .tactile-row:hover { transform: translateX(10px); background: rgba(0, 128, 128, 0.05) !important; box-shadow: -5px 0 0 #008080; }
         .animate-scale-up { animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1); } }
       `}</style>
     </div>
   );

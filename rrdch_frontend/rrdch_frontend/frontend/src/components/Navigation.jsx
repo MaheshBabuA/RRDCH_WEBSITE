@@ -118,13 +118,92 @@ const Navigation = () => {
               <GlobeIcon className="w-4 h-4" />
               <span>{language === 'en' ? 'KN' : 'EN'}</span>
             </button>
-            <Link to="/book-appointment" className="btn-primary text-sm px-5 py-2">
+
+            {/* Desktop CTA Buttons */}
+            <div className="hidden lg:flex items-center gap-2">
+               <Link to="/login" className="px-5 py-2 rounded-full border border-primary-blue text-primary-blue hover:bg-primary-blue hover:text-white transition-all text-sm font-black">
+                 Staff Login
+               </Link>
+               <Link to="/book-appointment" className="btn-primary text-sm px-5 py-2">
+                 {t('navbar.bookAppointment')}
+               </Link>
+            </div>
+
+            {/* Mobile Hamburger Button */}
+            <div className="md:hidden flex items-center">
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                type="button"
+                className="inline-flex items-center justify-center p-2 rounded-md text-neutral-gray hover:text-primary-blue hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-blue transition-colors"
+                aria-controls="mobile-menu"
+                aria-expanded="false"
+              >
+                <span className="sr-only">Open main menu</span>
+                {!isOpen ? (
+                  <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                ) : (
+                  <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      {isOpen && (
+        <div className="md:hidden border-t border-border-light bg-white shadow-lg absolute w-full" id="mobile-menu">
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 max-h-[80vh] overflow-y-auto">
+            <Link to="/" className={navLinkClasses('/')} onClick={closeMenu}>{t('navbar.home')}</Link>
+            
+            <div className="pt-2 pb-1 mt-1 border-t border-gray-100">
+              <span className="block px-3 py-1 text-xs font-semibold text-primary-blue uppercase tracking-wider">About Us</span>
+              <div className="mt-1 space-y-1 pl-3 border-l-2 border-gray-100 ml-3">
+                <Link to="/about" className={navLinkClasses('/about')} onClick={closeMenu}>{t('navbar.about')}</Link>
+                <Link to="/facilities" className={navLinkClasses('/facilities')} onClick={closeMenu}>Facilities</Link>
+                <Link to="/alumni" className={navLinkClasses('/alumni')} onClick={closeMenu}>Alumni</Link>
+                <Link to="/events" className={navLinkClasses('/events')} onClick={closeMenu}>Events</Link>
+              </div>
+            </div>
+            
+            <div className="pt-2 pb-1 mt-1 border-t border-gray-100">
+              <span className="block px-3 py-1 text-xs font-semibold text-primary-blue uppercase tracking-wider">{t('navbar.academicServices')}</span>
+              <div className="mt-1 space-y-1 pl-3 border-l-2 border-gray-100 ml-3">
+                <Link to="/courses" className={navLinkClasses('/courses')} onClick={closeMenu}>Courses</Link>
+                <Link to="/academics" className={navLinkClasses('/academics')} onClick={closeMenu}>{t('navbar.academics')}</Link>
+                <Link to="/departments" className={navLinkClasses('/departments')} onClick={closeMenu}>{t('navbar.departments')}</Link>
+                <Link to="/admissions" className={navLinkClasses('/admissions')} onClick={closeMenu}>{t('navbar.admissions')}</Link>
+                <Link to="/student-portal" className={navLinkClasses('/student-portal')} onClick={closeMenu}>{t('navbar.studentPortal')}</Link>
+              </div>
+            </div>
+
+            <div className="pt-2 pb-1 mt-1 border-t border-gray-100">
+              <span className="block px-3 py-1 text-xs font-semibold text-primary-blue uppercase tracking-wider">{t('navbar.patientServices')}</span>
+              <div className="mt-1 space-y-1 pl-3 border-l-2 border-gray-100 ml-3">
+                <Link to="/book-appointment" className={navLinkClasses('/book-appointment')} onClick={closeMenu}>{t('navbar.bookAppointment')}</Link>
+                <Link to="/check-status" className={navLinkClasses('/check-status')} onClick={closeMenu}>{t('navbar.checkStatus')}</Link>
+              </div>
+            </div>
+
+            <div className="pt-2 mt-1 border-t border-gray-100">
+              <Link to="/contact" className={navLinkClasses('/contact')} onClick={closeMenu}>{t('navbar.contact')}</Link>
+            </div>
+          </div>
+          <div className="px-4 pb-4 pt-2 border-t border-gray-100 flex flex-col gap-2">
+            <Link to="/login" className="px-4 py-2 text-center rounded-lg border border-primary-blue text-primary-blue hover:bg-primary-blue hover:text-white transition-all text-sm font-bold block" onClick={closeMenu}>
+              Staff Login
+            </Link>
+            <Link to="/book-appointment" className="btn-primary w-full block text-center" onClick={closeMenu}>
               {t('navbar.bookAppointment')}
             </Link>
           </div>
           
-          {/* Mobile Right Section (Just Lang Toggle for now, Menu is at bottom) */}
-          <div className="md:hidden flex items-center gap-2">
+          {/* Mobile Right Section (Lang Toggle) */}
+          <div className="md:hidden flex items-center gap-2 px-4 pb-3">
              <button 
                onClick={toggleLanguage}
                className="flex items-center gap-1 px-3 py-1.5 rounded-full border border-border-light hover:border-primary-blue hover:text-primary-blue transition-all text-[10px] font-black uppercase text-neutral-gray"
@@ -134,7 +213,7 @@ const Navigation = () => {
              </button>
           </div>
         </div>
-      </div>
+      )}
     </nav>
 
     {/* Mobile Bottom Navigation Bar */}
@@ -190,6 +269,13 @@ const Navigation = () => {
               <div className="text-[10px] font-black text-primary-blue uppercase tracking-widest mb-3">Support</div>
               <div className="grid grid-cols-2 gap-3">
                 <Link to="/contact" className="p-4 bg-slate-50 rounded-2xl font-bold text-sm text-slate-700" onClick={closeMenu}>{t('navbar.contact')}</Link>
+              </div>
+            </div>
+
+            <div>
+              <div className="text-[10px] font-black text-primary-blue uppercase tracking-widest mb-3">Staff</div>
+              <div className="grid grid-cols-2 gap-3">
+                <Link to="/login" className="p-4 bg-primary-blue/10 rounded-2xl font-bold text-sm text-primary-blue" onClick={closeMenu}>Staff Login</Link>
               </div>
             </div>
          </div>

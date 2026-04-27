@@ -1,4 +1,4 @@
-require('dotenv').config(); // Ensure env variables are loaded (for DB connection)
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
@@ -12,6 +12,8 @@ const doctorsRouter = require('./routes/doctors');
 const receptionRouter = require('./routes/reception');
 const portalRouter = require('./routes/portal');
 const symptomCheckerRouter = require('./routes/symptomChecker');
+const authRouter = require('./routes/auth');
+const erpAppointmentsRouter = require('./routes/erp_appointments');
 
 const http = require('http');
 const { Server } = require('socket.io');
@@ -20,14 +22,17 @@ const doctorRoutes = require('./routes/doctor');
 
 const app = express();
 const server = http.createServer(app);
+
+const ALLOWED_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5173', 'http://127.0.0.1:5173'];
+
 const io = new Server(server, {
   cors: {
-    origin: '*', // More permissive for development to avoid issues
-    methods: ['GET', 'POST', 'PUT']
+    origin: ALLOWED_ORIGINS,
+    methods: ['GET', 'POST']
   }
 });
 
-// Lead: Expose 'io' for routes to use
+// Expose 'io' for routes to use
 app.set('io', io);
 
 const PORT = process.env.PORT || 5000;
@@ -46,8 +51,21 @@ io.on('connection', (socket) => {
   });
 });
 
+// Setup CORS configuration
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || ALLOWED_ORIGINS.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
 // Application-level middleware
-app.use(cors({ origin: ['http://localhost:3000', 'http://localhost:5173'], credentials: true })); 
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -62,6 +80,8 @@ app.use('/api/reception', receptionRouter);
 app.use('/api/portal', portalRouter);
 app.use('/api/symptomChecker', symptomCheckerRouter);
 app.use('/api/doctor', doctorRoutes);
+app.use('/api/auth', authRouter);
+app.use('/api/erp/appointments', erpAppointmentsRouter);
 
 // Base health check endpoint
 app.get('/api/health', (req, res) => {
