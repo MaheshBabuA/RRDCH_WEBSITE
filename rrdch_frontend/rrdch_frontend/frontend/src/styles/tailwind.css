@@ -161,3 +161,64 @@ h1, h2, h3, h4 {
   border: 1px solid rgba(255, 255, 255, 0.4) !important;
   box-shadow: 0 20px 40px rgba(0, 128, 128, 0.1) !important;
 }
+
+@layer components {
+  /* Premium Buttons */
+  .btn-primary {
+    @apply px-6 py-2.5 bg-primary-blue text-white rounded-lg font-semibold 
+           transition-all duration-300 ease-in-out
+           hover:bg-secondary-blue hover:shadow-lg hover:-translate-y-0.5
+           active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-2.5 border-2 border-primary-blue text-primary-blue rounded-lg font-semibold 
+           transition-all duration-300 ease-in-out
+           hover:bg-primary-blue hover:text-white hover:shadow-md
+           active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2;
+  }
+
+  /* Premium Card */
+  .card {
+    @apply bg-white rounded-2xl shadow-sm border border-border-light p-6
+           transition-all duration-300 ease-in-out
+           hover:shadow-xl hover:border-primary-blue/20;
+  }
+
+  /* Styled Form Elements */
+  .form-input {
+    @apply w-full px-4 py-3 bg-white border border-border-light rounded-xl
+           transition-all duration-200 ease-in-out
+           placeholder:text-neutral-gray/60
+           focus:outline-none focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue
+           disabled:bg-gray-50 disabled:cursor-not-allowed;
+  }
+
+  .form-select {
+    @apply w-full px-4 py-3 bg-white border border-border-light rounded-xl cursor-pointer
+           transition-all duration-200 ease-in-out
+           focus:outline-none focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue
+           appearance-none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236C757D' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 1rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+  }
+
+  .nav-logo {
+    width: 45px;
+    height: 45px;
+    object-fit: contain;
+  }
+
+  .hero {
+    background: linear-gradient(
+      rgba(37, 99, 235, 0.75),
+      rgba(16, 185, 129, 0.75)
+    ),
+    url('../assets/rrdch_photo.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+}

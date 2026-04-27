@@ -24,7 +24,7 @@ const Home = () => {
   return (
     <div className="flex flex-col gap-16 md:gap-24 -mt-8 bg-gray-50 min-h-screen pb-16">
       {/* 1. Hero Section */}
-      <section className="relative w-full min-h-[85vh] flex items-center justify-center overflow-hidden -mx-4 sm:-mx-6 lg:-mx-8 w-[calc(100%+2rem)] sm:w-[calc(100%+3rem)] lg:w-[calc(100%+4rem)] bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900">
+      <section className="hero relative w-full min-h-[85vh] flex items-center justify-center overflow-hidden -mx-4 sm:-mx-6 lg:-mx-8 w-[calc(100%+2rem)] sm:w-[calc(100%+3rem)] lg:w-[calc(100%+4rem)]">
         {/* Subtle overlay patterns */}
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
