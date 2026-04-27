@@ -8,9 +8,14 @@ def ingest_data():
     print("Initializing Ingestion Process...")
     
     # 1. Load Documents
-    # We use TextLoader for our mock data, but DirectoryLoader can handle PDFs with a PDF loader
-    loader = DirectoryLoader('./data', glob="./*.txt", loader_cls=TextLoader)
+    # Pointing to syllabus_pdfs as requested
+    if not os.path.exists('./syllabus_pdfs'):
+        os.makedirs('./syllabus_pdfs')
+        print("Created syllabus_pdfs folder. Please add PDF files there.")
+        
+    loader = DirectoryLoader('./syllabus_pdfs', glob="./*.pdf")
     documents = loader.load()
+
     print(f"Loaded {len(documents)} documents.")
 
     # 2. Split Documents

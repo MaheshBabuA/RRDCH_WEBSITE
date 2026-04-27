@@ -11,8 +11,7 @@ const feedbackRouter = require('./routes/feedback');
 const doctorsRouter = require('./routes/doctors');
 const receptionRouter = require('./routes/reception');
 const portalRouter = require('./routes/portal');
-
-
+const symptomCheckerRouter = require('./routes/symptomChecker');
 
 const http = require('http');
 const { Server } = require('socket.io');
@@ -23,10 +22,13 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:5173',
-    methods: ['GET', 'POST']
+    origin: '*', // More permissive for development to avoid issues
+    methods: ['GET', 'POST', 'PUT']
   }
 });
+
+// Lead: Expose 'io' for routes to use
+app.set('io', io);
 
 const PORT = process.env.PORT || 5000;
 
@@ -35,9 +37,7 @@ io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
   socket.on('next-patient-called', (data) => {
-    // data: { doctor_id, patient_name, appointment_id }
     console.log('Next patient called:', data);
-    // Broadcast to all clients (specifically the Patient Portal will listen)
     io.emit('live-ticker-update', data);
   });
 
@@ -46,15 +46,8 @@ io.on('connection', (socket) => {
   });
 });
 
-// Setup CORS configuration as requested
-const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173', // specific frontend URL constraint
-  credentials: true, // allow sending cookies/auth headers
-  optionsSuccessStatus: 200
-};
-
 // Application-level middleware
-app.use(cors(corsOptions));
+app.use(cors({ origin: ['http://localhost:3000', 'http://localhost:5173'], credentials: true })); 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -67,9 +60,14 @@ app.use('/api/feedback', feedbackRouter);
 app.use('/api/doctors', doctorsRouter);
 app.use('/api/reception', receptionRouter);
 app.use('/api/portal', portalRouter);
+app.use('/api/symptomChecker', symptomCheckerRouter);
 app.use('/api/doctor', doctorRoutes);
 
 // Base health check endpoint
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok', message: 'API is operational' });
+});
+
 app.get('/api', (req, res) => {
   res.status(200).json({ success: true, message: 'API is operational' });
 });
@@ -99,7 +97,6 @@ app.get('/api/get-patient-appointments', async (req, res) => {
 
 /**
  * Endpoint: POST /api/scan-appointment
- * Triggered when a QR code is scanned.
  */
 app.post('/api/scan-appointment', async (req, res) => {
   const { patient_id, appointment_id } = req.body;
@@ -128,4 +125,3 @@ if (require.main === module) {
 }
 
 module.exports = app;
-

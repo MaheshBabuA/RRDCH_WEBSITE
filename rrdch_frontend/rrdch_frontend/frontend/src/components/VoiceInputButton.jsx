@@ -1,98 +1,120 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useLanguage } from '../utils/i18n';
 
-const VoiceInputButton = ({ onTranscript, className = '' }) => {
+// 13-Language Map extracted from MedOS AI
+const LANG_MAP = {
+  en: "en-US", 
+  kn: "kn-IN", // Added specifically for RRDCH
+  hi: "hi-IN", 
+  es: "es-ES", 
+  zh: "zh-CN", 
+  ar: "ar-SA",
+  bn: "bn-BD", 
+  fr: "fr-FR", 
+  ru: "ru-RU", 
+  ja: "ja-JP",
+  de: "de-DE", 
+  ko: "ko-KR", 
+  te: "te-IN", // Telugu for regional support
+  ta: "ta-IN"  // Tamil for regional support
+};
+
+const VoiceInputButton = ({ onTranscript, className = '', targetLanguage, onListeningEnd }) => {
+  const { language: globalLanguage } = useLanguage();
   const [isListening, setIsListening] = useState(false);
-  const [recognition, setRecognition] = useState(null);
-  const [lang, setLang] = useState('en-US');
+  const [isSupported, setIsSupported] = useState(false);
+  const recognitionRef = useRef(null);
+
+  // Determine active language code
+  const activeLangKey = targetLanguage || globalLanguage;
+  const activeLangCode = LANG_MAP[activeLangKey] || "en-US";
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const recog = new SpeechRecognition();
-      recog.continuous = false;
-      recog.interimResults = false;
-      
-      recog.onstart = () => setIsListening(true);
-      recog.onend = () => setIsListening(false);
-      recog.onerror = (event) => {
-        console.error('Speech recognition error', event.error);
-        setIsListening(false);
-      };
-      recog.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        onTranscript(transcript);
-      };
+    setIsSupported(!!SpeechRecognition);
+  }, []);
 
-      setRecognition(recog);
-    }
-  }, [onTranscript]);
+  const toggleListening = useCallback(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
 
-  const startListening = (l) => {
-    if (!recognition) return;
-    if (isListening) {
-      recognition.stop();
-      if (lang === l) return; // Toggle off if same language
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+      return;
     }
-    
-    setLang(l);
-    recognition.lang = l;
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = activeLangCode;
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => {
+      setIsListening(false);
+      if (onListeningEnd) onListeningEnd();
+    };
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error', event.error);
+      setIsListening(false);
+      if (onListeningEnd) onListeningEnd();
+    };
+    recognition.onresult = (event) => {
+      let currentTranscript = '';
+      let isFinal = false;
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        currentTranscript += event.results[i][0].transcript;
+        if (event.results[i].isFinal) isFinal = true;
+      }
+      if (currentTranscript) onTranscript(currentTranscript, isFinal);
+    };
+
+    recognitionRef.current = recognition;
     try {
       recognition.start();
     } catch (e) {
       console.error(e);
+      setIsListening(false);
     }
-  };
+  }, [isListening, activeLangCode, onTranscript]);
 
-  const stopListening = () => {
-    if (recognition) recognition.stop();
-  };
-
-  if (!recognition) return (
-    <div className="text-xs text-neutral-gray italic py-2">
-      Voice input is not supported in this browser.
+  if (!isSupported) return (
+    <div className="text-[10px] text-neutral-gray italic py-1 opacity-50">
+      Voice not supported
     </div>
   );
 
+  const isKannada = activeLangKey === 'kn';
+
   return (
-    <div className={`space-y-3 ${className}`}>
-      <div className="flex flex-col sm:flex-row items-center gap-3">
-        <button
-          type="button"
-          onClick={() => startListening('en-US')}
-          className={`w-full sm:flex-1 flex items-center justify-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-300 border-2 font-black text-[11px] uppercase tracking-[0.1em] shadow-sm ${
-            isListening && lang === 'en-US'
-              ? 'bg-primary-blue border-primary-blue text-white animate-pulse shadow-primary-blue/30 scale-[1.02]'
-              : 'bg-white border-border-soft text-secondary-blue hover:border-primary-blue/50 hover:bg-primary-blue/5'
-          }`}
-        >
-          <span className="text-xl">🎤</span>
-          <span>Speak English</span>
-        </button>
-        
-        <button
-          type="button"
-          onClick={() => startListening('kn-IN')}
-          className={`w-full sm:flex-1 flex items-center justify-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-300 border-2 font-black text-[11px] uppercase tracking-[0.1em] shadow-sm ${
-            isListening && lang === 'kn-IN'
-              ? 'bg-success-green border-success-green text-white animate-pulse shadow-success-green/30 scale-[1.02]'
-              : 'bg-white border-border-soft text-secondary-blue hover:border-success-green/50 hover:bg-success-green/5'
-          }`}
-        >
-          <span className="text-xl">🎤</span>
-          <span>ಮಾತನಾಡಿ (Kannada)</span>
-        </button>
-      </div>
+    <div className={`voice-input-container flex flex-col items-center ${className}`}>
+      <button
+        type="button"
+        onClick={toggleListening}
+        className={`flex items-center justify-center p-4 rounded-full transition-all duration-300 shadow-[6px_6px_12px_#d1d9e6,-6px_-6px_12px_#ffffff] active:shadow-[inset_6px_6px_12px_#d1d9e6,inset_-6px_-6px_12px_#ffffff] ${
+          isListening
+            ? 'bg-red-500 text-white shadow-[inset_4px_4px_10px_#cc0000,inset_-4px_-4px_10px_#ff4d4d] animate-pulse'
+            : 'bg-gray-50 text-primary-blue'
+        }`}
+        title={isListening ? "Stop Listening" : `Speak in ${activeLangCode}`}
+      >
+        <span className="text-2xl">{isListening ? '⏹' : '🎤'}</span>
+      </button>
       
       {isListening && (
-        <div className="flex items-center justify-center gap-2 py-1">
-          <div className="flex gap-1">
-             <div className="w-1.5 h-1.5 bg-primary-blue rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-             <div className="w-1.5 h-1.5 bg-primary-blue rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-             <div className="w-1.5 h-1.5 bg-primary-blue rounded-full animate-bounce"></div>
-          </div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-primary-blue">
-            Listening in {lang === 'en-US' ? 'English' : 'Kannada'}...
-          </span>
+        <div className="mt-4 flex items-center justify-center gap-1 h-6">
+          <div className="w-1.5 bg-red-500 rounded-full animate-[wave_1s_ease-in-out_infinite] h-full"></div>
+          <div className="w-1.5 bg-red-500 rounded-full animate-[wave_1s_ease-in-out_infinite_0.1s] h-3/4"></div>
+          <div className="w-1.5 bg-red-500 rounded-full animate-[wave_1s_ease-in-out_infinite_0.2s] h-full"></div>
+          <div className="w-1.5 bg-red-500 rounded-full animate-[wave_1s_ease-in-out_infinite_0.3s] h-1/2"></div>
+          <div className="w-1.5 bg-red-500 rounded-full animate-[wave_1s_ease-in-out_infinite_0.4s] h-3/4"></div>
+          <div className="w-1.5 bg-red-500 rounded-full animate-[wave_1s_ease-in-out_infinite_0.5s] h-full"></div>
+          <style>{`
+            @keyframes wave {
+              0%, 100% { transform: scaleY(0.4); }
+              50% { transform: scaleY(1); }
+            }
+          `}</style>
         </div>
       )}
     </div>

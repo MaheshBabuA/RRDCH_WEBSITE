@@ -118,8 +118,30 @@ const Footer = () => {
           </div>
         </div>
 
+        {/* Accreditation Badges — Official RRDCH Data */}
+        <div className="border-t border-white/10 mt-12 pt-8">
+          <div className="text-center mb-4">
+            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-blue-300/60">Accreditations & Recognitions</span>
+          </div>
+          <div className="flex flex-wrap justify-center gap-4 mb-8">
+            {[
+              { code: 'NAAC', label: 'NAAC Accredited' },
+              { code: 'NABH', label: 'NABH Accredited' },
+              { code: 'ISO', label: 'ISO 9001:2015' },
+              { code: 'DCI', label: 'DCI Recognized' },
+              { code: 'RCPS', label: 'RCPS Glasgow' },
+              { code: 'NIRF', label: 'NIRF Ranked' },
+              { code: 'IAO', label: 'IAO Accredited' },
+            ].map((b) => (
+              <div key={b.code} className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-blue-100/70 text-xs font-bold uppercase tracking-wider hover:bg-white/10 transition-all cursor-default">
+                {b.label}
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Bottom Copyright */}
-        <div className="border-t border-white/10 mt-16 pt-8 text-center text-sm text-blue-200/50 font-medium">
+        <div className="border-t border-white/10 pt-6 text-center text-sm text-blue-200/50 font-medium">
           <p>{t('footer.copyright')}</p>
         </div>
       </div>

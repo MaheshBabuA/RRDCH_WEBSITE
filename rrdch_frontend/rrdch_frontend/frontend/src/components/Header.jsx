@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../utils/i18n';
 
 const Header = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const { language, toggleLanguage, t } = useLanguage();
 
   return (
     <header className="w-full flex flex-col shadow-md z-50">
@@ -80,9 +82,9 @@ const Header = () => {
       <nav className="bg-[#008080] text-white sticky top-0 shadow-lg px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex space-x-1">
-            <NavLink to="/" label="Home" />
+            <NavLink to="/" label={t('navbar.home')} />
             <NavDropdown 
-              label="About Us" 
+              label={t('navbar.about')} 
               items={[
                 { label: 'Our Legacy', to: '/about' },
                 { label: 'Campus Facilities', to: '/facilities' },
@@ -91,9 +93,20 @@ const Header = () => {
                 { label: 'Video Gallery', to: '/video-gallery', highlight: true }
               ]} 
             />
-            <NavLink to="/departments" label="Departments" />
+            
             <NavDropdown 
-              label="Academics" 
+              label={t('navbar.departments')} 
+              items={[
+                { label: 'Oral Surgery', to: '/departments/oral-surgery' },
+                { label: 'Orthodontics', to: '/departments/orthodontics' },
+                { label: 'Periodontics', to: '/departments/periodontics' },
+                { label: 'Prosthodontics', to: '/departments/prosthodontics' },
+                { label: 'Conservative Dentistry', to: '/departments/conservative-dentistry' }
+              ]} 
+            />
+
+            <NavDropdown 
+              label={t('navbar.academics')} 
               items={[
                 { label: 'Courses Offered', to: '/courses' },
                 { label: 'Academics & Research', to: '/academics' },
@@ -101,21 +114,38 @@ const Header = () => {
                 { label: 'Student Portal', to: '/student-portal', highlight: true }
               ]} 
             />
+
             <NavDropdown 
-              label="Patient Services" 
+              label="Clinical Services" 
               items={[
                 { label: 'Book Appointment', to: '/book-appointment' },
                 { label: 'Patient Portal', to: '/patient-portal', highlight: true },
                 { label: 'AI Symptom Checker', to: '/ai-checker' }
               ]} 
             />
-            <NavLink to="/contact" label="Contact" />
+
+            <NavLink to="/research" label="Research" />
+            <NavLink to="/contact" label={t('navbar.contact') || 'Contact'} />
           </div>
 
-          {/* Language Toggle & Mobile Menu (Simplified) */}
+          {/* Language Toggle, Doctor Login & Appointment Button */}
           <div className="flex items-center space-x-4">
-             <button className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-md text-xs font-bold transition-all">ಕನ್ನಡ</button>
-             <Link to="/book-appointment" className="bg-success-green hover:bg-green-600 px-5 py-2.5 text-xs font-black uppercase tracking-wider transition-all">Book Now</Link>
+             <button 
+               onClick={toggleLanguage} 
+               className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-md text-xs font-bold transition-all"
+             >
+               {language === 'en' ? 'ಕನ್ನಡ' : 'English'}
+             </button>
+             <Link 
+               to="/staff/doctor-dashboard" 
+               className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-md text-[10px] font-black uppercase tracking-widest border border-white/20 transition-all"
+             >
+               <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+               Doctor Login
+             </Link>
+             <Link to="/book-appointment" className="bg-success-green hover:bg-green-600 px-5 py-2.5 text-xs font-black uppercase tracking-wider transition-all shadow-lg">
+               {t('navbar.bookAppointment') || 'Book Now'}
+             </Link>
           </div>
         </div>
       </nav>

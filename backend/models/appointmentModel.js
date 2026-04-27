@@ -39,11 +39,13 @@ async function createAppointment(patientData) {
       );
     }
 
-    // 2. Generate Appointment Details
-    const appointmentId = crypto.randomUUID();
-    const confirmationNumber = 'CNF-' + Math.floor(100000 + Math.random() * 899999);
+    // 3. Generate Verification Hash
+    const verificationHash = crypto.createHash('sha256')
+      .update(`${appointmentId}-${patientPhone}-${Date.now()}`)
+      .digest('hex')
+      .substring(0, 12);
 
-    // 3. Insert Appointment
+    // 4. Insert Appointment
     const query = `
       INSERT INTO appointments 
       (appointment_id, confirmation_number, patient_id, patient_name, patient_phone, doctor_id, appointment_date, reason, status) 
@@ -69,8 +71,10 @@ async function createAppointment(patientData) {
       appointmentId, 
       confirmationNumber,
       patientId,
-      data: { appointmentId, confirmationNumber, patientId }
+      verificationHash,
+      data: { appointmentId, confirmationNumber, patientId, verificationHash }
     };
+
   } catch (error) {
     await connection.rollback();
     return handleError('createAppointment', error);

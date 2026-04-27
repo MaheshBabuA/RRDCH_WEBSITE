@@ -1,86 +1,163 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Modern Design System Variables */
+
 :root {
-  --primary-blue: #0066CC;
-  --secondary-blue: #0f172a;
-  --accent-emerald: #10b981;
-  --soft-bg: #f8fafc;
-  --text-main: #1e293b;
-  --text-muted: #64748b;
-  --border-soft: #e2e8f0;
-  --error-red: #ef4444;
-  --success-green: #28A745;
+  --clinical-blue: #008080;
+  --clinical-blue-glow: rgba(0, 128, 128, 0.2);
+  --sky-blue: #87CEEB;
+  --navy: #001F3F;
+  --soft-white: #ffffff;
+  --glass-bg: rgba(255, 255, 255, 0.4);
 }
 
-@layer base {
-  body {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    line-height: 1.6;
-    color: var(--text-main);
-    background-color: var(--soft-bg);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    @apply selection:bg-primary-blue/20 selection:text-primary-blue;
-  }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
-  h1, .heading-1 {
-    @apply text-4xl font-bold tracking-tight text-secondary-blue mb-6;
-  }
+html {
+  scroll-behavior: smooth;
+}
 
-  h2, .heading-2 {
-    @apply text-2xl font-semibold tracking-tight text-secondary-blue mb-4;
-  }
+body {
+  background-color: #f0f4f8;
+  color: var(--navy);
+  overflow-x: hidden;
+  letter-spacing: -0.01em;
+}
 
-  h3, .heading-3 {
-    @apply text-xl font-medium tracking-tight text-secondary-blue mb-3;
+button {
+  touch-action: manipulation;
+}
+
+/* Momentum Scrolling & Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 255, 0.1);
+  border-radius: 10px;
+  transition: background 0.3s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 255, 0.2);
+}
+
+/* Glassmorphism 2.0 */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(0, 128, 128, 0.05),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .glass-panel {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
 }
 
-@layer components {
-  /* Premium Buttons */
-  .btn-primary {
-    @apply px-6 py-2.5 bg-primary-blue text-white rounded-lg font-semibold 
-           transition-all duration-300 ease-in-out
-           hover:bg-secondary-blue hover:shadow-lg hover:-translate-y-0.5
-           active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2;
-  }
+/* Teal Bloom Effect */
+.teal-bloom::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(circle at 50% 50%, var(--clinical-blue-glow), transparent 70%);
+  filter: blur(20px);
+  opacity: 0.5;
+  pointer-events: none;
+}
 
-  .btn-secondary {
-    @apply px-6 py-2.5 border-2 border-primary-blue text-primary-blue rounded-lg font-semibold 
-           transition-all duration-300 ease-in-out
-           hover:bg-primary-blue hover:text-white hover:shadow-md
-           active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2;
-  }
+/* Neumorphism (Soft White Plastic) */
+.neumorphic-card {
+  background: #ffffff;
+  box-shadow: 10px 10px 20px #e6ebf0,
+              -10px -10px 20px #ffffff;
+  border-radius: 40px;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
-  /* Premium Card */
-  .card {
-    @apply bg-white rounded-2xl shadow-sm border border-border-light p-6
-           transition-all duration-300 ease-in-out
-           hover:shadow-xl hover:border-primary-blue/20;
-  }
+.neumorphic-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 12px 12px 25px #dfe5ec,
+              -12px -12px 25px #ffffff,
+              0 0 20px var(--clinical-blue-glow);
+}
 
-  /* Styled Form Elements */
-  .form-input {
-    @apply w-full px-4 py-3 bg-white border border-border-light rounded-xl
-           transition-all duration-200 ease-in-out
-           placeholder:text-neutral-gray/60
-           focus:outline-none focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue
-           disabled:bg-gray-50 disabled:cursor-not-allowed;
-  }
+/* Tidal Wave Effect */
+.wave-container {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  background: #ffffff;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 8px solid #f0f4f8;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+}
 
-  .form-select {
-    @apply w-full px-4 py-3 bg-white border border-border-light rounded-xl cursor-pointer
-           transition-all duration-200 ease-in-out
-           focus:outline-none focus:ring-2 focus:ring-primary-blue/30 focus:border-primary-blue
-           appearance-none;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236C757D' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 1rem center;
-    background-repeat: no-repeat;
-    background-size: 1.5em 1.5em;
-  }
+.wave {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 200%;
+  height: 100%;
+  background: var(--sky-blue);
+  opacity: 0.6;
+  border-radius: 40%;
+  animation: waveRotate 8s infinite linear;
+  transition: all 1s ease-in-out;
+}
+
+.wave:nth-child(2) {
+  bottom: 5px;
+  opacity: 0.4;
+  animation: waveRotate 12s infinite linear;
+}
+
+@keyframes waveRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Tactile Table Rows */
+.tactile-row {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tactile-row:hover {
+  transform: translateX(8px);
+  background: rgba(0, 31, 63, 0.02) !important;
+  box-shadow: 0 10px 20px -5px rgba(0, 31, 63, 0.1);
+  z-index: 10;
+}
+
+/* Typography Overrides */
+h1, h2, h3, h4 {
+  letter-spacing: -0.02em;
+  font-weight: 800;
+}
+
+/* Toasts Glassmorphism */
+.glass-toast {
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 20px 40px rgba(0, 128, 128, 0.1) !important;
 }

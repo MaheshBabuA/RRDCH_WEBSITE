@@ -4,6 +4,7 @@ import apiService from '../services/api';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import FormInput from '../components/FormInput';
+import VoiceInputButton from '../components/VoiceInputButton';
 
 const SYLLABUS_UPDATES = [
   { id: 1, subject: 'Oral Medicine', topic: 'Digital Radiology Update', date: '2026-04-20', status: 'Updated', version: 'v2.4' },
@@ -13,7 +14,7 @@ const SYLLABUS_UPDATES = [
 ];
 
 const StudentPortal = () => {
-  const { t } = useLanguage();
+  const { t, language: globalLanguage } = useLanguage();
 
   const [activeTab, setActiveTab] = useState('academics');
   const [phone, setPhone] = useState(localStorage.getItem('current_user_phone') || '');
@@ -26,10 +27,27 @@ const StudentPortal = () => {
 
   // RAG Chat State
   const [chatInput, setChatInput] = useState('');
+  const [chatLanguage, setChatLanguage] = useState(globalLanguage);
   const [isThinking, setIsThinking] = useState(false);
   const [messages, setMessages] = useState([
     { role: 'assistant', content: "Hello! I'm your Academic Assistant. I've indexed the complete BDS syllabus and current clinical schedules. How can I help you today?" }
   ]);
+
+  const CHAT_LANGUAGES = [
+    { code: 'en', name: 'English' },
+    { code: 'kn', name: 'Kannada' },
+    { code: 'hi', name: 'Hindi' },
+    { code: 'te', name: 'Telugu' },
+    { code: 'ta', name: 'Tamil' },
+    { code: 'es', name: 'Spanish' },
+    { code: 'fr', name: 'French' },
+    { code: 'ar', name: 'Arabic' },
+    { code: 'de', name: 'German' },
+    { code: 'zh', name: 'Chinese' },
+    { code: 'ja', name: 'Japanese' },
+    { code: 'ru', name: 'Russian' },
+    { code: 'ko', name: 'Korean' }
+  ];
 
   useEffect(() => {
     const fetchStaticData = async () => {
@@ -95,25 +113,63 @@ const StudentPortal = () => {
     }
   };
 
-  // RAG Chat Handler
-  const handleQuery = async (e) => {
+    // RAG Chat Handler
+  const handleQuery = async (e, forcedInput) => {
     if (e && e.preventDefault) e.preventDefault();
-    if (!chatInput.trim()) return;
-    setMessages(prev => [...prev, { role: 'user', content: chatInput }]);
+    const query = forcedInput || chatInput;
+    if (!query.trim()) return;
+    
+    setMessages(prev => [...prev, { role: 'user', content: query }]);
     setChatInput('');
     setIsThinking(true);
+
+    // Timeout handling
+    const busyTimer = setTimeout(() => {
+      setMessages(prev => {
+        // Only add if we haven't received a response yet and the last message isn't already the busy message
+        if (prev[prev.length - 1].role === 'user') {
+          return [...prev, { role: 'assistant', content: 'System busy, searching documents... Please wait a moment.' }];
+        }
+        return prev;
+      });
+    }, 5000);
+    
     try {
-      const response = await fetch('http://localhost:8000/api/academic-query', {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s Network Timeout
+
+      const response = await fetch('http://localhost:5000/api/academic-query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: chatInput }),
+        signal: controller.signal,
+        body: JSON.stringify({ 
+          question: query,
+          language: chatLanguage 
+        }),
       });
+      
+      clearTimeout(timeoutId);
+      clearTimeout(busyTimer);
       const data = await response.json();
-      setMessages(prev => [...prev, { role: 'assistant', content: data.answer, source: data.source }]);
+      
+      setMessages(prev => {
+        const filtered = prev.filter(m => m.content !== 'System busy, searching documents... Please wait a moment.');
+        return [...filtered, { role: 'assistant', content: data.answer, source: data.source }];
+      });
     } catch (err) {
-      setMessages(prev => [...prev, { role: 'assistant', content: "I'm having trouble connecting to the knowledge base. I can provide general syllabus information based on standard BDS guidelines." }]);
+      clearTimeout(busyTimer);
+      const errorMessage = err.name === 'AbortError' 
+        ? "The request timed out. The system is taking longer than usual to process your query."
+        : "I'm having trouble connecting to the knowledge base. I can provide general syllabus information based on standard BDS guidelines.";
+      
+      setMessages(prev => {
+        const filtered = prev.filter(m => m.content !== 'System busy, searching documents... Please wait a moment.');
+        return [...filtered, { role: 'assistant', content: errorMessage }];
+      });
     } finally { setIsThinking(false); }
   };
+
+
 
   return (
     <div className="relative animate-fade-in pb-24 min-h-screen bg-soft-bg font-sans">
@@ -237,12 +293,23 @@ const StudentPortal = () => {
             {/* SIDEBAR (RAG Assistant) */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-2xl shadow-xl border border-[#008080]/30 h-[calc(100vh-200px)] flex flex-col sticky top-6 overflow-hidden">
-                <div className="bg-[#008080] p-4 text-white flex items-center gap-3">
-                   <span className="text-2xl">🤖</span>
-                   <div>
-                     <div className="text-xs font-black uppercase tracking-widest">Academic Bot</div>
-                     <div className="text-[9px] font-bold opacity-80">RAG-Powered Syllabus Assistant</div>
+                <div className="bg-[#008080] p-4 text-white flex items-center justify-between">
+                   <div className="flex items-center gap-3">
+                     <span className="text-2xl">🤖</span>
+                     <div>
+                       <div className="text-xs font-black uppercase tracking-widest">Academic Bot</div>
+                       <div className="text-[9px] font-bold opacity-80">RAG Syllabus Assistant</div>
+                     </div>
                    </div>
+                   <select 
+                     value={chatLanguage} 
+                     onChange={(e) => setChatLanguage(e.target.value)}
+                     className="bg-white/10 border border-white/20 rounded px-1 py-0.5 text-[9px] font-bold outline-none"
+                   >
+                     {CHAT_LANGUAGES.map(lang => (
+                       <option key={lang.code} value={lang.code} className="text-black">{lang.name}</option>
+                     ))}
+                   </select>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
@@ -260,16 +327,23 @@ const StudentPortal = () => {
                 </div>
 
                 <div className="p-3 bg-white border-t border-border-light">
-                  <form onSubmit={handleQuery} className="relative">
-                    <input 
-                      type="text" 
-                      value={chatInput} 
-                      onChange={(e) => setChatInput(e.target.value)} 
-                      placeholder="Ask syllabus query..." 
-                      className="w-full pl-3 pr-10 py-2.5 bg-gray-50 border-2 border-transparent focus:border-[#008080] rounded-xl text-[11px] font-bold text-secondary-blue outline-none transition-all" 
+                  <div className="flex flex-col gap-2">
+                    <VoiceInputButton 
+                      onTranscript={(text) => handleQuery(null, text)} 
+                      targetLanguage={chatLanguage}
+                      className="w-full" 
                     />
-                    <button type="submit" className="absolute right-2 top-2 text-[#008080] p-1 font-black">↵</button>
-                  </form>
+                    <form onSubmit={handleQuery} className="relative">
+                      <input 
+                        type="text" 
+                        value={chatInput} 
+                        onChange={(e) => setChatInput(e.target.value)} 
+                        placeholder="Ask syllabus query..." 
+                        className="w-full pl-3 pr-10 py-2.5 bg-gray-50 border-2 border-transparent focus:border-[#008080] rounded-xl text-[11px] font-bold text-secondary-blue outline-none transition-all" 
+                      />
+                      <button type="submit" className="absolute right-2 top-2 text-[#008080] p-1 font-black">↵</button>
+                    </form>
+                  </div>
                   <p className="text-[8px] text-center text-text-muted mt-2 font-bold uppercase tracking-tighter">AI-indexed from PDF Syllabus v2.4</p>
                 </div>
               </div>
@@ -283,4 +357,3 @@ const StudentPortal = () => {
 };
 
 export default StudentPortal;
-
