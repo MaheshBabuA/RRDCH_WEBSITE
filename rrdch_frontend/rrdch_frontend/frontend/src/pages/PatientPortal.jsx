@@ -157,12 +157,12 @@ const PatientPortal = () => {
 
     if (status === 'With Doctor') {
       fillLevel = '66%';
-      waveColor = '#001F3F';
+      waveColor = 'linear-gradient(180deg, #38bdf8 0%, #1e40af 100%)';
       label = t('patientPortal.statusInQueue');
       subLabel = t('patientPortal.statusWaiting');
     } else if (status === 'in_progress') {
       fillLevel = '100%';
-      waveColor = '#008080';
+      waveColor = 'linear-gradient(180deg, #10b981 0%, #064e3b 100%)';
       label = t('patientPortal.statusCalled');
       subLabel = t('patientPortal.statusEnterCabin');
       isCalled = true;
@@ -170,8 +170,8 @@ const PatientPortal = () => {
 
     return (
       <div className="flex flex-col items-center gap-10 py-10">
-        <div className={`wave-container shadow-2xl relative ${isCalled ? 'animate-pulse ring-[12px] ring-teal-400/20' : ''}`}>
-           <div className="wave" style={{ bottom: fillLevel, backgroundColor: waveColor }}></div>
+        <div className={`wave-container shadow-2xl relative ${isCalled ? 'animate-pulse ring-[12px] ring-teal-400/20' : ''} border-4 border-[rgba(0,121,191,0.2)]`}>
+           <div className="wave" style={{ bottom: fillLevel, background: waveColor }}></div>
            <div className="absolute inset-0 flex flex-col items-center justify-center z-10 text-center">
               <span className={`text-4xl font-black ${isCalled ? 'text-white' : 'text-slate-900'} tracking-tighter`}>
                 {isCalled ? t('patientPortal.cabin') : label}
@@ -238,8 +238,8 @@ const PatientPortal = () => {
 
              {selectedApt ? (
                <div className="space-y-8">
-                 <div className="glass-panel p-6 md:p-8 rounded-[40px] flex items-center gap-6 teal-bloom animate-fade-in mx-4 md:mx-0">
-                    <div className="w-16 h-16 md:w-20 md:h-20 shrink-0 bg-[#008080] rounded-full flex items-center justify-center text-3xl md:text-4xl text-white shadow-xl">
+                 <div className="glass-panel p-6 md:p-8 rounded-[40px] flex items-center gap-6 teal-bloom animate-fade-in mx-4 md:mx-0 shadow-2xl border border-[rgba(0,121,191,0.3)] bg-white/70 backdrop-blur-[12px]">
+                    <div className="w-16 h-16 md:w-20 md:h-20 shrink-0 bg-gradient-to-br from-blue-400 to-blue-900 rounded-full flex items-center justify-center text-3xl md:text-4xl text-white shadow-xl">
                        {patientName.charAt(0)}
                     </div>
                     <div>
@@ -368,7 +368,7 @@ const PatientPortal = () => {
         .teal-bloom { position: relative; }
         .teal-bloom::after { content: ''; position: absolute; inset: 0; z-index: -1; background: radial-gradient(circle at 50% 50%, rgba(0, 128, 128, 0.2), transparent 70%); filter: blur(20px); opacity: 0.5; }
         .wave-container { position: relative; width: 80vw; height: 80vw; max-width: 250px; max-height: 250px; background: #ffffff; border-radius: 50%; overflow: hidden; border: 8px solid #f0f4f8; }
-        .wave { position: absolute; bottom: 0; left: 0; width: 200%; height: 100%; opacity: 0.6; border-radius: 40%; animation: waveRotate 8s infinite linear; }
+        .wave { position: absolute; bottom: 0; left: 0; width: 200%; height: 200%; opacity: 0.8; border-radius: 38%; animation: waveRotate 5s infinite linear; }
         @keyframes waveRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       `}</style>
     </div>

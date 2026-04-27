@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ChevronRight, Calendar, User, Activity, Clock, ShieldCheck, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { siteContent } from '../data/siteContent';
+import AutoSlideshow from '../components/AutoSlideshow';
 
 const Home = () => {
   const [loading, setLoading] = useState(true);
@@ -261,6 +262,9 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* 6. Campus Highlights Slideshow */}
+      <AutoSlideshow />
     </div>
   );
 };

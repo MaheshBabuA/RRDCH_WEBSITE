@@ -68,8 +68,8 @@ const db = new sqlite3.Database(dbPath, (err) => {
                         if (!err && row.count === 0) {
                             console.log("Seeding medical history data...");
                             const stmt = db.prepare("INSERT INTO medical_history (patient_phone, patient_id, visit_date, doctor_name, diagnosis, treatment_plan, notes) VALUES (?, ?, ?, ?, ?, ?, ?)");
-                            stmt.run("9876543210", "P-1001", "2026-03-15", "Dr. Mahesh Babu", "Deep Dental Caries (Molar)", "Root Canal Treatment + Zirconia Crown", "Patient reported sensitivity to cold.");
-                            stmt.run("9876543210", "P-1001", "2026-01-10", "Dr. Sarah", "Gingivitis", "Scaling and Polishing", "Improved oral hygiene instructions given.");
+                            stmt.run("9972680044", "P-1001", "2026-03-15", "Dr. Mahesh Babu", "Deep Dental Cavity (Molar)", "Root Canal Treatment + Zirconia Crown", "Patient reported sensitivity to cold.");
+                            stmt.run("9972680044", "P-1001", "2026-01-10", "Dr. Sarah", "Gingivitis", "Scaling and Polishing", "Improved oral hygiene instructions given.");
                             stmt.finalize();
                         }
                     });
