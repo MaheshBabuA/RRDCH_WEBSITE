@@ -19,7 +19,7 @@ const io = new Server(server, {
     }
 });
 
-app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(require('cors')({ origin: '*', methods: ['GET', 'POST', 'PATCH', 'DELETE'], allowedHeaders: ['Content-Type', 'Authorization'] }));
 app.use(express.json());
 
 // --- REST Endpoints ---
