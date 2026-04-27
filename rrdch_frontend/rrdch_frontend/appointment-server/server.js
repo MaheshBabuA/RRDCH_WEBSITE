@@ -2,9 +2,13 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
-const { randomUUID } = require('crypto'); // Built-in Node.js — no external dependency
+const { randomUUID } = require('crypto');
 const QRCode = require('qrcode');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const db = require('./db');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'rrdch_super_secret_key_2026';
 
 const app = express();
 const server = http.createServer(app);
@@ -19,6 +23,118 @@ app.use(cors());
 app.use(express.json());
 
 // --- REST Endpoints ---
+
+// --- Auth Middleware ---
+const verifyToken = (req, res, next) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ success: false, message: 'No token provided.' });
+    try {
+        req.user = jwt.verify(token, JWT_SECRET);
+        next();
+    } catch (e) {
+        return res.status(403).json({ success: false, message: 'Invalid or expired token.' });
+    }
+};
+
+// --- Auth Endpoints ---
+
+// POST /api/auth/login
+app.post('/api/auth/login', (req, res) => {
+    const { user_id, password } = req.body;
+    if (!user_id || !password) {
+        return res.status(400).json({ success: false, message: 'User ID and password are required.' });
+    }
+    db.get('SELECT * FROM users WHERE user_id = ?', [user_id], async (err, user) => {
+        if (err) return res.status(500).json({ success: false, message: 'Database error.' });
+        if (!user) return res.status(401).json({ success: false, message: 'Invalid credentials.' });
+
+        const isValid = await bcrypt.compare(password, user.password_hash);
+        if (!isValid) return res.status(401).json({ success: false, message: 'Invalid credentials.' });
+
+        const payload = { id: user.id, user_id: user.user_id, role: user.role, department_id: user.department_id, name: user.name };
+        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
+
+        let redirectUrl = '/student-portal';
+        if (user.role === 'super_admin' || user.role === 'admin') redirectUrl = '/staff/reception-dashboard';
+        else if (user.role === 'doctor' || user.role === 'hod') redirectUrl = '/staff/doctor-dashboard';
+
+        res.json({
+            success: true,
+            message: 'Login successful',
+            token,
+            user: payload,
+            force_password_change: !!user.force_password_change,
+            redirectUrl
+        });
+    });
+});
+
+// POST /api/auth/change-password
+app.post('/api/auth/change-password', (req, res) => {
+    const { user_id, oldPassword, newPassword } = req.body;
+    db.get('SELECT * FROM users WHERE user_id = ?', [user_id], async (err, user) => {
+        if (err || !user) return res.status(404).json({ success: false, message: 'User not found.' });
+        const isValid = await bcrypt.compare(oldPassword, user.password_hash);
+        if (!isValid) return res.status(401).json({ success: false, message: 'Incorrect old password.' });
+        const newHash = await bcrypt.hash(newPassword, 10);
+        db.run('UPDATE users SET password_hash = ?, force_password_change = 0 WHERE user_id = ?', [newHash, user_id], (e) => {
+            if (e) return res.status(500).json({ success: false, message: 'Failed to update password.' });
+            res.json({ success: true, message: 'Password updated.' });
+        });
+    });
+});
+
+// POST /api/auth/register-staff  (super_admin only)
+app.post('/api/auth/register-staff', verifyToken, async (req, res) => {
+    if (req.user.role !== 'super_admin' && req.user.role !== 'admin') {
+        return res.status(403).json({ success: false, message: 'Access denied.' });
+    }
+    const { user_id, password, role, department_id, name } = req.body;
+    if (!user_id || !password || !role) {
+        return res.status(400).json({ success: false, message: 'user_id, password, role required.' });
+    }
+    db.get('SELECT id FROM users WHERE user_id = ?', [user_id], async (err, existing) => {
+        if (existing) return res.status(400).json({ success: false, message: 'User ID already exists.' });
+        const hash = await bcrypt.hash(password, 10);
+        db.run(
+            'INSERT INTO users (user_id, password_hash, role, department_id, name, force_password_change) VALUES (?, ?, ?, ?, ?, 1)',
+            [user_id, hash, role, department_id || null, name || user_id],
+            (insertErr) => {
+                if (insertErr) return res.status(500).json({ success: false, message: 'Failed to register.' });
+                res.status(201).json({ success: true, message: 'Staff member registered.' });
+            }
+        );
+    });
+});
+
+// GET /api/erp/appointments/queue  (all active appointments)
+app.get('/api/erp/appointments/queue', verifyToken, (req, res) => {
+    const query = `SELECT * FROM appointments WHERE status IN ('Booked','With Doctor','in_progress','scheduled','confirmed') ORDER BY date ASC, time_slot ASC`;
+    db.all(query, [], (err, rows) => {
+        if (err) return res.status(500).json({ success: false, message: 'Database error' });
+        res.json({ success: true, count: rows.length, appointments: rows });
+    });
+});
+
+// GET /api/erp/appointments/department/:deptName
+app.get('/api/erp/appointments/department/:deptName', verifyToken, (req, res) => {
+    const { deptName } = req.params;
+    const query = `SELECT * FROM appointments WHERE status IN ('Booked','With Doctor','in_progress','scheduled','confirmed','PENDING') AND dept = ? ORDER BY date ASC, time_slot ASC`;
+    db.all(query, [deptName], (err, rows) => {
+        if (err) return res.status(500).json({ success: false, message: 'Database error' });
+        res.json({ success: true, count: rows.length, appointments: rows });
+    });
+});
+
+// PUT /api/erp/appointments/:id/complete
+app.put('/api/erp/appointments/:id/complete', verifyToken, (req, res) => {
+    const { id } = req.params;
+    db.run(`UPDATE appointments SET status = 'completed' WHERE id = ?`, [id], function(err) {
+        if (err) return res.status(500).json({ success: false, message: 'Database error' });
+        if (this.changes === 0) return res.status(404).json({ success: false, message: 'Appointment not found' });
+        res.json({ success: true, message: 'Appointment marked as completed' });
+    });
+});
 
 // Health Check
 app.get('/api/health', (req, res) => {

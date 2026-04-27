@@ -6,7 +6,7 @@ import html2canvas from 'html2canvas';
 import { useLanguage } from '../utils/i18n';
 import { useVoiceGuidance } from '../hooks/useVoiceGuidance';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const DEPARTMENTS = [
   { id: 1, name: 'Oral Medicine \u0026 Radiology', icon: '📸', color: 'from-blue-400 to-blue-600' },

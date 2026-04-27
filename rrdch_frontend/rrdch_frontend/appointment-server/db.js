@@ -1,4 +1,5 @@
 const sqlite3 = require('sqlite3').verbose();
+const bcrypt = require('bcrypt');
 const path = require('path');
 
 const dbPath = path.resolve(__dirname, 'appointments.db');
@@ -40,6 +41,19 @@ const db = new sqlite3.Database(dbPath, (err) => {
             )
         `;
 
+        const createUsersTable = `
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                name TEXT,
+                role TEXT DEFAULT 'staff',
+                department_id INTEGER,
+                force_password_change INTEGER DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `;
+
         db.serialize(() => {
             db.run(createAppointmentsTable, (err) => {
                 if (err) console.error('Error creating appointments table:', err.message);
@@ -50,7 +64,6 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 if (err) console.error('Error creating history table:', err.message);
                 else {
                     console.log('Medical history table ready.');
-                    // Seed some initial data if empty
                     db.get("SELECT COUNT(*) as count FROM medical_history", (err, row) => {
                         if (!err && row.count === 0) {
                             console.log("Seeding medical history data...");
@@ -58,6 +71,29 @@ const db = new sqlite3.Database(dbPath, (err) => {
                             stmt.run("9876543210", "P-1001", "2026-03-15", "Dr. Mahesh Babu", "Deep Dental Caries (Molar)", "Root Canal Treatment + Zirconia Crown", "Patient reported sensitivity to cold.");
                             stmt.run("9876543210", "P-1001", "2026-01-10", "Dr. Sarah", "Gingivitis", "Scaling and Polishing", "Improved oral hygiene instructions given.");
                             stmt.finalize();
+                        }
+                    });
+                }
+            });
+
+            db.run(createUsersTable, (err) => {
+                if (err) console.error('Error creating users table:', err.message);
+                else {
+                    console.log('Users table ready.');
+                    // Seed super_admin 'mohan' if not already present
+                    db.get("SELECT id FROM users WHERE user_id = 'mohan'", (err, row) => {
+                        if (!err && !row) {
+                            bcrypt.hash('admin123', 10, (hashErr, hash) => {
+                                if (hashErr) return console.error('Bcrypt error:', hashErr);
+                                db.run(
+                                    "INSERT INTO users (user_id, password_hash, name, role, force_password_change) VALUES (?, ?, ?, ?, ?)",
+                                    ['mohan', hash, 'Super Admin Mohan', 'super_admin', 1],
+                                    (insertErr) => {
+                                        if (insertErr) console.error('Error seeding mohan:', insertErr.message);
+                                        else console.log('✅ Super Admin "mohan" seeded.');
+                                    }
+                                );
+                            });
                         }
                     });
                 }
