@@ -2,9 +2,13 @@ import axios from 'axios';
 
 const FALLBACK_ERROR_MESSAGE = 'Something went wrong. Please try again later.';
 
+const BASE_URL = 'http://localhost:5000/api';
+console.log('--- RRDCH FRONTEND API INITIALIZED ---');
+console.log('TARGET BASE_URL:', BASE_URL);
+
 // Create axios instance
 export const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },

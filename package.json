@@ -7,11 +7,15 @@
     "backend": "cd rrdch_frontend/rrdch_frontend/appointment-server && npm start",
     "frontend": "cd rrdch_frontend/rrdch_frontend/frontend && npm run dev",
     "dev": "node scripts/orchestrator.js",
+    "dev:full": "concurrently \"npm run backend\" \"npm run frontend\"",
     "start": "node scripts/orchestrator.js",
     "build": "cd rrdch_frontend/rrdch_frontend/frontend && npm install && npm run build",
     "postinstall": "cd rrdch_frontend/rrdch_frontend/appointment-server && npm install --build-from-source=sqlite3 && cd ../../../rrdch_frontend/rrdch_frontend/frontend && npm install"
   },
   "engines": {
     "node": "18.x"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }
